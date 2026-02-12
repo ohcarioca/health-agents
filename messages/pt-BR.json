@@ -11,7 +11,8 @@
     "back": "Voltar",
     "next": "Próximo",
     "search": "Buscar",
-    "noResults": "Nenhum resultado encontrado"
+    "noResults": "Nenhum resultado encontrado",
+    "logout": "Sair"
   },
   "app": {
     "title": "Órbita",

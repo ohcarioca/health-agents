@@ -1,0 +1,85 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+import {
+  LayoutDashboard,
+  MessageSquare,
+  Blocks,
+  BarChart3,
+  Users,
+  Settings,
+} from "lucide-react";
+import * as Tooltip from "@radix-ui/react-tooltip";
+
+const NAV_ITEMS = [
+  { href: "/", icon: LayoutDashboard, labelKey: "nav.dashboard" },
+  { href: "/inbox", icon: MessageSquare, labelKey: "nav.inbox" },
+  { href: "/modules", icon: Blocks, labelKey: "nav.modules" },
+  { href: "/reports", icon: BarChart3, labelKey: "nav.reports" },
+  { href: "/team", icon: Users, labelKey: "nav.team" },
+  { href: "/settings", icon: Settings, labelKey: "nav.settings" },
+] as const;
+
+interface SidebarNavProps {
+  collapsed: boolean;
+}
+
+export function SidebarNav({ collapsed }: SidebarNavProps) {
+  const pathname = usePathname();
+  const t = useTranslations();
+
+  return (
+    <Tooltip.Provider delayDuration={0}>
+      <nav className="flex flex-col gap-1 px-2">
+        {NAV_ITEMS.map((item) => {
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
+          const Icon = item.icon;
+          const label = t(item.labelKey);
+
+          const linkContent = (
+            <Link
+              href={item.href}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-[var(--accent-muted)] text-[var(--accent)] border-l-[3px] border-[var(--accent)]"
+                  : "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--text-primary)]"
+              } ${collapsed ? "justify-center px-0" : ""}`}
+            >
+              <Icon className="size-5 shrink-0" strokeWidth={1.75} />
+              {!collapsed && <span>{label}</span>}
+            </Link>
+          );
+
+          if (collapsed) {
+            return (
+              <Tooltip.Root key={item.href}>
+                <Tooltip.Trigger asChild>{linkContent}</Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content
+                    side="right"
+                    sideOffset={8}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium"
+                    style={{
+                      backgroundColor: "var(--surface-elevated)",
+                      color: "var(--text-primary)",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    {label}
+                  </Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip.Root>
+            );
+          }
+
+          return <div key={item.href}>{linkContent}</div>;
+        })}
+      </nav>
+    </Tooltip.Provider>
+  );
+}
