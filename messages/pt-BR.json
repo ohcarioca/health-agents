@@ -1,0 +1,32 @@
+{
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "create": "Criar",
+    "loading": "Carregando...",
+    "error": "Algo deu errado",
+    "success": "Sucesso",
+    "back": "Voltar",
+    "next": "Próximo",
+    "search": "Buscar",
+    "noResults": "Nenhum resultado encontrado"
+  },
+  "app": {
+    "title": "Órbita",
+    "description": "Plataforma de agentes autônomos para saúde"
+  },
+  "nav": {
+    "dashboard": "Painel",
+    "inbox": "Caixa de Entrada",
+    "modules": "Módulos",
+    "reports": "Relatórios",
+    "team": "Equipe",
+    "settings": "Configurações"
+  },
+  "home": {
+    "title": "Órbita",
+    "subtitle": "Plataforma de agentes para saúde"
+  }
+}

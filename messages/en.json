@@ -1,0 +1,32 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "success": "Success",
+    "back": "Back",
+    "next": "Next",
+    "search": "Search",
+    "noResults": "No results found"
+  },
+  "app": {
+    "title": "Órbita",
+    "description": "Autonomous agent platform for healthcare"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "inbox": "Inbox",
+    "modules": "Modules",
+    "reports": "Reports",
+    "team": "Team",
+    "settings": "Settings"
+  },
+  "home": {
+    "title": "Órbita",
+    "subtitle": "Healthcare agent platform"
+  }
+}
