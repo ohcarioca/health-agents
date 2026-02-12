@@ -63,5 +63,53 @@
     "kpi.nps": "NPS médio",
     "funnel": "Funil de conversão",
     "alerts": "Alertas recentes"
+  },
+  "inbox": {
+    "title": "Caixa de Entrada",
+    "selectConversation": "Selecione uma conversa",
+    "filters.all": "Todas",
+    "filters.escalated": "Escaladas",
+    "filters.resolved": "Resolvidas"
+  },
+  "modules": {
+    "title": "Módulos",
+    "active": "Ativo",
+    "support.name": "Suporte",
+    "support.description": "Atendimento e FAQ via WhatsApp",
+    "scheduling.name": "Agendamento",
+    "scheduling.description": "Marcação de consultas automatizada",
+    "confirmation.name": "Confirmação",
+    "confirmation.description": "Confirmação de presença pré-consulta",
+    "nps.name": "NPS",
+    "nps.description": "Pesquisa de satisfação pós-consulta",
+    "billing.name": "Cobrança",
+    "billing.description": "Envio de links de pagamento",
+    "recall.name": "Recall",
+    "recall.description": "Reativação de pacientes inativos"
+  },
+  "reports": {
+    "title": "Relatórios",
+    "exportPdf": "Exportar PDF",
+    "period.7d": "7 dias",
+    "period.30d": "30 dias",
+    "period.90d": "90 dias",
+    "chart.appointments": "Consultas",
+    "chart.nps": "NPS"
+  },
+  "team": {
+    "title": "Equipe",
+    "invite": "Convidar",
+    "roles.owner": "Proprietário",
+    "roles.reception": "Recepção",
+    "placeholder.ownerName": "Usuário proprietário",
+    "placeholder.ownerEmail": "owner@clinica.com"
+  },
+  "settings": {
+    "title": "Configurações",
+    "tabs.clinic": "Clínica",
+    "tabs.professionals": "Profissionais",
+    "tabs.patients": "Pacientes",
+    "tabs.integrations": "Integrações",
+    "tabs.whatsapp": "WhatsApp"
   }
 }

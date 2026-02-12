@@ -63,5 +63,53 @@
     "kpi.nps": "Average NPS",
     "funnel": "Conversion funnel",
     "alerts": "Recent alerts"
+  },
+  "inbox": {
+    "title": "Inbox",
+    "selectConversation": "Select a conversation",
+    "filters.all": "All",
+    "filters.escalated": "Escalated",
+    "filters.resolved": "Resolved"
+  },
+  "modules": {
+    "title": "Modules",
+    "active": "Active",
+    "support.name": "Support",
+    "support.description": "FAQ and support via WhatsApp",
+    "scheduling.name": "Scheduling",
+    "scheduling.description": "Automated appointment booking",
+    "confirmation.name": "Confirmation",
+    "confirmation.description": "Pre-appointment attendance confirmation",
+    "nps.name": "NPS",
+    "nps.description": "Post-appointment satisfaction survey",
+    "billing.name": "Billing",
+    "billing.description": "Payment link delivery",
+    "recall.name": "Recall",
+    "recall.description": "Inactive patient reactivation"
+  },
+  "reports": {
+    "title": "Reports",
+    "exportPdf": "Export PDF",
+    "period.7d": "7 days",
+    "period.30d": "30 days",
+    "period.90d": "90 days",
+    "chart.appointments": "Appointments",
+    "chart.nps": "NPS"
+  },
+  "team": {
+    "title": "Team",
+    "invite": "Invite",
+    "roles.owner": "Owner",
+    "roles.reception": "Reception",
+    "placeholder.ownerName": "Owner user",
+    "placeholder.ownerEmail": "owner@clinic.com"
+  },
+  "settings": {
+    "title": "Settings",
+    "tabs.clinic": "Clinic",
+    "tabs.professionals": "Professionals",
+    "tabs.patients": "Patients",
+    "tabs.integrations": "Integrations",
+    "tabs.whatsapp": "WhatsApp"
   }
 }
