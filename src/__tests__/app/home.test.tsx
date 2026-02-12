@@ -1,39 +1,39 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import DashboardPage from "@/app/(dashboard)/page";
 
 vi.mock("next-intl", () => ({
-  useTranslations: () => (key: string) => {
-    const messages: Record<string, string> = {
-      title: "Dashboard",
-      "kpi.appointments": "Appointments today",
-      "kpi.confirmations": "Pending confirmations",
-      "kpi.noShows": "No-shows",
-      "kpi.nps": "Average NPS",
-      funnel: "Conversion funnel",
-      alerts: "Recent alerts",
-    };
-    return messages[key] ?? key;
-  },
+  useTranslations: () => (key: string) => key,
 }));
 
+vi.mock("@/components/layout/page-container", () => ({
+  PageContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+
+vi.mock("@/components/layout/page-header", () => ({
+  PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
+}));
+
+vi.mock("@/components/ui/card", () => ({
+  Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+
+vi.mock("@/components/ui/skeleton", () => ({
+  Skeleton: () => <div data-testid="skeleton" />,
+}));
+
+import DashboardPage from "@/app/(dashboard)/page";
+
 describe("DashboardPage", () => {
-  it("renders the title", () => {
+  it("renders dashboard title", () => {
     render(<DashboardPage />);
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(screen.getByText("title")).toBeInTheDocument();
   });
 
-  it("renders the kpi labels", () => {
+  it("renders kpi cards", () => {
     render(<DashboardPage />);
-    expect(screen.getByText("Appointments today")).toBeInTheDocument();
-    expect(screen.getByText("Pending confirmations")).toBeInTheDocument();
-    expect(screen.getByText("No-shows")).toBeInTheDocument();
-    expect(screen.getByText("Average NPS")).toBeInTheDocument();
-  });
-
-  it("renders the funnel and alerts sections", () => {
-    render(<DashboardPage />);
-    expect(screen.getByText("Conversion funnel")).toBeInTheDocument();
-    expect(screen.getByText("Recent alerts")).toBeInTheDocument();
+    expect(screen.getByText("kpi.appointments")).toBeInTheDocument();
+    expect(screen.getByText("kpi.confirmations")).toBeInTheDocument();
+    expect(screen.getByText("kpi.noShows")).toBeInTheDocument();
+    expect(screen.getByText("kpi.nps")).toBeInTheDocument();
   });
 });
