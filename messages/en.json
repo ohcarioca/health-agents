@@ -111,5 +111,28 @@
     "tabs.patients": "Patients",
     "tabs.integrations": "Integrations",
     "tabs.whatsapp": "WhatsApp"
+  },
+  "onboarding": {
+    "step1.title": "Clinic Details",
+    "step1.clinicName": "Clinic Name",
+    "step1.phone": "Phone",
+    "step1.address": "Address",
+    "step2.title": "Professionals",
+    "step2.description": "Add the first professional at your clinic.",
+    "step2.name": "Name",
+    "step2.specialty": "Specialty",
+    "step3.title": "Patients",
+    "step3.description": "You can add patients manually later.",
+    "step3.skipHint": "CSV import available in settings.",
+    "step4.title": "WhatsApp",
+    "step4.description": "Connect WhatsApp Business to activate agents.",
+    "step4.comingSoon": "Integration will be configured in Settings.",
+    "step5.title": "Modules",
+    "step5.description": "All modules are enabled by default.",
+    "step5.allEnabled": "You can disable specific modules at any time.",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "finishing": "Finishing..."
   }
 }

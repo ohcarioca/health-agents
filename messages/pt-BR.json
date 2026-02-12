@@ -111,5 +111,28 @@
     "tabs.patients": "Pacientes",
     "tabs.integrations": "Integrações",
     "tabs.whatsapp": "WhatsApp"
+  },
+  "onboarding": {
+    "step1.title": "Dados da Clínica",
+    "step1.clinicName": "Nome da Clínica",
+    "step1.phone": "Telefone",
+    "step1.address": "Endereço",
+    "step2.title": "Profissionais",
+    "step2.description": "Adicione o primeiro profissional da clínica.",
+    "step2.name": "Nome",
+    "step2.specialty": "Especialidade",
+    "step3.title": "Pacientes",
+    "step3.description": "Você pode adicionar pacientes manualmente depois.",
+    "step3.skipHint": "Importação CSV disponível nas configurações.",
+    "step4.title": "WhatsApp",
+    "step4.description": "Conecte o WhatsApp Business para ativar os agentes.",
+    "step4.comingSoon": "A integração será configurada nas Configurações.",
+    "step5.title": "Módulos",
+    "step5.description": "Todos os módulos estão ativados por padrão.",
+    "step5.allEnabled": "Você pode desativar módulos específicos a qualquer momento.",
+    "back": "Voltar",
+    "next": "Próximo",
+    "finish": "Concluir",
+    "finishing": "Concluindo..."
   }
 }
