@@ -54,5 +54,14 @@
       "hasAccount": "Já tem conta?",
       "loginLink": "Entrar"
     }
+  },
+  "dashboard": {
+    "title": "Painel",
+    "kpi.appointments": "Consultas hoje",
+    "kpi.confirmations": "Confirmações pendentes",
+    "kpi.noShows": "Faltas",
+    "kpi.nps": "NPS médio",
+    "funnel": "Funil de conversão",
+    "alerts": "Alertas recentes"
   }
 }

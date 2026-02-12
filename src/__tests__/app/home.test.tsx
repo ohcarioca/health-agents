@@ -1,25 +1,39 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import HomePage from "@/app/page";
+import DashboardPage from "@/app/(dashboard)/page";
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => {
     const messages: Record<string, string> = {
-      title: "Órbita",
-      subtitle: "Healthcare agent platform",
+      title: "Dashboard",
+      "kpi.appointments": "Appointments today",
+      "kpi.confirmations": "Pending confirmations",
+      "kpi.noShows": "No-shows",
+      "kpi.nps": "Average NPS",
+      funnel: "Conversion funnel",
+      alerts: "Recent alerts",
     };
     return messages[key] ?? key;
   },
 }));
 
-describe("HomePage", () => {
+describe("DashboardPage", () => {
   it("renders the title", () => {
-    render(<HomePage />);
-    expect(screen.getByText("Órbita")).toBeInTheDocument();
+    render(<DashboardPage />);
+    expect(screen.getByText("Dashboard")).toBeInTheDocument();
   });
 
-  it("renders the subtitle", () => {
-    render(<HomePage />);
-    expect(screen.getByText("Healthcare agent platform")).toBeInTheDocument();
+  it("renders the kpi labels", () => {
+    render(<DashboardPage />);
+    expect(screen.getByText("Appointments today")).toBeInTheDocument();
+    expect(screen.getByText("Pending confirmations")).toBeInTheDocument();
+    expect(screen.getByText("No-shows")).toBeInTheDocument();
+    expect(screen.getByText("Average NPS")).toBeInTheDocument();
+  });
+
+  it("renders the funnel and alerts sections", () => {
+    render(<DashboardPage />);
+    expect(screen.getByText("Conversion funnel")).toBeInTheDocument();
+    expect(screen.getByText("Recent alerts")).toBeInTheDocument();
   });
 });

@@ -54,5 +54,14 @@
       "hasAccount": "Already have an account?",
       "loginLink": "Sign in"
     }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "kpi.appointments": "Appointments today",
+    "kpi.confirmations": "Pending confirmations",
+    "kpi.noShows": "No-shows",
+    "kpi.nps": "Average NPS",
+    "funnel": "Conversion funnel",
+    "alerts": "Recent alerts"
   }
 }
