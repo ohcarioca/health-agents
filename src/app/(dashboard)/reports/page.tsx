@@ -22,13 +22,13 @@ export default function ReportsPage() {
           <Badge variant="neutral">{t("period.90d")}</Badge>
         </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <Card>
+          <Card variant="glass">
             <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
               {t("chart.appointments")}
             </p>
             <Skeleton className="mt-4 h-48 w-full" />
           </Card>
-          <Card>
+          <Card variant="glass">
             <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
               {t("chart.nps")}
             </p>

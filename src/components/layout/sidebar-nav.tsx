@@ -46,8 +46,8 @@ export function SidebarNav({ collapsed }: SidebarNavProps) {
               href={item.href}
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-[var(--accent-muted)] text-[var(--accent)] border-l-[3px] border-[var(--accent)]"
-                  : "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--text-primary)]"
+                  ? "bg-[var(--nav-active-bg)] text-[var(--nav-active-text)]"
+                  : "text-[var(--text-secondary)] hover:bg-[var(--nav-hover-bg)] hover:text-[var(--text-primary)]"
               } ${collapsed ? "justify-center px-0" : ""}`}
             >
               <Icon className="size-5 shrink-0" strokeWidth={1.75} />

@@ -29,7 +29,7 @@ export default function ModulesPage() {
       <PageHeader title={t("title")} />
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {MODULES.map(({ key, icon: Icon }) => (
-          <Card key={key} interactive>
+          <Card key={key} interactive variant="glass">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <div className="rounded-lg p-2" style={{ backgroundColor: "var(--accent-muted)" }}>

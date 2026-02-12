@@ -20,7 +20,7 @@ export default function InboxPage() {
           </div>
           <div className="space-y-2">
             {[1, 2, 3, 4, 5].map((i) => (
-              <Card key={i} interactive>
+              <Card key={i} interactive variant="glass">
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="mt-2 h-3 w-1/2" />
               </Card>
@@ -28,7 +28,7 @@ export default function InboxPage() {
           </div>
         </div>
         <div className="lg:col-span-2">
-          <Card>
+          <Card variant="glass">
             <div className="flex min-h-[400px] items-center justify-center">
               <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                 {t("selectConversation")}

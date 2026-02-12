@@ -16,7 +16,7 @@ export default function TeamPage() {
         actions={<Button variant="primary" disabled>{t("invite")}</Button>}
       />
       <div className="mt-6">
-        <Card>
+        <Card variant="glass">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

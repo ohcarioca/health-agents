@@ -55,14 +55,22 @@ export function Sidebar({ clinicName, userName, userEmail }: SidebarProps) {
             : "-translate-x-full lg:translate-x-0"
         } ${collapsed ? "lg:w-16" : "lg:w-[260px]"}`}
         style={{
-          backgroundColor: "var(--surface)",
-          borderColor: "var(--border)",
+          backgroundColor: "var(--sidebar-bg)",
+          backdropFilter: "blur(var(--glass-blur))",
+          WebkitBackdropFilter: "blur(var(--glass-blur))",
+          borderColor: "var(--glass-border)",
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b px-4 py-4" style={{ borderColor: "var(--border)" }}>
+        <div
+          className="flex items-center justify-between border-b px-4 py-4"
+          style={{ borderColor: "var(--glass-border)" }}
+        >
           {!collapsed && (
-            <span className="truncate text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+            <span
+              className="truncate text-sm font-semibold"
+              style={{ color: "var(--text-primary)" }}
+            >
               {clinicName}
             </span>
           )}
@@ -75,7 +83,7 @@ export function Sidebar({ clinicName, userName, userEmail }: SidebarProps) {
           </button>
           <button
             onClick={toggleCollapsed}
-            className="hidden rounded-lg p-1 transition-colors hover:bg-[rgba(255,255,255,0.04)] lg:block"
+            className="hidden rounded-lg p-1 transition-colors hover:bg-[var(--nav-hover-bg)] lg:block"
             style={{ color: "var(--text-muted)" }}
           >
             {collapsed ? (
@@ -99,7 +107,11 @@ export function Sidebar({ clinicName, userName, userEmail }: SidebarProps) {
               <ThemeToggle />
             </div>
           )}
-          <SidebarUserMenu collapsed={collapsed} userName={userName} userEmail={userEmail} />
+          <SidebarUserMenu
+            collapsed={collapsed}
+            userName={userName}
+            userEmail={userEmail}
+          />
         </div>
       </aside>
     </>

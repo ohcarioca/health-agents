@@ -102,7 +102,7 @@ export default function SetupPage() {
         </div>
       </div>
 
-      <Card>
+      <Card variant="glass">
         {/* Step 1: Clinic Data */}
         {step === 1 && (
           <div className="space-y-4">

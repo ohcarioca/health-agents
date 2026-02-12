@@ -1,3 +1,5 @@
+import { Zap } from "lucide-react";
+
 export default function AuthLayout({
   children,
 }: {
@@ -5,16 +7,27 @@ export default function AuthLayout({
 }) {
   return (
     <div
-      className="flex min-h-screen items-center justify-center px-4"
+      className="relative flex min-h-screen items-center justify-center px-4"
       style={{ backgroundColor: "var(--background)" }}
     >
+      {/* Atmospheric background glow */}
       <div
-        className="w-full max-w-sm rounded-xl border p-6"
+        className="pointer-events-none fixed inset-0"
         style={{
-          backgroundColor: "var(--surface)",
-          borderColor: "var(--border)",
+          backgroundImage: "var(--atmosphere-primary)",
         }}
-      >
+      />
+
+      {/* Glass card */}
+      <div className="glass-elevated relative w-full max-w-sm rounded-2xl p-8">
+        {/* Decorative accent icon */}
+        <div
+          className="mx-auto mb-6 flex size-12 items-center justify-center rounded-xl"
+          style={{ backgroundColor: "var(--accent)" }}
+        >
+          <Zap className="size-6 text-white" strokeWidth={2} />
+        </div>
+
         {children}
       </div>
     </div>

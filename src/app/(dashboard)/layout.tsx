@@ -42,14 +42,14 @@ export default async function DashboardLayout({
         userName={userName}
         userEmail={userEmail}
       />
-      <main
-        className="min-h-screen pt-14 transition-all duration-200 lg:pl-[260px] lg:pt-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(ellipse at 0% 0%, rgba(139, 92, 246, 0.04) 0%, transparent 50%)",
-        }}
-      >
-        {children}
+      <main className="relative min-h-screen pt-14 transition-all duration-200 lg:pl-[260px] lg:pt-0">
+        <div
+          className="pointer-events-none fixed inset-0"
+          style={{
+            backgroundImage: "var(--atmosphere-dashboard)",
+          }}
+        />
+        <div className="relative">{children}</div>
       </main>
     </div>
   );
