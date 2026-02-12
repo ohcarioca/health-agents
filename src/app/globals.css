@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Geist Sans", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+}
+
+/* Dark mode (default) */
+:root {
+  --background: #09090b;
+  --surface: #18181b;
+  --surface-elevated: #27272a;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+
+  --accent: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-muted: rgba(139, 92, 246, 0.15);
+  --accent-ring: rgba(139, 92, 246, 0.40);
+
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+
+  color-scheme: dark;
+}
+
+/* Light mode */
+.light {
+  --background: #ffffff;
+  --surface: #f4f4f5;
+  --surface-elevated: #ffffff;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.15);
+
+  --text-primary: #09090b;
+  --text-secondary: #52525b;
+  --text-muted: #a1a1aa;
+
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-muted: rgba(124, 58, 237, 0.10);
+  --accent-ring: rgba(124, 58, 237, 0.30);
+
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
