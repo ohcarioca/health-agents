@@ -28,5 +28,29 @@
   "home": {
     "title": "Órbita",
     "subtitle": "Plataforma de agentes para saúde"
+  },
+  "auth": {
+    "login": {
+      "title": "Entrar",
+      "subtitle": "Acesse sua conta",
+      "email": "Email",
+      "password": "Senha",
+      "submit": "Entrar",
+      "loading": "Entrando...",
+      "google": "Entrar com Google",
+      "noAccount": "Não tem conta?",
+      "signupLink": "Criar conta"
+    },
+    "signup": {
+      "title": "Criar Conta",
+      "subtitle": "Configure sua clínica em minutos",
+      "clinicName": "Nome da Clínica",
+      "email": "Email",
+      "password": "Senha",
+      "submit": "Criar Conta",
+      "loading": "Criando...",
+      "hasAccount": "Já tem conta?",
+      "loginLink": "Entrar"
+    }
   }
 }
