@@ -12,7 +12,8 @@
     "next": "Next",
     "search": "Search",
     "noResults": "No results found",
-    "logout": "Logout"
+    "logout": "Logout",
+    "tryAgain": "Try again"
   },
   "app": {
     "title": "Órbita",
