@@ -57,79 +57,115 @@
   },
   "dashboard": {
     "title": "Painel",
-    "kpi.appointments": "Consultas hoje",
-    "kpi.confirmations": "Confirmações pendentes",
-    "kpi.noShows": "Faltas",
-    "kpi.nps": "NPS médio",
+    "kpi": {
+      "appointments": "Consultas hoje",
+      "confirmations": "Confirmações pendentes",
+      "noShows": "Faltas",
+      "nps": "NPS médio"
+    },
     "funnel": "Funil de conversão",
     "alerts": "Alertas recentes"
   },
   "inbox": {
     "title": "Caixa de Entrada",
     "selectConversation": "Selecione uma conversa",
-    "filters.all": "Todas",
-    "filters.escalated": "Escaladas",
-    "filters.resolved": "Resolvidas"
+    "filters": {
+      "all": "Todas",
+      "escalated": "Escaladas",
+      "resolved": "Resolvidas"
+    }
   },
   "modules": {
     "title": "Módulos",
     "active": "Ativo",
-    "support.name": "Suporte",
-    "support.description": "Atendimento e FAQ via WhatsApp",
-    "scheduling.name": "Agendamento",
-    "scheduling.description": "Marcação de consultas automatizada",
-    "confirmation.name": "Confirmação",
-    "confirmation.description": "Confirmação de presença pré-consulta",
-    "nps.name": "NPS",
-    "nps.description": "Pesquisa de satisfação pós-consulta",
-    "billing.name": "Cobrança",
-    "billing.description": "Envio de links de pagamento",
-    "recall.name": "Recall",
-    "recall.description": "Reativação de pacientes inativos"
+    "support": {
+      "name": "Suporte",
+      "description": "Atendimento e FAQ via WhatsApp"
+    },
+    "scheduling": {
+      "name": "Agendamento",
+      "description": "Marcação de consultas automatizada"
+    },
+    "confirmation": {
+      "name": "Confirmação",
+      "description": "Confirmação de presença pré-consulta"
+    },
+    "nps": {
+      "name": "NPS",
+      "description": "Pesquisa de satisfação pós-consulta"
+    },
+    "billing": {
+      "name": "Cobrança",
+      "description": "Envio de links de pagamento"
+    },
+    "recall": {
+      "name": "Recall",
+      "description": "Reativação de pacientes inativos"
+    }
   },
   "reports": {
     "title": "Relatórios",
     "exportPdf": "Exportar PDF",
-    "period.7d": "7 dias",
-    "period.30d": "30 dias",
-    "period.90d": "90 dias",
-    "chart.appointments": "Consultas",
-    "chart.nps": "NPS"
+    "period": {
+      "7d": "7 dias",
+      "30d": "30 dias",
+      "90d": "90 dias"
+    },
+    "chart": {
+      "appointments": "Consultas",
+      "nps": "NPS"
+    }
   },
   "team": {
     "title": "Equipe",
     "invite": "Convidar",
-    "roles.owner": "Proprietário",
-    "roles.reception": "Recepção",
-    "placeholder.ownerName": "Usuário proprietário",
-    "placeholder.ownerEmail": "owner@clinica.com"
+    "roles": {
+      "owner": "Proprietário",
+      "reception": "Recepção"
+    },
+    "placeholder": {
+      "ownerName": "Usuário proprietário",
+      "ownerEmail": "owner@clinica.com"
+    }
   },
   "settings": {
     "title": "Configurações",
-    "tabs.clinic": "Clínica",
-    "tabs.professionals": "Profissionais",
-    "tabs.patients": "Pacientes",
-    "tabs.integrations": "Integrações",
-    "tabs.whatsapp": "WhatsApp"
+    "tabs": {
+      "clinic": "Clínica",
+      "professionals": "Profissionais",
+      "patients": "Pacientes",
+      "integrations": "Integrações",
+      "whatsapp": "WhatsApp"
+    }
   },
   "onboarding": {
-    "step1.title": "Dados da Clínica",
-    "step1.clinicName": "Nome da Clínica",
-    "step1.phone": "Telefone",
-    "step1.address": "Endereço",
-    "step2.title": "Profissionais",
-    "step2.description": "Adicione o primeiro profissional da clínica.",
-    "step2.name": "Nome",
-    "step2.specialty": "Especialidade",
-    "step3.title": "Pacientes",
-    "step3.description": "Você pode adicionar pacientes manualmente depois.",
-    "step3.skipHint": "Importação CSV disponível nas configurações.",
-    "step4.title": "WhatsApp",
-    "step4.description": "Conecte o WhatsApp Business para ativar os agentes.",
-    "step4.comingSoon": "A integração será configurada nas Configurações.",
-    "step5.title": "Módulos",
-    "step5.description": "Todos os módulos estão ativados por padrão.",
-    "step5.allEnabled": "Você pode desativar módulos específicos a qualquer momento.",
+    "step1": {
+      "title": "Dados da Clínica",
+      "clinicName": "Nome da Clínica",
+      "phone": "Telefone",
+      "address": "Endereço"
+    },
+    "step2": {
+      "title": "Profissionais",
+      "description": "Adicione o primeiro profissional da clínica.",
+      "name": "Nome",
+      "specialty": "Especialidade"
+    },
+    "step3": {
+      "title": "Pacientes",
+      "description": "Você pode adicionar pacientes manualmente depois.",
+      "skipHint": "Importação CSV disponível nas configurações."
+    },
+    "step4": {
+      "title": "WhatsApp",
+      "description": "Conecte o WhatsApp Business para ativar os agentes.",
+      "comingSoon": "A integração será configurada nas Configurações."
+    },
+    "step5": {
+      "title": "Módulos",
+      "description": "Todos os módulos estão ativados por padrão.",
+      "allEnabled": "Você pode desativar módulos específicos a qualquer momento."
+    },
     "back": "Voltar",
     "next": "Próximo",
     "finish": "Concluir",

@@ -57,79 +57,115 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "kpi.appointments": "Appointments today",
-    "kpi.confirmations": "Pending confirmations",
-    "kpi.noShows": "No-shows",
-    "kpi.nps": "Average NPS",
+    "kpi": {
+      "appointments": "Appointments today",
+      "confirmations": "Pending confirmations",
+      "noShows": "No-shows",
+      "nps": "Average NPS"
+    },
     "funnel": "Conversion funnel",
     "alerts": "Recent alerts"
   },
   "inbox": {
     "title": "Inbox",
     "selectConversation": "Select a conversation",
-    "filters.all": "All",
-    "filters.escalated": "Escalated",
-    "filters.resolved": "Resolved"
+    "filters": {
+      "all": "All",
+      "escalated": "Escalated",
+      "resolved": "Resolved"
+    }
   },
   "modules": {
     "title": "Modules",
     "active": "Active",
-    "support.name": "Support",
-    "support.description": "FAQ and support via WhatsApp",
-    "scheduling.name": "Scheduling",
-    "scheduling.description": "Automated appointment booking",
-    "confirmation.name": "Confirmation",
-    "confirmation.description": "Pre-appointment attendance confirmation",
-    "nps.name": "NPS",
-    "nps.description": "Post-appointment satisfaction survey",
-    "billing.name": "Billing",
-    "billing.description": "Payment link delivery",
-    "recall.name": "Recall",
-    "recall.description": "Inactive patient reactivation"
+    "support": {
+      "name": "Support",
+      "description": "FAQ and support via WhatsApp"
+    },
+    "scheduling": {
+      "name": "Scheduling",
+      "description": "Automated appointment booking"
+    },
+    "confirmation": {
+      "name": "Confirmation",
+      "description": "Pre-appointment attendance confirmation"
+    },
+    "nps": {
+      "name": "NPS",
+      "description": "Post-appointment satisfaction survey"
+    },
+    "billing": {
+      "name": "Billing",
+      "description": "Payment link delivery"
+    },
+    "recall": {
+      "name": "Recall",
+      "description": "Inactive patient reactivation"
+    }
   },
   "reports": {
     "title": "Reports",
     "exportPdf": "Export PDF",
-    "period.7d": "7 days",
-    "period.30d": "30 days",
-    "period.90d": "90 days",
-    "chart.appointments": "Appointments",
-    "chart.nps": "NPS"
+    "period": {
+      "7d": "7 days",
+      "30d": "30 days",
+      "90d": "90 days"
+    },
+    "chart": {
+      "appointments": "Appointments",
+      "nps": "NPS"
+    }
   },
   "team": {
     "title": "Team",
     "invite": "Invite",
-    "roles.owner": "Owner",
-    "roles.reception": "Reception",
-    "placeholder.ownerName": "Owner user",
-    "placeholder.ownerEmail": "owner@clinic.com"
+    "roles": {
+      "owner": "Owner",
+      "reception": "Reception"
+    },
+    "placeholder": {
+      "ownerName": "Owner user",
+      "ownerEmail": "owner@clinic.com"
+    }
   },
   "settings": {
     "title": "Settings",
-    "tabs.clinic": "Clinic",
-    "tabs.professionals": "Professionals",
-    "tabs.patients": "Patients",
-    "tabs.integrations": "Integrations",
-    "tabs.whatsapp": "WhatsApp"
+    "tabs": {
+      "clinic": "Clinic",
+      "professionals": "Professionals",
+      "patients": "Patients",
+      "integrations": "Integrations",
+      "whatsapp": "WhatsApp"
+    }
   },
   "onboarding": {
-    "step1.title": "Clinic Details",
-    "step1.clinicName": "Clinic Name",
-    "step1.phone": "Phone",
-    "step1.address": "Address",
-    "step2.title": "Professionals",
-    "step2.description": "Add the first professional at your clinic.",
-    "step2.name": "Name",
-    "step2.specialty": "Specialty",
-    "step3.title": "Patients",
-    "step3.description": "You can add patients manually later.",
-    "step3.skipHint": "CSV import available in settings.",
-    "step4.title": "WhatsApp",
-    "step4.description": "Connect WhatsApp Business to activate agents.",
-    "step4.comingSoon": "Integration will be configured in Settings.",
-    "step5.title": "Modules",
-    "step5.description": "All modules are enabled by default.",
-    "step5.allEnabled": "You can disable specific modules at any time.",
+    "step1": {
+      "title": "Clinic Details",
+      "clinicName": "Clinic Name",
+      "phone": "Phone",
+      "address": "Address"
+    },
+    "step2": {
+      "title": "Professionals",
+      "description": "Add the first professional at your clinic.",
+      "name": "Name",
+      "specialty": "Specialty"
+    },
+    "step3": {
+      "title": "Patients",
+      "description": "You can add patients manually later.",
+      "skipHint": "CSV import available in settings."
+    },
+    "step4": {
+      "title": "WhatsApp",
+      "description": "Connect WhatsApp Business to activate agents.",
+      "comingSoon": "Integration will be configured in Settings."
+    },
+    "step5": {
+      "title": "Modules",
+      "description": "All modules are enabled by default.",
+      "allEnabled": "You can disable specific modules at any time."
+    },
     "back": "Back",
     "next": "Next",
     "finish": "Finish",
