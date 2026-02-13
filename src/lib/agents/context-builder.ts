@@ -74,6 +74,15 @@ function formatBusinessContext(ctx: BusinessContext): string {
   if (ctx.insurancePlans.length > 0) {
     lines.push(`- Insurance plans: ${ctx.insurancePlans.join(", ")}`);
   }
+  if (ctx.professionals.length > 0) {
+    const profList = ctx.professionals
+      .map((p) => {
+        const spec = p.specialty ? ` (${p.specialty})` : "";
+        return `  - ${p.name}${spec} [ID: ${p.id}]`;
+      })
+      .join("\n");
+    lines.push(`- Professionals:\n${profList}`);
+  }
   return lines.join("\n");
 }
 

@@ -44,6 +44,12 @@ export interface RecipientContext {
 }
 
 // ── Business Context ──
+export interface ProfessionalInfo {
+  id: string;
+  name: string;
+  specialty: string | null;
+}
+
 export interface BusinessContext {
   clinicName: string;
   phone?: string;
@@ -51,6 +57,7 @@ export interface BusinessContext {
   timezone: string;
   insurancePlans: string[];
   services: string[];
+  professionals: ProfessionalInfo[];
 }
 
 // ── System Prompt Build Params ──

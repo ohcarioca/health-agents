@@ -209,6 +209,12 @@ export async function processMessage(
     .select("name")
     .eq("clinic_id", clinicId);
 
+  const { data: professionals } = await supabase
+    .from("professionals")
+    .select("id, name, specialty")
+    .eq("clinic_id", clinicId)
+    .eq("active", true);
+
   const businessContext: BusinessContext | undefined = clinic
     ? {
         clinicName: clinic.name,
@@ -217,6 +223,11 @@ export async function processMessage(
         timezone: clinic.timezone,
         insurancePlans: (insurancePlans ?? []).map((p) => p.name),
         services: (services ?? []).map((s) => s.name),
+        professionals: (professionals ?? []).map((p) => ({
+          id: p.id as string,
+          name: p.name as string,
+          specialty: (p.specialty as string) ?? null,
+        })),
       }
     : undefined;
 
