@@ -132,47 +132,33 @@ export async function processMessage(
   // 6. Route message to module
   let moduleType: ModuleType;
 
-  if (currentModule) {
+  if (currentModule && getAgentType(currentModule)) {
     moduleType = currentModule as ModuleType;
   } else {
-    // Get active modules for this clinic
-    const { data: moduleConfigs } = await supabase
-      .from("module_configs")
-      .select("module_type")
+    // Get active agents from DB that are also registered in the framework
+    const { data: activeAgents } = await supabase
+      .from("agents")
+      .select("type")
       .eq("clinic_id", clinicId)
-      .eq("enabled", true);
+      .eq("active", true);
 
-    const activeModules = (moduleConfigs ?? []).map(
-      (mc) => mc.module_type as ModuleType
-    );
+    const registeredModules = (activeAgents ?? [])
+      .filter((a) => getAgentType(a.type))
+      .map((a) => a.type as ModuleType);
 
-    // If no module_configs, fall back to active agents in DB
-    if (activeModules.length === 0) {
-      const { data: activeAgents } = await supabase
-        .from("agents")
-        .select("type")
-        .eq("clinic_id", clinicId)
-        .eq("active", true);
-
-      for (const agent of activeAgents ?? []) {
-        if (getAgentType(agent.type)) {
-          activeModules.push(agent.type as ModuleType);
-        }
-      }
-    }
-
-    // If only one module available, use it directly (skip router)
-    if (activeModules.length === 1) {
-      moduleType = activeModules[0];
-    } else if (activeModules.length > 1) {
+    if (registeredModules.length === 1) {
+      // Single registered agent — use directly, skip router
+      moduleType = registeredModules[0];
+    } else if (registeredModules.length > 1) {
+      // Multiple registered agents — use router to classify
       const routerResult = await routeMessage({
         message,
-        activeModules,
+        activeModules: registeredModules,
       });
       moduleType = routerResult.module;
     } else {
-      console.error(`[process-message] no active modules or agents for clinic=${clinicId}`);
-      throw new Error("no active modules or agents");
+      console.error(`[process-message] no registered agents for clinic=${clinicId}`);
+      throw new Error("no registered agents for this clinic");
     }
   }
 
