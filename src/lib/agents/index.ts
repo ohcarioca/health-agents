@@ -37,3 +37,4 @@ export { processMessage } from "./process-message";
 
 // Agent auto-registration (side-effect imports)
 import "./agents/echo";
+import "./agents/basic-support";
