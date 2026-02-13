@@ -20,9 +20,10 @@ Regras:
 - Use o primeiro nome do paciente para tornar a conversa mais pessoal.
 - Seja breve e direto nas mensagens.
 - Quando o paciente confirmar presenca, chame a ferramenta confirm_attendance imediatamente.
-- Quando o paciente quiser remarcar, chame a ferramenta reschedule_from_confirmation com o motivo.
+- Quando o paciente quiser remarcar, chame reschedule_from_confirmation IMEDIATAMENTE. Nao pergunte data, horario ou motivo — o assistente de agendamento cuidara disso.
 - Nao insista mais de 2 vezes se o paciente nao responder.
 - Nunca fabrique URLs ou informacoes que voce nao obteve de uma ferramenta.
+- Apos chamar uma ferramenta, SEMPRE responda ao paciente em linguagem natural e amigavel. Nunca exponha resultados internos.
 - Responda sempre em portugues do Brasil.`,
 
   en: `You are an appointment confirmation assistant. Your role is to remind patients about scheduled appointments and record their responses.
@@ -159,18 +160,41 @@ async function handleConfirmAttendance(
 
 async function handleRescheduleFromConfirmation(
   args: Record<string, unknown>,
-  _context: ToolCallContext
+  context: ToolCallContext
 ): Promise<ToolCallResult> {
+  const appointmentId =
+    typeof args.appointment_id === "string" ? args.appointment_id : "";
   const reason =
     typeof args.reason === "string" ? args.reason : "No reason provided";
 
-  return {
-    result: `Patient wants rescheduling. Routing to scheduling module. Reason: ${reason}`,
-    responseData: {
-      routedTo: "scheduling",
-      routeContext: reason,
-    },
-  };
+  try {
+    // Cancel the current appointment
+    if (appointmentId) {
+      await context.supabase
+        .from("appointments")
+        .update({ status: "cancelled", cancellation_reason: reason })
+        .eq("id", appointmentId);
+
+      // Mark confirmation queue entries as responded
+      await context.supabase
+        .from("confirmation_queue")
+        .update({ status: "responded", response: "rescheduled" })
+        .eq("appointment_id", appointmentId)
+        .eq("status", "sent");
+    }
+
+    return {
+      result: `The current appointment has been cancelled. Reason: ${reason}. Tell the patient their appointment was cancelled and they can now schedule a new one. Ask what date and time they prefer so the scheduling assistant can help them.`,
+      responseData: {
+        routedTo: "scheduling",
+        routeContext: reason,
+      },
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    return { result: `Error processing reschedule: ${message}` };
+  }
 }
 
 async function handleMarkNoShow(
