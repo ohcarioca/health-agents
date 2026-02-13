@@ -432,6 +432,34 @@ Before shipping a new agent type, verify:
 - [ ] Conversation status transitions are documented
 - [ ] Integration test covers the tool loop with mocked LLM responses
 
+### Registered Agent Types
+
+| Type | File | Tools | Channel |
+|------|------|-------|---------|
+| `support` | `agents/basic-support.ts` | `get_clinic_info`, `escalate_to_human`, `route_to_module` | whatsapp |
+| `scheduling` | `agents/scheduling.ts` | `check_availability`, `book_appointment`, `reschedule_appointment`, `cancel_appointment`, `list_patient_appointments`, `escalate_to_human` | whatsapp |
+| `confirmation` | `agents/confirmation.ts` | `confirm_attendance`, `reschedule_from_confirmation`, `mark_no_show` | whatsapp |
+| `nps` | `agents/nps.ts` | `collect_nps_score`, `collect_nps_comment`, `redirect_to_google_reviews`, `alert_detractor` | whatsapp |
+
+### Outbound Messaging (`src/lib/agents/outbound.ts`)
+
+Shared utility for proactive (system-initiated) messages:
+- **Business hours:** 8am-8pm Mon-Sat in the clinic's timezone. Sunday = no outbound.
+- **Rate limit:** Max 3 messages per patient per day.
+- `sendOutboundMessage()` — text messages (for within 24h window).
+- `sendOutboundTemplate()` — WhatsApp template messages (for >24h window).
+
+### Cron Routes
+
+| Route | Schedule | Purpose |
+|-------|----------|---------|
+| `GET /api/cron/confirmations` | `*/15 * * * *` | Scans `confirmation_queue`, sends reminders |
+| `GET /api/cron/nps` | `0 */2 * * *` | Surveys patients after completed appointments |
+
+Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqual()`).
+
+**Auto-enqueue:** When `book_appointment` creates an appointment, it auto-inserts 48h/24h/2h entries into `confirmation_queue` via `enqueueConfirmations()`.
+
 ---
 
 ## Error Handling
