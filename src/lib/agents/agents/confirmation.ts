@@ -1,6 +1,7 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { registerAgentType } from "../registry";
+import { deleteEvent } from "@/services/google-calendar";
 import type {
   AgentTypeConfig,
   AgentToolOptions,
@@ -198,6 +199,13 @@ async function handleRescheduleFromConfirmation(
       return { result: "No pending appointment found for this patient." };
     }
 
+    // Fetch appointment details for Google Calendar sync
+    const { data: appointment } = await context.supabase
+      .from("appointments")
+      .select("id, professional_id, google_event_id")
+      .eq("id", appointmentId)
+      .single();
+
     // Cancel the current appointment
     await context.supabase
       .from("appointments")
@@ -210,6 +218,33 @@ async function handleRescheduleFromConfirmation(
       .update({ status: "responded", response: "rescheduled" })
       .eq("appointment_id", appointmentId)
       .eq("status", "sent");
+
+    // Delete Google Calendar event if it exists
+    if (appointment?.google_event_id && appointment?.professional_id) {
+      try {
+        const { data: professional } = await context.supabase
+          .from("professionals")
+          .select("google_calendar_id, google_refresh_token")
+          .eq("id", appointment.professional_id)
+          .single();
+
+        if (
+          professional?.google_refresh_token &&
+          professional?.google_calendar_id
+        ) {
+          await deleteEvent(
+            professional.google_refresh_token as string,
+            professional.google_calendar_id as string,
+            appointment.google_event_id as string
+          );
+        }
+      } catch (calendarError) {
+        console.error(
+          "[confirmation] Google Calendar delete failed:",
+          calendarError
+        );
+      }
+    }
 
     return {
       result: `The current appointment has been cancelled. Reason: ${reason}. Tell the patient their appointment was cancelled and they can now schedule a new one. Ask what date and time they prefer so the scheduling assistant can help them.`,

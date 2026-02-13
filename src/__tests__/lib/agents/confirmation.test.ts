@@ -12,6 +12,11 @@ vi.mock("@/services/whatsapp", () => ({
   sendTemplateMessage: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+// Mock Google Calendar service
+vi.mock("@/services/google-calendar", () => ({
+  deleteEvent: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { getAgentType, getRegisteredTypes } from "@/lib/agents";
 import type { ToolCallContext, ToolCallResult } from "@/lib/agents";
 
@@ -62,18 +67,23 @@ function createChainable(
 
 /**
  * Creates a mock supabase that handles the confirmation agent's DB access pattern:
- * - appointments: 1st call = select (lookup), 2nd call = update
+ * - appointments: 1st call = select array (lookup), 2nd call = select single (details), 3rd call = update
  * - confirmation_queue: 1st call = select (lookup), 2nd call = update
+ * - professionals: select single (for Google Calendar sync)
  */
 function createConfirmationMockSupabase(options: {
   appointmentIds?: string[];
   queueAppointmentId?: string | null;
   updateError?: { message: string } | null;
+  googleEventId?: string | null;
+  professionalId?: string | null;
 } = {}) {
   const {
     appointmentIds = ["appt-123"],
     queueAppointmentId = "appt-123",
     updateError = null,
+    googleEventId = null,
+    professionalId = null,
   } = options;
 
   const callCounts: Record<string, number> = {};
@@ -85,18 +95,21 @@ function createConfirmationMockSupabase(options: {
     if (table === "appointments") {
       if (callNum === 1) {
         // findActiveConfirmationAppointment: select + eq + eq + in + order
-        // Resolves with array of appointment objects
         return createChainResolvingWith({
           data: appointmentIds.map((id) => ({ id })),
           error: null,
         });
       }
-      // update: .update().eq() resolves
-      return {
-        update: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ data: null, error: updateError }),
-        }),
-      };
+      // Subsequent calls: could be select(..).single() (detail fetch) or update(..).eq()
+      // Return a dual-purpose mock that handles both patterns
+      return createDualPurposeChainable({
+        selectSingleData: {
+          id: appointmentIds[0] ?? "appt-123",
+          professional_id: professionalId,
+          google_event_id: googleEventId,
+        },
+        updateError,
+      });
     }
 
     if (table === "confirmation_queue") {
@@ -117,10 +130,45 @@ function createConfirmationMockSupabase(options: {
       };
     }
 
+    if (table === "professionals") {
+      return createChainWithSingle({
+        data: {
+          google_calendar_id: "cal-123",
+          google_refresh_token: "refresh-token",
+        },
+        error: null,
+      });
+    }
+
     return createChainable();
   });
 
   return { from: fromMock };
+}
+
+/**
+ * Dual-purpose chainable: handles both `.select().eq().single()` (detail fetch)
+ * and `.update().eq()` (update) patterns from the same mock.
+ */
+function createDualPurposeChainable(options: {
+  selectSingleData: unknown;
+  updateError?: { message: string } | null;
+}) {
+  const chainable: Record<string, ReturnType<typeof vi.fn>> = {};
+  const resolvedSelect = { data: options.selectSingleData, error: null };
+  const resolvedUpdate = { data: null, error: options.updateError ?? null };
+
+  chainable.select = vi.fn().mockReturnValue({
+    eq: vi.fn().mockReturnValue({
+      single: vi.fn().mockResolvedValue(resolvedSelect),
+    }),
+  });
+
+  chainable.update = vi.fn().mockReturnValue({
+    eq: vi.fn().mockResolvedValue(resolvedUpdate),
+  });
+
+  return chainable;
 }
 
 /** Chainable that resolves at the end of any chain (for array queries) */
