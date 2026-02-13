@@ -11,6 +11,7 @@ import type {
   ToolCallResult,
 } from "../types";
 import { getAvailableSlots } from "@/lib/scheduling/availability";
+import { enqueueConfirmations } from "@/lib/scheduling/enqueue-confirmations";
 import {
   createEvent,
   updateEvent,
@@ -418,6 +419,17 @@ async function handleBookAppointment(
       return {
         result: `Error creating appointment: ${insertError?.message ?? "Unknown error"}`,
       };
+    }
+
+    // Enqueue confirmation reminders
+    try {
+      await enqueueConfirmations(context.supabase, {
+        clinicId: context.clinicId,
+        appointmentId: appointment.id as string,
+        startsAt,
+      });
+    } catch (enqueueError) {
+      console.error("[scheduling] failed to enqueue confirmations:", enqueueError);
     }
 
     // Load clinic timezone for formatting and calendar sync

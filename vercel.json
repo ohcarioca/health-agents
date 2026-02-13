@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/confirmations",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}
