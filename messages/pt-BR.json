@@ -107,7 +107,7 @@
     },
     "scheduling": {
       "name": "Agendamento",
-      "description": "Marcação de consultas automatizada"
+      "description": "Agendamento de consultas via WhatsApp com Google Calendar"
     },
     "confirmation": {
       "name": "Confirmação",
@@ -213,12 +213,38 @@
       "calendar": "Google Calendar",
       "pagarme": "Pagar.me",
       "notConnected": "Não conectado",
-      "comingSoon": "Configuração disponível em breve"
+      "comingSoon": "Configuração disponível em breve",
+      "calendarTitle": "Google Calendar",
+      "connected": "Conectado",
+      "connect": "Conectar",
+      "disconnect": "Desconectar",
+      "connectDescription": "Conecte o Google Calendar de cada profissional para sincronizar consultas.",
+      "disconnectConfirm": "Desconectar o Google Calendar?",
+      "connectSuccess": "Google Calendar conectado com sucesso",
+      "connectError": "Falha ao conectar Google Calendar"
     },
     "whatsapp": {
       "title": "WhatsApp Business",
       "notConnected": "Não conectado",
       "comingSoon": "Integração com WhatsApp em breve"
+    },
+    "scheduleGrid": {
+      "title": "Horários de trabalho",
+      "addBlock": "Adicionar horário",
+      "removeBlock": "Remover",
+      "dayOff": "Folga",
+      "start": "Início",
+      "end": "Fim",
+      "noSchedule": "Nenhum horário definido"
+    },
+    "weekdays": {
+      "monday": "Segunda-feira",
+      "tuesday": "Terça-feira",
+      "wednesday": "Quarta-feira",
+      "thursday": "Quinta-feira",
+      "friday": "Sexta-feira",
+      "saturday": "Sábado",
+      "sunday": "Domingo"
     }
   },
   "onboarding": {

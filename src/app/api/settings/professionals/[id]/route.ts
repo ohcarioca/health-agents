@@ -56,6 +56,8 @@ export async function PUT(
     updateData.appointment_duration_minutes =
       parsed.data.appointment_duration_minutes;
   if (parsed.data.active !== undefined) updateData.active = parsed.data.active;
+  if (parsed.data.schedule_grid !== undefined)
+    updateData.schedule_grid = parsed.data.schedule_grid;
 
   const admin = createAdminClient();
   const { data: professional, error } = await admin

@@ -8,7 +8,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ClinicForm } from "@/components/settings/clinic-form";
 import { ProfessionalsList } from "@/components/settings/professionals-list";
 import { PatientsPlaceholder } from "@/components/settings/patients-placeholder";
-import { IntegrationsPlaceholder } from "@/components/settings/integrations-placeholder";
+import { IntegrationsTab } from "@/components/settings/integrations-tab";
 import { WhatsAppPlaceholder } from "@/components/settings/whatsapp-placeholder";
 import type { Clinic } from "@/types";
 
@@ -81,7 +81,7 @@ export default function SettingsPage() {
             {activeTab === 0 && clinic && <ClinicForm clinic={clinic} />}
             {activeTab === 1 && <ProfessionalsList />}
             {activeTab === 2 && <PatientsPlaceholder />}
-            {activeTab === 3 && <IntegrationsPlaceholder />}
+            {activeTab === 3 && <IntegrationsTab />}
             {activeTab === 4 && <WhatsAppPlaceholder />}
           </>
         )}

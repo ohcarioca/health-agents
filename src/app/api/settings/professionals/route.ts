@@ -32,7 +32,7 @@ export async function GET() {
   const { data: professionals, error } = await admin
     .from("professionals")
     .select(
-      "id, name, specialty, appointment_duration_minutes, active, created_at",
+      "id, name, specialty, appointment_duration_minutes, schedule_grid, active, created_at",
     )
     .eq("clinic_id", clinicId)
     .order("created_at", { ascending: true });
@@ -65,7 +65,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, specialty, appointment_duration_minutes } = parsed.data;
+  const { name, specialty, appointment_duration_minutes, schedule_grid } =
+    parsed.data;
 
   const admin = createAdminClient();
   const { data: professional, error } = await admin
@@ -75,6 +76,7 @@ export async function POST(request: Request) {
       name,
       specialty: specialty || null,
       appointment_duration_minutes,
+      schedule_grid: schedule_grid ?? {},
     })
     .select()
     .single();

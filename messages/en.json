@@ -107,7 +107,7 @@
     },
     "scheduling": {
       "name": "Scheduling",
-      "description": "Automated appointment booking"
+      "description": "Appointment scheduling via WhatsApp with Google Calendar"
     },
     "confirmation": {
       "name": "Confirmation",
@@ -213,12 +213,38 @@
       "calendar": "Google Calendar",
       "pagarme": "Pagar.me",
       "notConnected": "Not connected",
-      "comingSoon": "Configuration coming in a future update"
+      "comingSoon": "Configuration coming in a future update",
+      "calendarTitle": "Google Calendar",
+      "connected": "Connected",
+      "connect": "Connect",
+      "disconnect": "Disconnect",
+      "connectDescription": "Connect each professional's Google Calendar to sync appointments.",
+      "disconnectConfirm": "Disconnect Google Calendar?",
+      "connectSuccess": "Google Calendar connected successfully",
+      "connectError": "Failed to connect Google Calendar"
     },
     "whatsapp": {
       "title": "WhatsApp Business",
       "notConnected": "Not connected",
       "comingSoon": "WhatsApp integration coming in a future update"
+    },
+    "scheduleGrid": {
+      "title": "Working hours",
+      "addBlock": "Add time block",
+      "removeBlock": "Remove",
+      "dayOff": "Day off",
+      "start": "Start",
+      "end": "End",
+      "noSchedule": "No schedule defined"
+    },
+    "weekdays": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
     }
   },
   "onboarding": {

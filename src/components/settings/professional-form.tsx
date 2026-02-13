@@ -4,7 +4,19 @@ import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ScheduleGridEditor } from "./schedule-grid-editor";
 import { createProfessionalSchema } from "@/lib/validations/settings";
+import type { ScheduleGrid } from "@/lib/validations/settings";
+
+const DEFAULT_GRID: ScheduleGrid = {
+  monday: [],
+  tuesday: [],
+  wednesday: [],
+  thursday: [],
+  friday: [],
+  saturday: [],
+  sunday: [],
+};
 
 interface ProfessionalFormProps {
   professional?: {
@@ -12,6 +24,7 @@ interface ProfessionalFormProps {
     name: string;
     specialty: string | null;
     appointment_duration_minutes: number;
+    schedule_grid?: Record<string, { start: string; end: string }[]>;
   };
   onSuccess: () => void;
   onCancel: () => void;
@@ -30,6 +43,9 @@ export function ProfessionalForm({
   const [duration, setDuration] = useState(
     professional?.appointment_duration_minutes ?? 30,
   );
+  const [scheduleGrid, setScheduleGrid] = useState<ScheduleGrid>(
+    (professional?.schedule_grid as ScheduleGrid | undefined) ?? DEFAULT_GRID,
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,6 +57,7 @@ export function ProfessionalForm({
       name,
       specialty,
       appointment_duration_minutes: duration,
+      schedule_grid: scheduleGrid,
     };
 
     const parsed = createProfessionalSchema.safeParse(data);
@@ -101,6 +118,8 @@ export function ProfessionalForm({
         min={5}
         max={480}
       />
+
+      <ScheduleGridEditor value={scheduleGrid} onChange={setScheduleGrid} />
 
       {error && (
         <p className="text-sm" style={{ color: "var(--danger)" }}>

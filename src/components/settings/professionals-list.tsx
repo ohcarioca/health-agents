@@ -15,6 +15,7 @@ interface ProfessionalRow {
   name: string;
   specialty: string | null;
   appointment_duration_minutes: number;
+  schedule_grid?: Record<string, { start: string; end: string }[]>;
   active: boolean;
   created_at: string;
 }
