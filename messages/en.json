@@ -126,7 +126,23 @@
     "placeholder": {
       "ownerName": "Owner user",
       "ownerEmail": "owner@clinic.com"
-    }
+    },
+    "inviteDialog": {
+      "title": "Invite team member",
+      "email": "Email address",
+      "role": "Role",
+      "submit": "Send invite",
+      "sending": "Sending...",
+      "success": "Invitation sent",
+      "error": "Failed to send invitation",
+      "alreadyMember": "This user is already a member"
+    },
+    "changeRole": "Change role",
+    "remove": "Remove",
+    "removeConfirm": "Are you sure you want to remove this member?",
+    "removeError": "Failed to remove member",
+    "cannotRemoveSelf": "You cannot remove yourself",
+    "empty": "No team members"
   },
   "settings": {
     "title": "Settings",
@@ -136,6 +152,50 @@
       "patients": "Patients",
       "integrations": "Integrations",
       "whatsapp": "WhatsApp"
+    },
+    "clinic": {
+      "name": "Clinic name",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "city": "City",
+      "state": "State",
+      "zipCode": "ZIP code",
+      "timezone": "Timezone",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "saveSuccess": "Settings saved",
+      "saveError": "Failed to save settings"
+    },
+    "professionals": {
+      "add": "Add professional",
+      "edit": "Edit professional",
+      "name": "Name",
+      "specialty": "Specialty",
+      "duration": "Duration (min)",
+      "active": "Active",
+      "inactive": "Inactive",
+      "empty": "No professionals added yet",
+      "deleteConfirm": "Are you sure you want to delete this professional?",
+      "deleteError": "Failed to delete professional",
+      "saveError": "Failed to save professional"
+    },
+    "patients": {
+      "comingSoon": "Patient management coming soon",
+      "csvHint": "CSV import will be available here"
+    },
+    "integrations": {
+      "title": "Integrations",
+      "gmail": "Gmail",
+      "calendar": "Google Calendar",
+      "pagarme": "Pagar.me",
+      "notConnected": "Not connected",
+      "comingSoon": "Configuration coming in a future update"
+    },
+    "whatsapp": {
+      "title": "WhatsApp Business",
+      "notConnected": "Not connected",
+      "comingSoon": "WhatsApp integration coming in a future update"
     }
   },
   "onboarding": {

@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
 
 const TOTAL_STEPS = 5;
 
@@ -35,40 +34,33 @@ export default function SetupPage() {
 
   async function handleComplete() {
     setLoading(true);
-    // Save clinic data via Supabase client
-    const supabase = createClient();
 
-    // Update clinic if we have data
-    if (clinicName) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: membership } = await supabase
-          .from("clinic_users")
-          .select("clinic_id")
-          .eq("user_id", user.id)
-          .limit(1)
-          .single();
+    try {
+      const res = await fetch("/api/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clinicName,
+          phone,
+          address,
+          profName,
+          specialty,
+        }),
+      });
 
-        if (membership) {
-          await supabase
-            .from("clinics")
-            .update({ name: clinicName, phone, address })
-            .eq("id", membership.clinic_id);
-
-          // Add professional if entered
-          if (profName) {
-            await supabase.from("professionals").insert({
-              clinic_id: membership.clinic_id,
-              name: profName,
-              specialty: specialty || null,
-            });
-          }
-        }
+      if (!res.ok) {
+        const json = await res.json();
+        console.error("[setup] onboarding failed:", json.error);
+        setLoading(false);
+        return;
       }
-    }
 
-    router.push("/");
-    router.refresh();
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      console.error("[setup] onboarding error:", err);
+      setLoading(false);
+    }
   }
 
   const stepTitles = [

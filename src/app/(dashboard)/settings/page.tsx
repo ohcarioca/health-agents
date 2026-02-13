@@ -1,10 +1,18 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { ClinicForm } from "@/components/settings/clinic-form";
+import { ProfessionalsList } from "@/components/settings/professionals-list";
+import { PatientsPlaceholder } from "@/components/settings/patients-placeholder";
+import { IntegrationsPlaceholder } from "@/components/settings/integrations-placeholder";
+import { WhatsAppPlaceholder } from "@/components/settings/whatsapp-placeholder";
+import type { Clinic } from "@/types";
 
-const TABS = [
+const TAB_KEYS = [
   "tabs.clinic",
   "tabs.professionals",
   "tabs.patients",
@@ -14,17 +22,46 @@ const TABS = [
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
+  const [activeTab, setActiveTab] = useState(0);
+  const [clinic, setClinic] = useState<Clinic | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchClinic() {
+      try {
+        const res = await fetch("/api/settings/clinic");
+        if (!res.ok) {
+          console.error("[settings] failed to fetch clinic:", res.status);
+          setLoading(false);
+          return;
+        }
+        const json = await res.json();
+        if (json.data) setClinic(json.data);
+      } catch (err) {
+        console.error("[settings] fetch clinic error:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchClinic();
+  }, []);
 
   return (
     <PageContainer>
       <PageHeader title={t("title")} />
       <div className="mt-6 space-y-6">
-        <div className="flex gap-1 border-b" style={{ borderColor: "var(--border)" }}>
-          {TABS.map((tab, i) => (
+        {/* Tab bar */}
+        <div
+          className="flex gap-1 overflow-x-auto border-b"
+          style={{ borderColor: "var(--border)" }}
+        >
+          {TAB_KEYS.map((tab, i) => (
             <button
               key={tab}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                i === 0
+              onClick={() => setActiveTab(i)}
+              className={`whitespace-nowrap px-4 py-2 text-sm font-medium transition-colors ${
+                i === activeTab
                   ? "border-b-2 border-[var(--accent)] text-[var(--accent)]"
                   : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               }`}
@@ -33,13 +70,21 @@ export default function SettingsPage() {
             </button>
           ))}
         </div>
-        <Card variant="glass">
-          <div className="space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-3/4" />
+
+        {/* Tab content */}
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <Spinner />
           </div>
-        </Card>
+        ) : (
+          <>
+            {activeTab === 0 && clinic && <ClinicForm clinic={clinic} />}
+            {activeTab === 1 && <ProfessionalsList />}
+            {activeTab === 2 && <PatientsPlaceholder />}
+            {activeTab === 3 && <IntegrationsPlaceholder />}
+            {activeTab === 4 && <WhatsAppPlaceholder />}
+          </>
+        )}
       </div>
     </PageContainer>
   );

@@ -126,7 +126,23 @@
     "placeholder": {
       "ownerName": "Usuário proprietário",
       "ownerEmail": "owner@clinica.com"
-    }
+    },
+    "inviteDialog": {
+      "title": "Convidar membro",
+      "email": "Email",
+      "role": "Função",
+      "submit": "Enviar convite",
+      "sending": "Enviando...",
+      "success": "Convite enviado",
+      "error": "Falha ao enviar convite",
+      "alreadyMember": "Este usuário já é membro"
+    },
+    "changeRole": "Alterar função",
+    "remove": "Remover",
+    "removeConfirm": "Tem certeza que deseja remover este membro?",
+    "removeError": "Falha ao remover membro",
+    "cannotRemoveSelf": "Você não pode remover a si mesmo",
+    "empty": "Nenhum membro na equipe"
   },
   "settings": {
     "title": "Configurações",
@@ -136,6 +152,50 @@
       "patients": "Pacientes",
       "integrations": "Integrações",
       "whatsapp": "WhatsApp"
+    },
+    "clinic": {
+      "name": "Nome da clínica",
+      "phone": "Telefone",
+      "email": "Email",
+      "address": "Endereço",
+      "city": "Cidade",
+      "state": "Estado",
+      "zipCode": "CEP",
+      "timezone": "Fuso horário",
+      "save": "Salvar alterações",
+      "saving": "Salvando...",
+      "saveSuccess": "Configurações salvas",
+      "saveError": "Falha ao salvar configurações"
+    },
+    "professionals": {
+      "add": "Adicionar profissional",
+      "edit": "Editar profissional",
+      "name": "Nome",
+      "specialty": "Especialidade",
+      "duration": "Duração (min)",
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "empty": "Nenhum profissional adicionado",
+      "deleteConfirm": "Tem certeza que deseja excluir este profissional?",
+      "deleteError": "Falha ao excluir profissional",
+      "saveError": "Falha ao salvar profissional"
+    },
+    "patients": {
+      "comingSoon": "Gestão de pacientes em breve",
+      "csvHint": "Importação CSV estará disponível aqui"
+    },
+    "integrations": {
+      "title": "Integrações",
+      "gmail": "Gmail",
+      "calendar": "Google Calendar",
+      "pagarme": "Pagar.me",
+      "notConnected": "Não conectado",
+      "comingSoon": "Configuração disponível em breve"
+    },
+    "whatsapp": {
+      "title": "WhatsApp Business",
+      "notConnected": "Não conectado",
+      "comingSoon": "Integração com WhatsApp em breve"
     }
   },
   "onboarding": {

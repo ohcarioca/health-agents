@@ -38,3 +38,14 @@ export type AppointmentStatus = "scheduled" | "confirmed" | "completed" | "cance
 
 // Conversation status
 export type ConversationStatus = "active" | "escalated" | "resolved";
+
+// Enriched team member (clinic_user + auth metadata)
+export interface TeamMember {
+  id: string;
+  user_id: string;
+  clinic_id: string;
+  role: ClinicRole;
+  created_at: string;
+  email: string;
+  name: string;
+}

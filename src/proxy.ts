@@ -1,10 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PUBLIC_ROUTES = ["/login", "/signup", "/auth/callback", "/setup"];
+// Routes that don't require authentication (unauthenticated users get redirected away from everything else)
+// Authenticated users on these routes get redirected to dashboard
+const AUTH_ROUTES = ["/login", "/signup", "/auth/callback"];
 
-function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+function isAuthRoute(pathname: string): boolean {
+  return AUTH_ROUTES.some((route) => pathname.startsWith(route));
 }
 
 export async function proxy(request: NextRequest) {
@@ -40,13 +42,13 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Unauthenticated user trying to access protected route → redirect to login
-  if (!user && !isPublicRoute(pathname)) {
+  if (!user && !isAuthRoute(pathname)) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Authenticated user on login/signup → redirect to dashboard
-  if (user && isPublicRoute(pathname)) {
+  // Authenticated user on login/signup → redirect to dashboard (but allow /setup)
+  if (user && isAuthRoute(pathname)) {
     const dashboardUrl = new URL("/", request.url);
     return NextResponse.redirect(dashboardUrl);
   }
