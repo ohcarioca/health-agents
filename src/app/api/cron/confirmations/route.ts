@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 // ── Constants ──
 
 const SKIPPED_STATUSES = ["cancelled", "completed", "no_show"];
-const TEMPLATE_NAME = "appointment_reminder";
+const TEMPLATE_NAME = "lembrete_da_sua_consulta";
 const TEMPLATE_LANGUAGE = "pt_BR";
 
 // ── Auth ──

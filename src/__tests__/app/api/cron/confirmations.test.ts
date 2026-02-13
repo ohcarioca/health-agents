@@ -239,7 +239,7 @@ describe("GET /api/cron/confirmations", () => {
     expect(options.clinicId).toBe("clinic-1");
     expect(options.patientId).toBe("patient-1");
     expect(options.patientPhone).toBe("5511999998888");
-    expect(options.templateName).toBe("appointment_reminder");
+    expect(options.templateName).toBe("lembrete_da_sua_consulta");
     expect(options.templateLanguage).toBe("pt_BR");
     expect(options.templateParams[0]).toBe("Maria");
     expect(options.templateParams[1]).toBe("Dr. Carlos Santos");

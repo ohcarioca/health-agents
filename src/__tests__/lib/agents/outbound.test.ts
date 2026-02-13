@@ -315,7 +315,7 @@ describe("outbound", () => {
         clinicId: "clinic-1",
         patientId: "patient-1",
         patientPhone: "5511999998888",
-        templateName: "appointment_reminder",
+        templateName: "lembrete_da_sua_consulta",
         templateLanguage: "pt_BR",
         templateParams: ["Maria", "Dr. Silva"],
         localBody: "Ola Maria, lembrete da consulta com Dr. Silva",
@@ -328,7 +328,7 @@ describe("outbound", () => {
       expect(result.messageId).toBe("wamid-456");
       expect(mockSend).toHaveBeenCalledWith(
         "5511999998888",
-        "appointment_reminder",
+        "lembrete_da_sua_consulta",
         "pt_BR",
         ["Maria", "Dr. Silva"]
       );
@@ -340,7 +340,7 @@ describe("outbound", () => {
         clinicId: "clinic-1",
         patientId: "patient-1",
         patientPhone: "5511999998888",
-        templateName: "appointment_reminder",
+        templateName: "lembrete_da_sua_consulta",
         templateLanguage: "pt_BR",
         templateParams: ["Maria"],
         localBody: "Ola Maria",
