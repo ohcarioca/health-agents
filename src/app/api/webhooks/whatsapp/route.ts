@@ -61,7 +61,8 @@ export async function POST(request: Request) {
 
   const { value } = change;
   const messages = value.messages ?? [];
-  const phoneNumberId = value.metadata.phone_number_id;
+  // Use display_phone_number (actual phone) to look up clinic, not phone_number_id (Meta internal ID)
+  const displayPhone = value.metadata.display_phone_number.replace(/\D/g, "");
 
   // 5. Process each text message in after() for async processing
   for (const msg of messages) {
@@ -77,18 +78,18 @@ export async function POST(request: Request) {
 
     after(async () => {
       try {
-        // Look up clinic by WhatsApp phone number ID
+        // Look up clinic by display phone number (digits-only, per DB convention)
         const supabase = createAdminClient();
 
         const { data: clinic } = await supabase
           .from("clinics")
           .select("id")
-          .eq("phone", phoneNumberId)
+          .eq("phone", displayPhone)
           .maybeSingle();
 
         if (!clinic) {
           console.error(
-            `[webhook/whatsapp] no clinic found for phone_number_id=${phoneNumberId}`
+            `[webhook/whatsapp] no clinic found for display_phone=${displayPhone}`
           );
           return;
         }

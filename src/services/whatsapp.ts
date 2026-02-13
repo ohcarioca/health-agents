@@ -14,8 +14,8 @@ export async function sendTextMessage(
   to: string,
   text: string
 ): Promise<SendMessageResult> {
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const token = process.env.WHATSAPP_API_TOKEN;
+  const phoneNumberId = process.env.TEST_WHATSAPP_PHONE_NUMBER_ID;
+  const token = process.env.WHATSAPP_TOKEN;
 
   if (!phoneNumberId || !token) {
     return { success: false, error: "missing WhatsApp configuration" };
@@ -62,8 +62,8 @@ export async function sendTemplateMessage(
   language: string,
   params: string[]
 ): Promise<SendMessageResult> {
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const token = process.env.WHATSAPP_API_TOKEN;
+  const phoneNumberId = process.env.TEST_WHATSAPP_PHONE_NUMBER_ID;
+  const token = process.env.WHATSAPP_TOKEN;
 
   if (!phoneNumberId || !token) {
     return { success: false, error: "missing WhatsApp configuration" };
