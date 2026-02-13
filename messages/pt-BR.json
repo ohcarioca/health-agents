@@ -87,7 +87,16 @@
       "send": "Enviar"
     },
     "messagePlaceholder": "Digite sua mensagem...",
-    "noMessages": "Nenhuma mensagem ainda"
+    "noMessages": "Nenhuma mensagem ainda",
+    "humanBadge": "humano",
+    "channel": "Canal",
+    "module": "Módulo",
+    "patient": "Paciente",
+    "phone": "Telefone",
+    "loadError": "Falha ao carregar conversas",
+    "actionError": "Ação falhou",
+    "sendError": "Falha ao enviar mensagem",
+    "unknownPatient": "Paciente desconhecido"
   },
   "modules": {
     "title": "Módulos",

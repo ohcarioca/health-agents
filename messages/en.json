@@ -87,7 +87,16 @@
       "send": "Send"
     },
     "messagePlaceholder": "Type your message...",
-    "noMessages": "No messages yet"
+    "noMessages": "No messages yet",
+    "humanBadge": "human",
+    "channel": "Channel",
+    "module": "Module",
+    "patient": "Patient",
+    "phone": "Phone",
+    "loadError": "Failed to load conversations",
+    "actionError": "Action failed",
+    "sendError": "Failed to send message",
+    "unknownPatient": "Unknown patient"
   },
   "modules": {
     "title": "Modules",
