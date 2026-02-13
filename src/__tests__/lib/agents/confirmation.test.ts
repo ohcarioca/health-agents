@@ -60,22 +60,109 @@ function createChainable(
   return chainable;
 }
 
-function createMockSupabase(
-  tableOverrides: Record<string, MockChainable> = {}
-) {
-  const defaultChainable = createChainable();
+/**
+ * Creates a mock supabase that handles the confirmation agent's DB access pattern:
+ * - appointments: 1st call = select (lookup), 2nd call = update
+ * - confirmation_queue: 1st call = select (lookup), 2nd call = update
+ */
+function createConfirmationMockSupabase(options: {
+  appointmentIds?: string[];
+  queueAppointmentId?: string | null;
+  updateError?: { message: string } | null;
+} = {}) {
+  const {
+    appointmentIds = ["appt-123"],
+    queueAppointmentId = "appt-123",
+    updateError = null,
+  } = options;
+
+  const callCounts: Record<string, number> = {};
+
   const fromMock = vi.fn().mockImplementation((table: string) => {
-    return tableOverrides[table] ?? defaultChainable;
+    callCounts[table] = (callCounts[table] ?? 0) + 1;
+    const callNum = callCounts[table];
+
+    if (table === "appointments") {
+      if (callNum === 1) {
+        // findActiveConfirmationAppointment: select + eq + eq + in + order
+        // Resolves with array of appointment objects
+        return createChainResolvingWith({
+          data: appointmentIds.map((id) => ({ id })),
+          error: null,
+        });
+      }
+      // update: .update().eq() resolves
+      return {
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: null, error: updateError }),
+        }),
+      };
+    }
+
+    if (table === "confirmation_queue") {
+      if (callNum === 1) {
+        // findActiveConfirmationAppointment: select + in + eq + order + limit + maybeSingle
+        return createChainResolvingWithMaybeSingle({
+          data: queueAppointmentId ? { appointment_id: queueAppointmentId } : null,
+          error: null,
+        });
+      }
+      // update: .update().eq().eq() resolves
+      return {
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+          }),
+        }),
+      };
+    }
+
+    return createChainable();
   });
 
   return { from: fromMock };
+}
+
+/** Chainable that resolves at the end of any chain (for array queries) */
+function createChainResolvingWith(resolvedValue: { data: unknown; error: unknown }) {
+  const chainable: Record<string, ReturnType<typeof vi.fn>> = {};
+
+  // All chainable methods return themselves (resolved at terminal)
+  const self = new Proxy(chainable, {
+    get: (_target, prop: string) => {
+      if (prop === "then") {
+        // Make it thenable — resolves the chain
+        return (resolve: (v: unknown) => void) => resolve(resolvedValue);
+      }
+      if (!chainable[prop]) {
+        chainable[prop] = vi.fn().mockReturnValue(self);
+      }
+      return chainable[prop];
+    },
+  });
+
+  return self;
+}
+
+/** Chainable that resolves via .maybeSingle() */
+function createChainResolvingWithMaybeSingle(resolvedValue: { data: unknown; error: unknown }) {
+  const chainable: MockChainable = {} as MockChainable;
+
+  chainable.select = vi.fn().mockReturnValue(chainable);
+  chainable.in = vi.fn().mockReturnValue(chainable);
+  chainable.eq = vi.fn().mockReturnValue(chainable);
+  chainable.order = vi.fn().mockReturnValue(chainable);
+  chainable.limit = vi.fn().mockReturnValue(chainable);
+  chainable.maybeSingle = vi.fn().mockResolvedValue(resolvedValue);
+
+  return chainable;
 }
 
 function createToolCallContext(
   overrides?: Partial<ToolCallContext>
 ): ToolCallContext {
   return {
-    supabase: createMockSupabase() as unknown as ToolCallContext["supabase"],
+    supabase: createConfirmationMockSupabase() as unknown as ToolCallContext["supabase"],
     conversationId: "conv-123",
     recipientId: "patient-456",
     clinicId: "clinic-789",
@@ -216,83 +303,52 @@ describe("confirmation agent", () => {
     });
 
     describe("confirm_attendance", () => {
-      it("updates appointment status to confirmed and returns success", async () => {
-        // appointments: .update().eq() resolves directly
-        const appointmentsChainable = createChainable();
-        appointmentsChainable.eq = vi.fn().mockResolvedValue({
-          data: null,
-          error: null,
+      it("auto-resolves appointment and confirms it", async () => {
+        const mockSupabase = createConfirmationMockSupabase({
+          appointmentIds: ["appt-123"],
+          queueAppointmentId: "appt-123",
         });
-
-        // confirmation_queue: .update().eq().eq() — first eq returns chainable, second resolves
-        const confirmationQueueChainable = createChainable();
-        const innerChainable = createChainable();
-        innerChainable.eq = vi.fn().mockResolvedValue({
-          data: null,
-          error: null,
-        });
-        confirmationQueueChainable.eq = vi.fn().mockReturnValue(innerChainable);
-
-        const mockFromFn = vi.fn().mockImplementation((table: string) => {
-          if (table === "appointments") return appointmentsChainable;
-          if (table === "confirmation_queue") return confirmationQueueChainable;
-          return createChainable();
-        });
-
-        const mockSupabase = { from: mockFromFn };
 
         const context = createToolCallContext({
           supabase: mockSupabase as unknown as ToolCallContext["supabase"],
         });
 
         const result: ToolCallResult = await config.handleToolCall(
-          {
-            name: "confirm_attendance",
-            args: { appointment_id: "appt-123" },
-          },
+          { name: "confirm_attendance", args: {} },
           context
         );
 
         expect(result.result).toBeDefined();
         expect(result.result).toContain("confirmed");
+
+        // Verify appointments was queried (select) then updated
+        expect(mockSupabase.from).toHaveBeenCalledWith("appointments");
+        expect(mockSupabase.from).toHaveBeenCalledWith("confirmation_queue");
+      });
+
+      it("returns error when no appointment found", async () => {
+        const mockSupabase = createConfirmationMockSupabase({
+          appointmentIds: [],
+        });
+
+        const context = createToolCallContext({
+          supabase: mockSupabase as unknown as ToolCallContext["supabase"],
+        });
+
+        const result: ToolCallResult = await config.handleToolCall(
+          { name: "confirm_attendance", args: {} },
+          context
+        );
+
+        expect(result.result).toContain("No pending appointment");
       });
     });
 
     describe("reschedule_from_confirmation", () => {
-      it("returns rescheduling result with routing data", async () => {
-        const context = createToolCallContext();
-
-        const result: ToolCallResult = await config.handleToolCall(
-          {
-            name: "reschedule_from_confirmation",
-            args: {
-              appointment_id: "appt-123",
-              reason: "Cannot make it on that day",
-            },
-          },
-          context
-        );
-
-        expect(result.result).toBeDefined();
-        expect(
-          result.result!.includes("rescheduling") ||
-            result.result!.includes("scheduling")
-        ).toBe(true);
-        expect(result.responseData).toBeDefined();
-        expect(result.responseData!.routedTo).toBe("scheduling");
-      });
-    });
-
-    describe("mark_no_show", () => {
-      it("updates appointment status to no_show", async () => {
-        const appointmentsChainable = createChainable();
-        appointmentsChainable.eq = vi.fn().mockResolvedValue({
-          data: null,
-          error: null,
-        });
-
-        const mockSupabase = createMockSupabase({
-          appointments: appointmentsChainable,
+      it("auto-resolves appointment, cancels it, and returns routing data", async () => {
+        const mockSupabase = createConfirmationMockSupabase({
+          appointmentIds: ["appt-123"],
+          queueAppointmentId: "appt-123",
         });
 
         const context = createToolCallContext({
@@ -301,9 +357,52 @@ describe("confirmation agent", () => {
 
         const result: ToolCallResult = await config.handleToolCall(
           {
-            name: "mark_no_show",
-            args: { appointment_id: "appt-123" },
+            name: "reschedule_from_confirmation",
+            args: { reason: "Cannot make it on that day" },
           },
+          context
+        );
+
+        expect(result.result).toBeDefined();
+        expect(result.result).toContain("cancelled");
+        expect(result.responseData).toBeDefined();
+        expect(result.responseData!.routedTo).toBe("scheduling");
+      });
+
+      it("returns error when no appointment found", async () => {
+        const mockSupabase = createConfirmationMockSupabase({
+          appointmentIds: [],
+        });
+
+        const context = createToolCallContext({
+          supabase: mockSupabase as unknown as ToolCallContext["supabase"],
+        });
+
+        const result: ToolCallResult = await config.handleToolCall(
+          {
+            name: "reschedule_from_confirmation",
+            args: { reason: "busy" },
+          },
+          context
+        );
+
+        expect(result.result).toContain("No pending appointment");
+      });
+    });
+
+    describe("mark_no_show", () => {
+      it("auto-resolves appointment and marks as no-show", async () => {
+        const mockSupabase = createConfirmationMockSupabase({
+          appointmentIds: ["appt-123"],
+          queueAppointmentId: "appt-123",
+        });
+
+        const context = createToolCallContext({
+          supabase: mockSupabase as unknown as ToolCallContext["supabase"],
+        });
+
+        const result: ToolCallResult = await config.handleToolCall(
+          { name: "mark_no_show", args: {} },
           context
         );
 

@@ -32,9 +32,10 @@ Rules:
 - Use the patient's first name to make the conversation more personal.
 - Keep messages brief and direct.
 - When the patient confirms attendance, call the confirm_attendance tool immediately.
-- When the patient wants to reschedule, call the reschedule_from_confirmation tool with the reason.
+- When the patient wants to reschedule, call reschedule_from_confirmation IMMEDIATELY. Do not ask for date, time, or reason — the scheduling assistant will handle that.
 - Do not insist more than 2 times if the patient does not respond.
 - Never fabricate URLs or information you did not obtain from a tool.
+- After calling a tool, ALWAYS respond to the patient in natural, friendly language. Never expose internal results.
 - Always respond in English.`,
 
   es: `Eres un asistente de confirmacion de citas. Tu rol es recordar a los pacientes sobre citas programadas y registrar sus respuestas.
@@ -43,9 +44,10 @@ Reglas:
 - Usa el primer nombre del paciente para hacer la conversacion mas personal.
 - Se breve y directo en los mensajes.
 - Cuando el paciente confirme asistencia, llama la herramienta confirm_attendance inmediatamente.
-- Cuando el paciente quiera reprogramar, llama la herramienta reschedule_from_confirmation con el motivo.
+- Cuando el paciente quiera reprogramar, llama reschedule_from_confirmation INMEDIATAMENTE. No preguntes fecha, hora o motivo — el asistente de agendamiento se encargara.
 - No insistas mas de 2 veces si el paciente no responde.
 - Nunca fabriques URLs o informacion que no obtuviste de una herramienta.
+- Despues de llamar una herramienta, SIEMPRE responde al paciente en lenguaje natural y amigable. Nunca expongas resultados internos.
 - Responde siempre en espanol.`,
 };
 
@@ -59,23 +61,18 @@ const INSTRUCTIONS: Record<string, string> = {
 };
 
 // ── Tool Definitions (Stubs) ──
+// NOTE: Tools do NOT require appointment_id from the LLM.
+// The handlers resolve the active confirmation automatically via patient + clinic.
 
 const confirmAttendanceTool = tool(
-  async (input) => {
-    return JSON.stringify({
-      action: "confirm_attendance",
-      appointment_id: input.appointment_id,
-    });
+  async () => {
+    return JSON.stringify({ action: "confirm_attendance" });
   },
   {
     name: "confirm_attendance",
     description:
-      "Confirms that the patient will attend the appointment. Call this when the patient explicitly confirms they will come.",
-    schema: z.object({
-      appointment_id: z
-        .string()
-        .describe("The ID of the appointment being confirmed"),
-    }),
+      "Confirms that the patient will attend their upcoming appointment. Call this when the patient explicitly confirms they will come. No parameters needed.",
+    schema: z.object({}),
   }
 );
 
@@ -83,18 +80,14 @@ const rescheduleFromConfirmationTool = tool(
   async (input) => {
     return JSON.stringify({
       action: "reschedule_from_confirmation",
-      appointment_id: input.appointment_id,
       reason: input.reason,
     });
   },
   {
     name: "reschedule_from_confirmation",
     description:
-      "Routes the patient to the scheduling module when they want to reschedule instead of confirming. Use this when the patient cannot make it but wants a new time.",
+      "Cancels the current appointment and routes the patient to reschedule. Call this IMMEDIATELY when the patient wants to reschedule — do not ask for details.",
     schema: z.object({
-      appointment_id: z
-        .string()
-        .describe("The ID of the appointment to reschedule"),
       reason: z
         .string()
         .describe("Brief reason why the patient wants to reschedule"),
@@ -103,34 +96,67 @@ const rescheduleFromConfirmationTool = tool(
 );
 
 const markNoShowTool = tool(
-  async (input) => {
-    return JSON.stringify({
-      action: "mark_no_show",
-      appointment_id: input.appointment_id,
-    });
+  async () => {
+    return JSON.stringify({ action: "mark_no_show" });
   },
   {
     name: "mark_no_show",
     description:
-      "Marks the appointment as a no-show. Use this when the patient did not attend and did not respond to confirmation attempts.",
-    schema: z.object({
-      appointment_id: z
-        .string()
-        .describe("The ID of the appointment to mark as no-show"),
-    }),
+      "Marks the appointment as a no-show. Use this when the patient did not attend and did not respond to confirmation attempts. No parameters needed.",
+    schema: z.object({}),
   }
 );
+
+// ── Appointment Lookup Helper ──
+
+/**
+ * Finds the active confirmation appointment for the current patient.
+ * Looks up confirmation_queue entries with status "sent" that link to
+ * appointments belonging to this patient in this clinic.
+ */
+async function findActiveConfirmationAppointment(
+  context: ToolCallContext
+): Promise<string | null> {
+  // Find scheduled appointments for this patient
+  const { data: appointments } = await context.supabase
+    .from("appointments")
+    .select("id")
+    .eq("patient_id", context.recipientId)
+    .eq("clinic_id", context.clinicId)
+    .in("status", ["scheduled", "confirmed"])
+    .order("starts_at", { ascending: true });
+
+  if (!appointments || appointments.length === 0) return null;
+
+  // Find which one has a sent confirmation
+  const { data: queueEntry } = await context.supabase
+    .from("confirmation_queue")
+    .select("appointment_id")
+    .in(
+      "appointment_id",
+      appointments.map((a) => a.id)
+    )
+    .eq("status", "sent")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return queueEntry?.appointment_id ?? appointments[0].id;
+}
 
 // ── Tool Handlers ──
 
 async function handleConfirmAttendance(
-  args: Record<string, unknown>,
+  _args: Record<string, unknown>,
   context: ToolCallContext
 ): Promise<ToolCallResult> {
-  const appointmentId =
-    typeof args.appointment_id === "string" ? args.appointment_id : "";
-
   try {
+    const appointmentId = await findActiveConfirmationAppointment(context);
+
+    if (!appointmentId) {
+      return { result: "No pending appointment found for this patient." };
+    }
+
     const { error: appointmentError } = await context.supabase
       .from("appointments")
       .update({ status: "confirmed" })
@@ -162,26 +188,28 @@ async function handleRescheduleFromConfirmation(
   args: Record<string, unknown>,
   context: ToolCallContext
 ): Promise<ToolCallResult> {
-  const appointmentId =
-    typeof args.appointment_id === "string" ? args.appointment_id : "";
   const reason =
     typeof args.reason === "string" ? args.reason : "No reason provided";
 
   try {
-    // Cancel the current appointment
-    if (appointmentId) {
-      await context.supabase
-        .from("appointments")
-        .update({ status: "cancelled", cancellation_reason: reason })
-        .eq("id", appointmentId);
+    const appointmentId = await findActiveConfirmationAppointment(context);
 
-      // Mark confirmation queue entries as responded
-      await context.supabase
-        .from("confirmation_queue")
-        .update({ status: "responded", response: "rescheduled" })
-        .eq("appointment_id", appointmentId)
-        .eq("status", "sent");
+    if (!appointmentId) {
+      return { result: "No pending appointment found for this patient." };
     }
+
+    // Cancel the current appointment
+    await context.supabase
+      .from("appointments")
+      .update({ status: "cancelled", cancellation_reason: reason })
+      .eq("id", appointmentId);
+
+    // Mark confirmation queue entries as responded
+    await context.supabase
+      .from("confirmation_queue")
+      .update({ status: "responded", response: "rescheduled" })
+      .eq("appointment_id", appointmentId)
+      .eq("status", "sent");
 
     return {
       result: `The current appointment has been cancelled. Reason: ${reason}. Tell the patient their appointment was cancelled and they can now schedule a new one. Ask what date and time they prefer so the scheduling assistant can help them.`,
@@ -198,13 +226,16 @@ async function handleRescheduleFromConfirmation(
 }
 
 async function handleMarkNoShow(
-  args: Record<string, unknown>,
+  _args: Record<string, unknown>,
   context: ToolCallContext
 ): Promise<ToolCallResult> {
-  const appointmentId =
-    typeof args.appointment_id === "string" ? args.appointment_id : "";
-
   try {
+    const appointmentId = await findActiveConfirmationAppointment(context);
+
+    if (!appointmentId) {
+      return { result: "No pending appointment found for this patient." };
+    }
+
     const { error } = await context.supabase
       .from("appointments")
       .update({ status: "no_show" })
@@ -215,6 +246,12 @@ async function handleMarkNoShow(
         result: `Failed to mark appointment as no-show: ${error.message}`,
       };
     }
+
+    await context.supabase
+      .from("confirmation_queue")
+      .update({ status: "responded", response: "no_show" })
+      .eq("appointment_id", appointmentId)
+      .eq("status", "sent");
 
     return { result: "Appointment marked as no-show." };
   } catch (error) {
