@@ -3,7 +3,7 @@ import { NextResponse, after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifySignature } from "@/services/whatsapp";
 import { whatsappWebhookSchema } from "@/lib/validations/webhook";
-import { processMessage } from "@/lib/agents/process-message";
+import { processMessage } from "@/lib/agents";
 
 // GET — Meta webhook verification handshake
 export async function GET(request: Request) {
