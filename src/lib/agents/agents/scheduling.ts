@@ -10,7 +10,7 @@ import type {
   ToolCallContext,
   ToolCallResult,
 } from "../types";
-import { getAvailableSlots, formatSlotsForLLM } from "@/lib/scheduling/availability";
+import { getAvailableSlots } from "@/lib/scheduling/availability";
 import {
   createEvent,
   updateEvent,
@@ -308,14 +308,26 @@ async function handleCheckAvailability(
       busyBlocks
     );
 
-    const formatted = formatSlotsForLLM(slots, timezone, "pt-BR");
-
     if (slots.length === 0) {
       return { result: "No available slots for this date." };
     }
 
+    // Build a machine-readable list so the LLM can pass starts_at/ends_at
+    // directly to book_appointment without guessing.
+    const timeFormatter = new Intl.DateTimeFormat("pt-BR", {
+      timeZone: timezone,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+    const slotLines = slots.map((s, i) => {
+      const localTime = timeFormatter.format(new Date(s.start));
+      return `${i + 1}. ${localTime} — starts_at: ${s.start}, ends_at: ${s.end}`;
+    });
+
     return {
-      result: `Available slots (${slots.length} found):\n${formatted}`,
+      result: `Available slots on ${date} (${slots.length} found, ${durationMinutes} min each):\n${slotLines.join("\n")}\n\nUse the exact starts_at and ends_at values when calling book_appointment.`,
     };
   } catch (error) {
     const message =
