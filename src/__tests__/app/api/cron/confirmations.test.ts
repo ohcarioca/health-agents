@@ -217,7 +217,19 @@ describe("GET /api/cron/confirmations", () => {
       }
 
       if (table === "conversations") {
-        return createChainWithMaybeSingle(CONVERSATION, null);
+        const callNum = callCounts[table];
+
+        // First call: find existing conversation
+        if (callNum === 1) {
+          return createChainWithMaybeSingle(CONVERSATION, null);
+        }
+
+        // Second call: update current_module
+        return {
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+        };
       }
 
       return createMockChain();

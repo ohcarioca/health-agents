@@ -4,12 +4,18 @@ const whatsappTextSchema = z.object({
   body: z.string(),
 });
 
+const whatsappButtonSchema = z.object({
+  payload: z.string(),
+  text: z.string(),
+});
+
 const whatsappMessageSchema = z.object({
   from: z.string(),
   id: z.string(),
   timestamp: z.string(),
   type: z.string(),
   text: whatsappTextSchema.optional(),
+  button: whatsappButtonSchema.optional(),
 });
 
 const whatsappContactSchema = z.object({

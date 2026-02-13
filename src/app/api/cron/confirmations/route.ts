@@ -219,8 +219,13 @@ export async function GET(request: Request) {
         skipBusinessHoursCheck: true,
       });
 
-      // 12. Update queue status
+      // 12. Set conversation module to confirmation so replies route correctly
       if (sendResult.success) {
+        await supabase
+          .from("conversations")
+          .update({ current_module: "confirmation" })
+          .eq("id", conversationId);
+
         await supabase
           .from("confirmation_queue")
           .update({ status: "sent", sent_at: new Date().toISOString() })

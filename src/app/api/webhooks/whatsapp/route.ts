@@ -64,16 +64,22 @@ export async function POST(request: Request) {
   // Use display_phone_number (actual phone) to look up clinic, not phone_number_id (Meta internal ID)
   const displayPhone = value.metadata.display_phone_number.replace(/\D/g, "");
 
-  // 5. Process each text message in after() for async processing
+  // 5. Process each message in after() for async processing
   for (const msg of messages) {
-    // Skip non-text messages for now
-    if (msg.type !== "text" || !msg.text) {
+    // Extract message body from text or button replies
+    let messageBody: string | null = null;
+
+    if (msg.type === "text" && msg.text) {
+      messageBody = msg.text.body;
+    } else if (msg.type === "button" && msg.button) {
+      messageBody = msg.button.text;
+    }
+
+    if (!messageBody) {
       continue;
     }
 
-    // Extract before entering after() closure so TS narrowing is preserved
     const senderPhone = msg.from;
-    const messageBody = msg.text.body;
     const messageExternalId = msg.id;
 
     after(async () => {
