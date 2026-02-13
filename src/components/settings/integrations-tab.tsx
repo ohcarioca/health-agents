@@ -72,9 +72,9 @@ export function IntegrationsTab() {
         console.error("[integrations] connect failed:", res.status);
         return;
       }
-      const json: { url?: string } = await res.json();
-      if (json.url) {
-        window.location.href = json.url;
+      const json: { data?: { url?: string } } = await res.json();
+      if (json.data?.url) {
+        window.location.href = json.data.url;
       }
     } catch (err) {
       console.error("[integrations] connect error:", err);
