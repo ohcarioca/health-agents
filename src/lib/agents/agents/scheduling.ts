@@ -420,6 +420,16 @@ async function handleBookAppointment(
       };
     }
 
+    // Load clinic timezone for formatting and calendar sync
+    const { data: bookClinic } = await context.supabase
+      .from("clinics")
+      .select("name, timezone")
+      .eq("id", context.clinicId)
+      .single();
+
+    const bookTimezone =
+      (bookClinic?.timezone as string) || "America/Sao_Paulo";
+
     // Sync to Google Calendar if professional has tokens
     try {
       const { data: professional } = await context.supabase
@@ -438,15 +448,8 @@ async function handleBookAppointment(
           .eq("id", patientId)
           .single();
 
-        const { data: clinic } = await context.supabase
-          .from("clinics")
-          .select("name, timezone")
-          .eq("id", context.clinicId)
-          .single();
-
         const patientName = (patient?.name as string) ?? "Patient";
-        const clinicName = (clinic?.name as string) ?? "Clinic";
-        const timezone = (clinic?.timezone as string) || "America/Sao_Paulo";
+        const clinicName = (bookClinic?.name as string) ?? "Clinic";
 
         const eventResult = await createEvent(
           professional.google_refresh_token as string,
@@ -455,7 +458,7 @@ async function handleBookAppointment(
             summary: `${patientName} — ${clinicName}`,
             startTime: startsAt,
             endTime: endsAt,
-            timezone,
+            timezone: bookTimezone,
           }
         );
 
@@ -475,11 +478,13 @@ async function handleBookAppointment(
         weekday: "long",
         day: "numeric",
         month: "long",
+        timeZone: bookTimezone,
       });
       const timeFormatted = new Date(startsAt).toLocaleTimeString("pt-BR", {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
+        timeZone: bookTimezone,
       });
 
       return {
@@ -565,6 +570,16 @@ async function handleRescheduleAppointment(
       };
     }
 
+    // Load clinic timezone for formatting and calendar sync
+    const { data: reschClinic } = await context.supabase
+      .from("clinics")
+      .select("timezone")
+      .eq("id", context.clinicId)
+      .single();
+
+    const reschTimezone =
+      (reschClinic?.timezone as string) || "America/Sao_Paulo";
+
     // Sync to Google Calendar if event exists
     if (existing.google_event_id && existing.professional_id) {
       try {
@@ -578,15 +593,6 @@ async function handleRescheduleAppointment(
           professional?.google_refresh_token &&
           professional?.google_calendar_id
         ) {
-          const { data: clinic } = await context.supabase
-            .from("clinics")
-            .select("timezone")
-            .eq("id", context.clinicId)
-            .single();
-
-          const timezone =
-            (clinic?.timezone as string) || "America/Sao_Paulo";
-
           await updateEvent(
             professional.google_refresh_token as string,
             professional.google_calendar_id as string,
@@ -594,7 +600,7 @@ async function handleRescheduleAppointment(
             {
               startTime: newStartsAt,
               endTime: newEndsAt,
-              timezone,
+              timezone: reschTimezone,
             }
           );
         }
@@ -610,11 +616,13 @@ async function handleRescheduleAppointment(
       weekday: "long",
       day: "numeric",
       month: "long",
+      timeZone: reschTimezone,
     });
     const timeFormatted = new Date(newStartsAt).toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
+      timeZone: reschTimezone,
     });
 
     return {
@@ -769,6 +777,16 @@ async function handleListPatientAppointments(
       );
     }
 
+    // Load clinic timezone for correct local time display
+    const { data: listClinic } = await context.supabase
+      .from("clinics")
+      .select("timezone")
+      .eq("id", context.clinicId)
+      .single();
+
+    const listTimezone =
+      (listClinic?.timezone as string) || "America/Sao_Paulo";
+
     const lines = appointments.map((appt, index) => {
       const professionalName =
         professionalMap.get(appt.professional_id as string) ?? "Unknown";
@@ -782,6 +800,7 @@ async function handleListPatientAppointments(
         weekday: "long",
         day: "numeric",
         month: "long",
+        timeZone: listTimezone,
       });
       const timeFormatted = new Date(
         appt.starts_at as string
@@ -789,6 +808,7 @@ async function handleListPatientAppointments(
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
+        timeZone: listTimezone,
       });
 
       const serviceLabel = serviceName ? ` (${serviceName})` : "";
