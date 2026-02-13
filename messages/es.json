@@ -71,9 +71,23 @@
     "selectConversation": "Selecciona una conversación",
     "filters": {
       "all": "Todas",
+      "active": "Activas",
       "escalated": "Escaladas",
       "resolved": "Resueltas"
-    }
+    },
+    "empty": "No se encontraron conversaciones",
+    "status": {
+      "active": "Activa",
+      "escalated": "Escalada",
+      "resolved": "Resuelta"
+    },
+    "actions": {
+      "takeOver": "Asumir",
+      "handBack": "Devolver al agente",
+      "send": "Enviar"
+    },
+    "messagePlaceholder": "Escribe tu mensaje...",
+    "noMessages": "Sin mensajes aún"
   },
   "modules": {
     "title": "Módulos",

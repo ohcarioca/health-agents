@@ -71,9 +71,23 @@
     "selectConversation": "Select a conversation",
     "filters": {
       "all": "All",
+      "active": "Active",
       "escalated": "Escalated",
       "resolved": "Resolved"
-    }
+    },
+    "empty": "No conversations found",
+    "status": {
+      "active": "Active",
+      "escalated": "Escalated",
+      "resolved": "Resolved"
+    },
+    "actions": {
+      "takeOver": "Take over",
+      "handBack": "Hand back to agent",
+      "send": "Send"
+    },
+    "messagePlaceholder": "Type your message...",
+    "noMessages": "No messages yet"
   },
   "modules": {
     "title": "Modules",
