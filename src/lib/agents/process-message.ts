@@ -146,16 +146,34 @@ export async function processMessage(
       (mc) => mc.module_type as ModuleType
     );
 
+    // If no module_configs, fall back to active agents in DB
     if (activeModules.length === 0) {
-      activeModules.push("support");
+      const { data: activeAgents } = await supabase
+        .from("agents")
+        .select("type")
+        .eq("clinic_id", clinicId)
+        .eq("active", true);
+
+      for (const agent of activeAgents ?? []) {
+        if (getAgentType(agent.type)) {
+          activeModules.push(agent.type as ModuleType);
+        }
+      }
     }
 
-    const routerResult = await routeMessage({
-      message,
-      activeModules,
-    });
-
-    moduleType = routerResult.module;
+    // If only one module available, use it directly (skip router)
+    if (activeModules.length === 1) {
+      moduleType = activeModules[0];
+    } else if (activeModules.length > 1) {
+      const routerResult = await routeMessage({
+        message,
+        activeModules,
+      });
+      moduleType = routerResult.module;
+    } else {
+      console.error(`[process-message] no active modules or agents for clinic=${clinicId}`);
+      throw new Error("no active modules or agents");
+    }
   }
 
   // 7. Get agent config from registry
