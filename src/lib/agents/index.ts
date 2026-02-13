@@ -35,6 +35,15 @@ export { routeMessage } from "./router";
 // Process message orchestrator
 export { processMessage } from "./process-message";
 
+// Outbound message runner
+export {
+  isWithinBusinessHours,
+  canSendToPatient,
+  sendOutboundMessage,
+  sendOutboundTemplate,
+} from "./outbound";
+export type { OutboundSendResult } from "./outbound";
+
 // Agent auto-registration (side-effect imports)
 import "./agents/basic-support";
 import "./agents/scheduling";
