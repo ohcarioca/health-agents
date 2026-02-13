@@ -267,11 +267,15 @@ export async function processMessage(
     role: "assistant",
   });
 
-  // 13. Update conversation
+  // 13. Handle module routing (if agent requested it)
+  const routedTo = engineResult.responseData?.routedTo as string | undefined;
+  const finalModule = (routedTo && getAgentType(routedTo)) ? routedTo : moduleType;
+
+  // 14. Update conversation
   await supabase
     .from("conversations")
     .update({
-      current_module: moduleType,
+      current_module: finalModule,
       ...(engineResult.newConversationStatus
         ? { status: engineResult.newConversationStatus }
         : {}),
@@ -279,7 +283,7 @@ export async function processMessage(
     })
     .eq("id", conversationId);
 
-  // 14. Queue outbound message
+  // 15. Queue outbound message
   const { data: queueRow } = await supabase
     .from("message_queue")
     .insert({
@@ -294,10 +298,10 @@ export async function processMessage(
     .select("id")
     .single();
 
-  // 15. Send via WhatsApp
+  // 16. Send via WhatsApp
   const sendResult = await sendTextMessage(normalizedPhone, finalResponse);
 
-  // 16. Update queue status
+  // 17. Update queue status
   if (queueRow) {
     await supabase
       .from("message_queue")
@@ -313,7 +317,7 @@ export async function processMessage(
   return {
     conversationId,
     responseText: finalResponse,
-    module: moduleType,
+    module: finalModule,
     toolCallCount: engineResult.toolCallCount,
     queued: sendResult.success,
   };
