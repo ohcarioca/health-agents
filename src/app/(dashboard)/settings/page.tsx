@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
@@ -20,9 +21,21 @@ const TAB_KEYS = [
   "tabs.whatsapp",
 ] as const;
 
+const TAB_PARAM_MAP: Record<string, number> = {
+  clinic: 0,
+  professionals: 1,
+  patients: 2,
+  integrations: 3,
+  whatsapp: 4,
+};
+
 export default function SettingsPage() {
   const t = useTranslations("settings");
-  const [activeTab, setActiveTab] = useState(0);
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(
+    (tabParam && TAB_PARAM_MAP[tabParam]) ?? 0,
+  );
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [loading, setLoading] = useState(true);
 

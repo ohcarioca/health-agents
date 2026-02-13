@@ -32,7 +32,7 @@ export async function GET() {
   const { data: professionals, error } = await admin
     .from("professionals")
     .select(
-      "id, name, specialty, appointment_duration_minutes, schedule_grid, active, created_at",
+      "id, name, specialty, appointment_duration_minutes, schedule_grid, google_calendar_id, active, created_at",
     )
     .eq("clinic_id", clinicId)
     .order("created_at", { ascending: true });
