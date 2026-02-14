@@ -259,16 +259,16 @@ export function IntegrationsTab() {
                 className="text-sm font-medium"
                 style={{ color: "var(--text-primary)" }}
               >
-                {t("pagarme")}
+                {t("asaas")}
               </p>
               <p
                 className="text-xs"
                 style={{ color: "var(--text-muted)" }}
               >
-                {t("comingSoon")}
+                {t("asaasDescription")}
               </p>
             </div>
-            <Badge variant="neutral">{t("notConnected")}</Badge>
+            <Badge variant="neutral">{t("configuredViaEnv")}</Badge>
           </div>
         </Card>
       </div>
