@@ -441,6 +441,7 @@ Before shipping a new agent type, verify:
 | `confirmation` | `agents/confirmation.ts` | `confirm_attendance`, `reschedule_from_confirmation`, `mark_no_show` | whatsapp |
 | `nps` | `agents/nps.ts` | `collect_nps_score`, `collect_nps_comment`, `redirect_to_google_reviews`, `alert_detractor` | whatsapp |
 | `billing` | `agents/billing.ts` | `create_payment_link`, `check_payment_status`, `send_payment_reminder`, `escalate_billing` | whatsapp |
+| `recall` | `agents/recall.ts` | `send_reactivation_message`, `route_to_scheduling`, `mark_patient_inactive` | whatsapp |
 
 ### Outbound Messaging (`src/lib/agents/outbound.ts`)
 
@@ -456,6 +457,8 @@ Shared utility for proactive (system-initiated) messages:
 |-------|----------|---------|
 | `GET /api/cron/confirmations` | `*/15 * * * *` | Scans `confirmation_queue`, sends reminders |
 | `GET /api/cron/nps` | `0 */2 * * *` | Surveys patients after completed appointments |
+| `GET /api/cron/recall` | `0 6 * * *` | Enqueues inactive patients for reactivation |
+| `GET /api/cron/recall-send` | `*/30 * * * *` | Sends pending recall messages |
 
 Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqual()`).
 
@@ -494,6 +497,87 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 - Tests must be isolated and deterministic. No shared mutable state between tests.
 - Mock external services (Supabase, OpenAI, etc.). Never call real APIs in tests.
 - Prefer integration tests for API routes. Prefer unit tests for pure functions.
+
+---
+
+## Eval System
+
+CLI-driven evaluation pipeline that runs YAML scenarios against real LangChain agents, scores responses with deterministic checks + LLM judge, and proposes improvements.
+
+### Running Evals
+
+```bash
+npm run eval                                    # Run all scenarios
+npm run eval -- --agent scheduling              # Filter by agent type
+npm run eval -- --scenario nps-promoter-flow    # Single scenario
+npm run eval -- --verbose                       # Detailed per-turn output
+npm run eval -- --threshold 7                   # Custom pass threshold (default: 5)
+```
+
+Requires `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `OPENAI_API_KEY` in `.env`.
+
+### Architecture
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| Types | `src/lib/eval/types.ts` | Zod schemas and TypeScript interfaces |
+| Loader | `src/lib/eval/loader.ts` | Reads YAML scenarios from `evals/scenarios/{agent}/` |
+| Fixtures | `src/lib/eval/fixtures.ts` | Seeds and cleans up test data in Supabase |
+| Runner | `src/lib/eval/runner.ts` | Orchestrates multi-turn scenario execution via `processMessage()` |
+| Checker | `src/lib/eval/checker.ts` | Deterministic pass/fail checks (tools called, response content, DB assertions) |
+| Judge | `src/lib/eval/judge.ts` | LLM-based scoring on 5 dimensions (correctness, helpfulness, tone, safety, conciseness) |
+| Analyst | `src/lib/eval/analyst.ts` | Reviews failures via LLM and proposes specific fixes |
+| Reporter | `src/lib/eval/reporter.ts` | CLI output formatting + JSON report to `evals/reports/` |
+| CLI | `src/scripts/eval.ts` | Entry point with arg parsing |
+
+### Scenario Format
+
+Scenarios are YAML files in `evals/scenarios/{agent-type}/`. Each scenario defines a persona, fixtures, and conversation turns with expectations.
+
+```yaml
+id: scheduling-happy-path-booking
+agent: scheduling
+locale: pt-BR
+description: "Patient books a standard appointment"
+
+persona:
+  name: Maria Silva
+  phone: "11987650003"
+
+fixtures:
+  professionals:
+    - id: eval-prof-1                    # Mapped to real UUID at runtime
+      name: Dr. Joao Silva
+      specialty: Cardiologia
+  services:
+    - id: eval-svc-1
+      name: Consulta Cardiologica
+
+turns:
+  - user: "Quero marcar uma consulta com o Dr. Joao"
+    expect:
+      tools_called: [check_availability]
+      no_tools: [book_appointment]
+
+  - user: "Pode ser o primeiro horario disponivel"
+    expect:
+      tools_called: [book_appointment]
+```
+
+### Writing Scenarios
+
+- Fixture IDs (e.g. `eval-prof-1`) are mapped to real UUIDs at runtime — use any string.
+- `tools_called` checks that specific tools were invoked during the turn.
+- `no_tools` checks that specific tools were NOT invoked.
+- `response_contains` / `response_not_contains` check the agent's text response.
+- `response_matches` checks the response against a regex pattern.
+- Valid agent types: `support`, `scheduling`, `confirmation`, `nps`, `billing`, `recall`.
+
+### Scoring
+
+- Each turn gets a deterministic check (pass/fail) and an LLM judge score (0-10).
+- Overall score = average judge score minus 1.5 points per deterministic failure.
+- Status: `pass` (>= 7), `warn` (5-7), `fail` (< 5 or any deterministic failure).
 
 ---
 
