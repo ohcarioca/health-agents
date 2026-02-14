@@ -8,13 +8,17 @@ const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]);
 const OVERDUE_EVENTS = new Set(["PAYMENT_OVERDUE"]);
 
 export async function POST(request: Request) {
-  console.log("[asaas-webhook] Received POST request");
+  const contentType = request.headers.get("content-type") ?? "none";
+  console.log("[asaas-webhook] POST received | content-type:", contentType);
+
+  const rawBody = await request.text();
+  console.log("[asaas-webhook] Raw body (first 500 chars):", rawBody.slice(0, 500));
 
   let payload: Record<string, unknown>;
   try {
-    payload = await request.json();
+    payload = JSON.parse(rawBody);
   } catch {
-    console.error("[asaas-webhook] Invalid JSON body");
+    console.error("[asaas-webhook] JSON parse failed | body length:", rawBody.length);
     return NextResponse.json({ error: "invalid JSON" }, { status: 400 });
   }
 
