@@ -49,3 +49,4 @@ import "./agents/basic-support";
 import "./agents/scheduling";
 import "./agents/confirmation";
 import "./agents/nps";
+import "./agents/billing";

@@ -440,6 +440,7 @@ Before shipping a new agent type, verify:
 | `scheduling` | `agents/scheduling.ts` | `check_availability`, `book_appointment`, `reschedule_appointment`, `cancel_appointment`, `list_patient_appointments`, `escalate_to_human` | whatsapp |
 | `confirmation` | `agents/confirmation.ts` | `confirm_attendance`, `reschedule_from_confirmation`, `mark_no_show` | whatsapp |
 | `nps` | `agents/nps.ts` | `collect_nps_score`, `collect_nps_comment`, `redirect_to_google_reviews`, `alert_detractor` | whatsapp |
+| `billing` | `agents/billing.ts` | `create_payment_link`, `check_payment_status`, `send_payment_reminder`, `escalate_billing` | whatsapp |
 
 ### Outbound Messaging (`src/lib/agents/outbound.ts`)
 
