@@ -1,0 +1,36 @@
+id: scheduling-happy-path-booking
+agent: scheduling
+locale: pt-BR
+description: "Patient books a standard appointment"
+
+persona:
+  name: Maria Silva
+  phone: "11987650003"
+  notes: "Prefere horarios pela manha"
+
+fixtures:
+  professionals:
+    - id: eval-prof-1
+      name: Dr. Joao Silva
+      specialty: Cardiologia
+      appointment_duration_minutes: 30
+      schedule_grid:
+        monday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
+        tuesday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
+        wednesday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
+        thursday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
+        friday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
+  services:
+    - id: eval-svc-1
+      name: Consulta Cardiologica
+      duration_minutes: 30
+
+turns:
+  - user: "Quero marcar uma consulta com o Dr. Joao"
+    expect:
+      tools_called: [check_availability]
+      no_tools: [book_appointment]
+
+  - user: "Pode ser o primeiro horario disponivel"
+    expect:
+      tools_called: [book_appointment]

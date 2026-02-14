@@ -1,0 +1,26 @@
+id: confirmation-patient-confirms
+agent: confirmation
+locale: pt-BR
+description: "Patient confirms attendance after receiving reminder"
+
+persona:
+  name: Julia Mendes
+  phone: "11987650005"
+
+fixtures:
+  professionals:
+    - id: eval-prof-3
+      name: Dr. Roberto Lima
+      specialty: Dermatologia
+      appointment_duration_minutes: 30
+  appointments:
+    - id: eval-appt-2
+      professional_id: eval-prof-3
+      starts_at: "2026-02-16T10:00:00.000Z"
+      ends_at: "2026-02-16T10:30:00.000Z"
+      status: scheduled
+
+turns:
+  - user: "Sim, confirmo minha presenca"
+    expect:
+      tools_called: [confirm_attendance]

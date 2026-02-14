@@ -1,0 +1,26 @@
+id: confirmation-patient-reschedules
+agent: confirmation
+locale: pt-BR
+description: "Patient asks to reschedule when receiving reminder"
+
+persona:
+  name: Lucas Ferreira
+  phone: "11987650006"
+
+fixtures:
+  professionals:
+    - id: eval-prof-4
+      name: Dra. Carla Santos
+      specialty: Clinico Geral
+      appointment_duration_minutes: 30
+  appointments:
+    - id: eval-appt-3
+      professional_id: eval-prof-4
+      starts_at: "2026-02-16T14:00:00.000Z"
+      ends_at: "2026-02-16T14:30:00.000Z"
+      status: scheduled
+
+turns:
+  - user: "Nao vou poder ir nesse dia, preciso remarcar"
+    expect:
+      tools_called: [reschedule_from_confirmation]

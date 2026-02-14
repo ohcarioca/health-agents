@@ -1,0 +1,29 @@
+id: nps-detractor-flow
+agent: nps
+locale: pt-BR
+description: "Unsatisfied patient gives low NPS score, detractor alert triggered"
+
+persona:
+  name: Roberto Gomes
+  phone: "11987650008"
+
+fixtures:
+  professionals:
+    - id: eval-prof-6
+      name: Dra. Patricia Dias
+      specialty: Clinico Geral
+  appointments:
+    - id: eval-appt-5
+      professional_id: eval-prof-6
+      starts_at: "2026-02-13T14:00:00.000Z"
+      ends_at: "2026-02-13T14:30:00.000Z"
+      status: completed
+
+turns:
+  - user: "3. Esperei mais de uma hora para ser atendido"
+    expect:
+      tools_called: [collect_nps_score]
+
+  - user: "A recepcionista foi grosseira e o medico tinha pressa"
+    expect:
+      tools_called: [collect_nps_comment]

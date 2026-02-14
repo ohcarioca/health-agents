@@ -1,0 +1,29 @@
+id: nps-promoter-flow
+agent: nps
+locale: pt-BR
+description: "Satisfied patient gives high NPS score and is redirected to Google Reviews"
+
+persona:
+  name: Fernanda Almeida
+  phone: "11987650007"
+
+fixtures:
+  professionals:
+    - id: eval-prof-5
+      name: Dr. Marcos Vieira
+      specialty: Ortopedia
+  appointments:
+    - id: eval-appt-4
+      professional_id: eval-prof-5
+      starts_at: "2026-02-13T10:00:00.000Z"
+      ends_at: "2026-02-13T10:30:00.000Z"
+      status: completed
+
+turns:
+  - user: "10! Adorei o atendimento"
+    expect:
+      tools_called: [collect_nps_score]
+
+  - user: "O doutor foi muito atencioso e explicou tudo direitinho"
+    expect:
+      tools_called: [collect_nps_comment]
