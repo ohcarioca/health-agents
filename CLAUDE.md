@@ -574,6 +574,23 @@ turns:
 - `response_matches` checks the response against a regex pattern.
 - Valid agent types: `support`, `scheduling`, `confirmation`, `nps`, `billing`, `recall`.
 
+#### Fixture Types
+
+- `professionals` — name, specialty, schedule_grid, appointment_duration_minutes.
+- `services` — name, duration_minutes.
+- `appointments` — professional_id, starts_at, ends_at, status.
+- `insurance_plans` — name.
+- `invoices` — amount_cents (integer), due_date (YYYY-MM-DD), status (`pending`/`paid`/`overdue`/`partial`/`cancelled`), notes, appointment_id (optional FK).
+
+#### Assertions
+
+- `appointment_created` (boolean) — checks if an appointment exists for the patient.
+- `confirmation_queue_entries` (integer) — exact count in `confirmation_queue`.
+- `conversation_status` (string) — checks conversation status (e.g. `"escalated"`).
+- `nps_score_recorded` (boolean) — checks if an NPS response exists.
+- `payment_link_created` (boolean) — checks if a payment link was created.
+- `invoice_status` (string) — checks the latest invoice status for the patient.
+
 ### Scoring
 
 - Each turn gets a deterministic check (pass/fail) and an LLM judge score (0-10).

@@ -1,0 +1,26 @@
+id: billing-overdue-reminder
+agent: billing
+locale: pt-BR
+description: "Patient asks about overdue invoice and agent sends payment reminder"
+
+persona:
+  name: Felipe Andrade
+  phone: "11987650012"
+
+fixtures:
+  invoices:
+    - id: eval-inv-4
+      amount_cents: 18000
+      due_date: "2026-01-15"
+      status: overdue
+      notes: "Consulta Ortopedica"
+
+turns:
+  - user: "Tenho uma fatura vencida, o que eu faco?"
+    expect:
+      tools_called: [check_payment_status]
+
+  - user: "Pode me enviar os detalhes para eu pagar?"
+    expect:
+      tools_called: [send_payment_reminder]
+      no_tools: [escalate_billing]

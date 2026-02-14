@@ -85,4 +85,77 @@ describe("evalScenarioSchema", () => {
     const result = evalScenarioSchema.safeParse(scenario);
     expect(result.success).toBe(false);
   });
+
+  it("validates billing scenario with invoice fixtures", () => {
+    const scenario = {
+      id: "billing-test",
+      agent: "billing",
+      locale: "pt-BR",
+      description: "Billing test",
+      persona: { name: "Amanda", phone: "11987650009" },
+      fixtures: {
+        invoices: [
+          {
+            id: "inv-1",
+            amount_cents: 15000,
+            due_date: "2026-03-01",
+            status: "pending",
+            notes: "Consulta",
+          },
+        ],
+      },
+      turns: [{ user: "Quero pagar", expect: { tools_called: ["create_payment_link"] } }],
+      assertions: {
+        payment_link_created: true,
+        invoice_status: "pending",
+      },
+    };
+    const result = evalScenarioSchema.safeParse(scenario);
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invoice fixture with invalid status", () => {
+    const scenario = {
+      id: "billing-test",
+      agent: "billing",
+      locale: "pt-BR",
+      description: "Billing test",
+      persona: { name: "Amanda", phone: "11987650009" },
+      fixtures: {
+        invoices: [
+          {
+            id: "inv-1",
+            amount_cents: 15000,
+            due_date: "2026-03-01",
+            status: "invalid_status",
+          },
+        ],
+      },
+      turns: [{ user: "Oi", expect: {} }],
+    };
+    const result = evalScenarioSchema.safeParse(scenario);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects invoice fixture with non-positive amount", () => {
+    const scenario = {
+      id: "billing-test",
+      agent: "billing",
+      locale: "pt-BR",
+      description: "Billing test",
+      persona: { name: "Amanda", phone: "11987650009" },
+      fixtures: {
+        invoices: [
+          {
+            id: "inv-1",
+            amount_cents: -100,
+            due_date: "2026-03-01",
+          },
+        ],
+      },
+      turns: [{ user: "Oi", expect: {} }],
+    };
+    const result = evalScenarioSchema.safeParse(scenario);
+    expect(result.success).toBe(false);
+  });
 });

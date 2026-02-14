@@ -33,11 +33,21 @@ const appointmentFixtureSchema = z.object({
   status: z.enum(["scheduled", "confirmed", "completed", "cancelled", "no_show"]).optional(),
 });
 
+const invoiceFixtureSchema = z.object({
+  id: z.string(),
+  amount_cents: z.number().int().positive(),
+  due_date: z.string(),
+  status: z.enum(["pending", "partial", "paid", "overdue", "cancelled"]).optional(),
+  notes: z.string().optional(),
+  appointment_id: z.string().optional(),
+});
+
 const fixturesSchema = z.object({
   professionals: z.array(professionalFixtureSchema).optional(),
   services: z.array(serviceFixtureSchema).optional(),
   appointments: z.array(appointmentFixtureSchema).optional(),
   insurance_plans: z.array(z.object({ id: z.string(), name: z.string() })).optional(),
+  invoices: z.array(invoiceFixtureSchema).optional(),
 }).optional();
 
 const turnExpectSchema = z.object({
@@ -60,6 +70,8 @@ const assertionsSchema = z.object({
   confirmation_queue_entries: z.number().int().optional(),
   conversation_status: z.string().optional(),
   nps_score_recorded: z.boolean().optional(),
+  payment_link_created: z.boolean().optional(),
+  invoice_status: z.string().optional(),
 }).optional();
 
 const personaSchema = z.object({

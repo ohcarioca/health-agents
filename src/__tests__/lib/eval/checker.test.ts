@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { checkTurn } from "@/lib/eval/checker";
+import { describe, it, expect, vi } from "vitest";
+import { checkTurn, checkAssertions } from "@/lib/eval/checker";
 import type { TurnExpect } from "@/lib/eval/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 describe("checkTurn", () => {
   it("passes when all expectations met", () => {
@@ -75,6 +76,95 @@ describe("checkTurn", () => {
 
   it("passes with empty expectations", () => {
     const result = checkTurn({}, ["any_tool"], "any response");
+    expect(result.passed).toBe(true);
+  });
+});
+
+function mockSupabase(tableResults: Record<string, { data: unknown[] | null }>): SupabaseClient {
+  const chainable = (table: string) => {
+    const result = tableResults[table] ?? { data: [] };
+    const chain = {
+      select: () => chain,
+      eq: () => chain,
+      order: () => chain,
+      limit: () => chain,
+      single: () => Promise.resolve({ data: result.data ? result.data[0] : null }),
+      then: (resolve: (val: { data: unknown[] | null }) => void) => resolve(result),
+    };
+    return chain;
+  };
+
+  return { from: (table: string) => chainable(table) } as unknown as SupabaseClient;
+}
+
+describe("checkAssertions — billing", () => {
+  it("passes when payment_link_created matches", async () => {
+    const supabase = mockSupabase({
+      payment_links: { data: [{ id: "pl-1" }] },
+    });
+    const result = await checkAssertions(
+      supabase,
+      { payment_link_created: true },
+      "clinic-1",
+      "patient-1",
+      "conv-1"
+    );
+    expect(result.passed).toBe(true);
+  });
+
+  it("fails when payment_link_created expected but none exist", async () => {
+    const supabase = mockSupabase({
+      payment_links: { data: [] },
+    });
+    const result = await checkAssertions(
+      supabase,
+      { payment_link_created: true },
+      "clinic-1",
+      "patient-1",
+      "conv-1"
+    );
+    expect(result.passed).toBe(false);
+    expect(result.failures[0]).toContain("payment_link_created");
+  });
+
+  it("passes when invoice_status matches", async () => {
+    const supabase = mockSupabase({
+      invoices: { data: [{ status: "paid" }] },
+    });
+    const result = await checkAssertions(
+      supabase,
+      { invoice_status: "paid" },
+      "clinic-1",
+      "patient-1",
+      "conv-1"
+    );
+    expect(result.passed).toBe(true);
+  });
+
+  it("fails when invoice_status does not match", async () => {
+    const supabase = mockSupabase({
+      invoices: { data: [{ status: "pending" }] },
+    });
+    const result = await checkAssertions(
+      supabase,
+      { invoice_status: "paid" },
+      "clinic-1",
+      "patient-1",
+      "conv-1"
+    );
+    expect(result.passed).toBe(false);
+    expect(result.failures[0]).toContain("invoice_status");
+  });
+
+  it("passes with no assertions", async () => {
+    const supabase = mockSupabase({});
+    const result = await checkAssertions(
+      supabase,
+      undefined,
+      "clinic-1",
+      "patient-1",
+      "conv-1"
+    );
     expect(result.passed).toBe(true);
   });
 });

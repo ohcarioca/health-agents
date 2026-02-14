@@ -1,0 +1,25 @@
+id: billing-dispute-escalation
+agent: billing
+locale: pt-BR
+description: "Patient disputes a charge and issue is escalated to human operator"
+
+persona:
+  name: Beatriz Ferreira
+  phone: "11987650011"
+
+fixtures:
+  invoices:
+    - id: eval-inv-3
+      amount_cents: 35000
+      due_date: "2026-03-10"
+      status: pending
+      notes: "Procedimento Estetico"
+
+turns:
+  - user: "Essa cobranca esta errada, eu nao fiz esse procedimento. Quero falar com alguem."
+    expect:
+      tools_called: [escalate_billing]
+      no_tools: [create_payment_link, send_payment_reminder]
+
+assertions:
+  conversation_status: escalated

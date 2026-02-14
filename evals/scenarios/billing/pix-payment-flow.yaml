@@ -1,0 +1,27 @@
+id: billing-pix-payment-flow
+agent: billing
+locale: pt-BR
+description: "Patient asks about pending invoice and requests Pix payment link"
+
+persona:
+  name: Amanda Ribeiro
+  phone: "11987650009"
+
+fixtures:
+  invoices:
+    - id: eval-inv-1
+      amount_cents: 15000
+      due_date: "2026-03-01"
+      status: pending
+      notes: "Consulta Dermatologica"
+
+turns:
+  - user: "Oi, recebi uma mensagem sobre uma fatura pendente. Qual o valor?"
+    expect:
+      tools_called: [check_payment_status]
+      no_tools: [create_payment_link]
+
+  - user: "Quero pagar por Pix"
+    expect:
+      tools_called: [create_payment_link]
+      response_not_contains: ["https://fake", "http://fake"]

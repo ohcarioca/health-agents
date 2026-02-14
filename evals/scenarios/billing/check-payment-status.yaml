@@ -1,0 +1,22 @@
+id: billing-check-payment-status
+agent: billing
+locale: pt-BR
+description: "Patient asks if their payment has been received"
+
+persona:
+  name: Ricardo Santos
+  phone: "11987650010"
+
+fixtures:
+  invoices:
+    - id: eval-inv-2
+      amount_cents: 25000
+      due_date: "2026-02-20"
+      status: pending
+      notes: "Limpeza Dental"
+
+turns:
+  - user: "Ja fiz o pagamento do meu boleto ontem, foi confirmado?"
+    expect:
+      tools_called: [check_payment_status]
+      no_tools: [create_payment_link, escalate_billing]
