@@ -14,7 +14,7 @@ Follow strictly when generating, modifying, or reviewing code.
 | Styling | Tailwind CSS v4 (CSS-first config — no `tailwind.config.*`) |
 | AI | LangChain + OpenAI |
 | Database | Supabase (PostgreSQL + Auth + RLS) |
-| Payments | Pagar.me |
+| Payments | Asaas (Pix + boleto) |
 | Email | Gmail API + Google Pub/Sub |
 | WhatsApp | Meta WhatsApp Business API |
 | Calendar | Google Calendar API |
@@ -101,7 +101,7 @@ No alternative libraries without explicit approval.
 ### Webhook Routes
 
 - Always use `createAdminClient()` — never session-based auth.
-- Verify signatures cryptographically (HMAC-SHA256 for WhatsApp, OIDC for Gmail).
+- Verify signatures cryptographically (HMAC-SHA256 for WhatsApp, token-based for Asaas, OIDC for Gmail).
 - Implement idempotency: deduplicate by external message ID before processing.
 - Return `200` for success or known skip only. `5xx` triggers provider retry.
 - Use `after()` from `next/server` for async work that must complete after the HTTP response.
@@ -441,6 +441,7 @@ Before shipping a new agent type, verify:
 | `confirmation` | `agents/confirmation.ts` | `confirm_attendance`, `reschedule_from_confirmation`, `mark_no_show` | whatsapp |
 | `nps` | `agents/nps.ts` | `collect_nps_score`, `collect_nps_comment`, `redirect_to_google_reviews`, `alert_detractor` | whatsapp |
 | `billing` | `agents/billing.ts` | `create_payment_link`, `check_payment_status`, `send_payment_reminder`, `escalate_billing` | whatsapp |
+| `recall` | `agents/recall.ts` | `send_reactivation_message`, `route_to_scheduling`, `mark_patient_inactive` | whatsapp |
 
 ### Outbound Messaging (`src/lib/agents/outbound.ts`)
 
@@ -454,8 +455,11 @@ Shared utility for proactive (system-initiated) messages:
 
 | Route | Schedule | Purpose |
 |-------|----------|---------|
-| `GET /api/cron/confirmations` | `*/15 * * * *` | Scans `confirmation_queue`, sends reminders |
-| `GET /api/cron/nps` | `0 */2 * * *` | Surveys patients after completed appointments |
+| `GET /api/cron/confirmations` | `0 8 * * *` | Scans `confirmation_queue`, sends reminders |
+| `GET /api/cron/nps` | `0 12 * * *` | Surveys patients after completed appointments |
+| `GET /api/cron/billing` | `0 9,14 * * 1-6` | Drip payment reminders (Mon-Sat) |
+| `GET /api/cron/recall` | `0 10 * * 1-5` | Enqueue inactive patients (Mon-Fri) |
+| `GET /api/cron/recall-send` | `30 10 * * 1-5` | Send recall messages from queue (Mon-Fri) |
 
 Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqual()`).
 
