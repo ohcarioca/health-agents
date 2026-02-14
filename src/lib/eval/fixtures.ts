@@ -88,7 +88,7 @@ export async function seedFixtures(
         name: prof.name,
         specialty: prof.specialty ?? null,
         appointment_duration_minutes: prof.appointment_duration_minutes ?? 30,
-        schedule_grid: prof.schedule_grid ?? null,
+        schedule_grid: prof.schedule_grid ?? {},
         google_calendar_id: prof.google_calendar_id ?? null,
         google_refresh_token: prof.google_refresh_token ?? null,
         active: true,
