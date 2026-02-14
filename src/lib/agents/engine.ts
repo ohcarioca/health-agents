@@ -34,7 +34,7 @@ export async function chatWithToolLoop(
     maxIterations = MAX_ITERATIONS,
   } = options;
 
-  const modelName = options.model ?? process.env.OPENAI_MODEL ?? "gpt-4o";
+  const modelName = options.model ?? process.env.OPENAI_MODEL ?? "gpt-5-mini";
 
   const llm = new ChatOpenAI({
     model: modelName,

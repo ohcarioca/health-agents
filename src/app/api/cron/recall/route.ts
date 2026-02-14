@@ -79,13 +79,13 @@ export async function GET(request: Request) {
 
       if (existing) continue;
 
-      // Insert new recall entry
+      // Insert new recall entry (last_visit_at guaranteed non-null by query filter)
       const { error: insertError } = await supabase
         .from("recall_queue")
         .insert({
           clinic_id: clinic.id,
           patient_id: patient.id,
-          last_visit_at: patient.last_visit_at,
+          last_visit_at: patient.last_visit_at as string,
           status: "pending",
           attempts: 0,
         });

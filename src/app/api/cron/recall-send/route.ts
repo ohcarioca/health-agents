@@ -184,10 +184,7 @@ export async function GET(request: Request) {
           status: "pending",
           attempts: entry.attempts + 1,
         })
-        .eq("id", entry.id)
-        .catch(() => {
-          // best effort
-        });
+        .eq("id", entry.id);
       skipped++;
     }
   }
