@@ -6,39 +6,59 @@ export interface SeededData {
   clinicId: string;
   patientId: string;
   agentId: string;
-  userId: string;
+  /** Maps scenario fixture IDs (e.g. "eval-prof-1") to real UUIDs */
+  idMap: Record<string, string>;
 }
 
-const EVAL_CLINIC_PREFIX = "eval-";
+/** Insert helper that throws on Supabase errors */
+async function insertRow(
+  supabase: SupabaseClient,
+  table: string,
+  row: Record<string, unknown>
+): Promise<void> {
+  const { error } = await supabase.from(table).insert(row);
+  if (error) {
+    throw new Error(`[eval-fixtures] insert into "${table}" failed: ${error.message}`);
+  }
+}
+
+/** Map a scenario fixture ID to a real UUID, caching in idMap */
+function resolveId(idMap: Record<string, string>, fixtureId: string): string {
+  if (!idMap[fixtureId]) {
+    idMap[fixtureId] = randomUUID();
+  }
+  return idMap[fixtureId];
+}
 
 export async function seedFixtures(
   supabase: SupabaseClient,
   scenario: EvalScenario
 ): Promise<SeededData> {
-  const clinicId = `${EVAL_CLINIC_PREFIX}${randomUUID()}`;
+  const clinicId = randomUUID();
   const patientId = randomUUID();
   const agentId = randomUUID();
-  const userId = randomUUID();
+  const idMap: Record<string, string> = {};
 
-  // 1. Create eval clinic
-  await supabase.from("clinics").insert({
+  // 1. Create eval clinic (slug is required, no user_id column)
+  const slug = `eval-${scenario.id}-${clinicId.slice(0, 8)}`;
+  await insertRow(supabase, "clinics", {
     id: clinicId,
     name: `Eval Clinic — ${scenario.id}`,
+    slug,
     phone: "11999990000",
     address: "Rua Eval, 123",
     timezone: "America/Sao_Paulo",
-    user_id: userId,
   });
 
   // 2. Create patient from persona
   const normalizedPhone = scenario.persona.phone.replace(/\D/g, "");
-  await supabase.from("patients").insert({
+  await insertRow(supabase, "patients", {
     id: patientId,
     clinic_id: clinicId,
     name: scenario.persona.name,
     phone: normalizedPhone,
     notes: scenario.persona.notes ?? null,
-    custom_fields: scenario.persona.custom_fields ?? null,
+    custom_fields: scenario.persona.custom_fields ?? {},
   });
 
   // 3. Create agent row (required by processMessage step 8)
@@ -47,7 +67,7 @@ export async function seedFixtures(
     locale: scenario.locale,
   };
 
-  await supabase.from("agents").insert({
+  await insertRow(supabase, "agents", {
     id: agentId,
     clinic_id: clinicId,
     type: scenario.agent,
@@ -61,8 +81,9 @@ export async function seedFixtures(
   // 4. Seed fixture data
   if (scenario.fixtures?.professionals) {
     for (const prof of scenario.fixtures.professionals) {
-      await supabase.from("professionals").insert({
-        id: prof.id,
+      const profId = resolveId(idMap, prof.id);
+      await insertRow(supabase, "professionals", {
+        id: profId,
         clinic_id: clinicId,
         name: prof.name,
         specialty: prof.specialty ?? null,
@@ -77,20 +98,21 @@ export async function seedFixtures(
 
   if (scenario.fixtures?.services) {
     for (const svc of scenario.fixtures.services) {
-      await supabase.from("services").insert({
-        id: svc.id,
+      const svcId = resolveId(idMap, svc.id);
+      await insertRow(supabase, "services", {
+        id: svcId,
         clinic_id: clinicId,
         name: svc.name,
         duration_minutes: svc.duration_minutes ?? 30,
-        active: true,
       });
     }
   }
 
   if (scenario.fixtures?.insurance_plans) {
     for (const plan of scenario.fixtures.insurance_plans) {
-      await supabase.from("insurance_plans").insert({
-        id: plan.id,
+      const planId = resolveId(idMap, plan.id);
+      await insertRow(supabase, "insurance_plans", {
+        id: planId,
         clinic_id: clinicId,
         name: plan.name,
       });
@@ -99,12 +121,19 @@ export async function seedFixtures(
 
   if (scenario.fixtures?.appointments) {
     for (const appt of scenario.fixtures.appointments) {
-      await supabase.from("appointments").insert({
-        id: appt.id,
+      const apptId = resolveId(idMap, appt.id);
+      const profId = resolveId(idMap, appt.professional_id);
+      const apptPatientId = appt.patient_id
+        ? resolveId(idMap, appt.patient_id)
+        : patientId;
+      const svcId = appt.service_id ? resolveId(idMap, appt.service_id) : null;
+
+      await insertRow(supabase, "appointments", {
+        id: apptId,
         clinic_id: clinicId,
-        professional_id: appt.professional_id,
-        patient_id: appt.patient_id ?? patientId,
-        service_id: appt.service_id ?? null,
+        professional_id: profId,
+        patient_id: apptPatientId,
+        service_id: svcId,
         starts_at: appt.starts_at,
         ends_at: appt.ends_at,
         status: appt.status ?? "scheduled",
@@ -112,7 +141,7 @@ export async function seedFixtures(
     }
   }
 
-  return { clinicId, patientId, agentId, userId };
+  return { clinicId, patientId, agentId, idMap };
 }
 
 export async function cleanupFixtures(
@@ -121,6 +150,7 @@ export async function cleanupFixtures(
 ): Promise<void> {
   // Delete in reverse dependency order
   const tables = [
+    "recall_queue",
     "nps_responses",
     "confirmation_queue",
     "message_queue",

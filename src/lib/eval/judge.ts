@@ -1,5 +1,18 @@
 import { ChatOpenAI } from "@langchain/openai";
+import type { MessageContent } from "@langchain/core/messages";
 import type { JudgeResult, JudgeScores, TurnExpect } from "./types";
+
+/** Extract text from LLM response content (string | ContentBlock[]) */
+function extractText(content: MessageContent): string {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    return content
+      .filter((b) => typeof b === "string" || (typeof b === "object" && b.type === "text"))
+      .map((b) => (typeof b === "string" ? b : "text" in b ? b.text : ""))
+      .join("");
+  }
+  return String(content ?? "");
+}
 
 const JUDGE_SYSTEM_PROMPT = `You are an expert evaluator for healthcare clinic chatbots in Brazil.
 Score the agent's response on these dimensions (0-10 each):
@@ -41,8 +54,6 @@ export async function judgeResponse(input: JudgeInput): Promise<JudgeResult> {
   const llm = new ChatOpenAI({
     model: modelName,
     maxRetries: 1,
-    maxTokens: 300,
-    temperature: 0,
   });
 
   const userPrompt = buildJudgePrompt(input);
@@ -53,14 +64,7 @@ export async function judgeResponse(input: JudgeInput): Promise<JudgeResult> {
       { role: "user", content: userPrompt },
     ]);
 
-    const text = typeof response.content === "string"
-      ? response.content
-      : Array.isArray(response.content)
-        ? response.content
-            .filter((b): b is { type: "text"; text: string } => b.type === "text")
-            .map((b) => b.text)
-            .join("")
-        : String(response.content);
+    const text = extractText(response.content);
 
     return parseJudgeResponse(text);
   } catch (error) {

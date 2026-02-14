@@ -1,5 +1,18 @@
 import { ChatOpenAI } from "@langchain/openai";
+import type { MessageContent } from "@langchain/core/messages";
 import type { ScenarioResult, ImprovementProposal } from "./types";
+
+/** Extract text from LLM response content (string | ContentBlock[]) */
+function extractText(content: MessageContent): string {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    return content
+      .filter((b) => typeof b === "string" || (typeof b === "object" && b.type === "text"))
+      .map((b) => (typeof b === "string" ? b : "text" in b ? b.text : ""))
+      .join("");
+  }
+  return String(content ?? "");
+}
 
 const ANALYST_SYSTEM_PROMPT = `You are a senior AI engineer reviewing evaluation results for healthcare clinic chatbot agents.
 Analyze the failures and warnings, then propose specific, actionable improvements.
@@ -28,8 +41,6 @@ export async function analyzeResults(
   const llm = new ChatOpenAI({
     model: modelName,
     maxRetries: 1,
-    maxTokens: 1000,
-    temperature: 0,
   });
 
   const summaries = problemScenarios.map((r) => {
@@ -64,14 +75,7 @@ export async function analyzeResults(
       { role: "user", content: userPrompt },
     ]);
 
-    const text = typeof response.content === "string"
-      ? response.content
-      : Array.isArray(response.content)
-        ? response.content
-            .filter((b): b is { type: "text"; text: string } => b.type === "text")
-            .map((b) => b.text)
-            .join("")
-        : String(response.content);
+    const text = extractText(response.content);
 
     const cleaned = text
       .replace(/```json\s*/g, "")
