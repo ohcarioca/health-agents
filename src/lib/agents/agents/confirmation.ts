@@ -21,7 +21,8 @@ Regras:
 - Use o primeiro nome do paciente para tornar a conversa mais pessoal.
 - Seja breve e direto nas mensagens.
 - Quando o paciente confirmar presenca, chame a ferramenta confirm_attendance imediatamente.
-- Quando o paciente quiser remarcar, chame reschedule_from_confirmation IMEDIATAMENTE. Nao pergunte data, horario ou motivo — o assistente de agendamento cuidara disso.
+- Quando o paciente quiser remarcar, chame reschedule_from_confirmation IMEDIATAMENTE. Nao pergunte data, horario ou motivo antes de chamar a ferramenta.
+- Apos remarcar, informe que a consulta foi cancelada e pergunte qual data e horario o paciente prefere para a nova consulta. O paciente pode remarcar agora mesmo nesta conversa.
 - Nao insista mais de 2 vezes se o paciente nao responder.
 - Nunca fabrique URLs ou informacoes que voce nao obteve de uma ferramenta.
 - Apos chamar uma ferramenta, SEMPRE responda ao paciente em linguagem natural e amigavel. Nunca exponha resultados internos.
@@ -33,7 +34,8 @@ Rules:
 - Use the patient's first name to make the conversation more personal.
 - Keep messages brief and direct.
 - When the patient confirms attendance, call the confirm_attendance tool immediately.
-- When the patient wants to reschedule, call reschedule_from_confirmation IMMEDIATELY. Do not ask for date, time, or reason — the scheduling assistant will handle that.
+- When the patient wants to reschedule, call reschedule_from_confirmation IMMEDIATELY. Do not ask for date, time, or reason before calling the tool.
+- After rescheduling, inform the patient their appointment was cancelled and ask what date and time they prefer for the new one. The patient can reschedule right now in this conversation.
 - Do not insist more than 2 times if the patient does not respond.
 - Never fabricate URLs or information you did not obtain from a tool.
 - After calling a tool, ALWAYS respond to the patient in natural, friendly language. Never expose internal results.
@@ -45,7 +47,8 @@ Reglas:
 - Usa el primer nombre del paciente para hacer la conversacion mas personal.
 - Se breve y directo en los mensajes.
 - Cuando el paciente confirme asistencia, llama la herramienta confirm_attendance inmediatamente.
-- Cuando el paciente quiera reprogramar, llama reschedule_from_confirmation INMEDIATAMENTE. No preguntes fecha, hora o motivo — el asistente de agendamiento se encargara.
+- Cuando el paciente quiera reprogramar, llama reschedule_from_confirmation INMEDIATAMENTE. No preguntes fecha, hora o motivo antes de llamar la herramienta.
+- Despues de reprogramar, informa que la cita fue cancelada y pregunta que fecha y hora prefiere para la nueva cita. El paciente puede reprogramar ahora mismo en esta conversacion.
 - No insistas mas de 2 veces si el paciente no responde.
 - Nunca fabriques URLs o informacion que no obtuviste de una herramienta.
 - Despues de llamar una herramienta, SIEMPRE responde al paciente en lenguaje natural y amigable. Nunca expongas resultados internos.
@@ -247,7 +250,7 @@ async function handleRescheduleFromConfirmation(
     }
 
     return {
-      result: `The current appointment has been cancelled. Reason: ${reason}. Tell the patient their appointment was cancelled and they can now schedule a new one. Ask what date and time they prefer so the scheduling assistant can help them.`,
+      result: `Appointment cancelled successfully. IMPORTANT: Tell the patient their appointment was cancelled and ask "Qual data e horario voce prefere para a nova consulta?" so they can reschedule immediately in this conversation.`,
       responseData: {
         routedTo: "scheduling",
         routeContext: reason,
