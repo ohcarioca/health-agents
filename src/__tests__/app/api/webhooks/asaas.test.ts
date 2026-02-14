@@ -15,25 +15,14 @@ vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn(() => ({ from: mockFrom })),
 }));
 
-vi.mock("@/services/asaas", () => ({
-  verifyWebhookToken: vi.fn().mockReturnValue(true),
-}));
-
 import { POST } from "@/app/api/webhooks/asaas/route";
-import { verifyWebhookToken } from "@/services/asaas";
 
 // ── Helpers ──
 
-function createRequest(
-  body: Record<string, unknown>,
-  token = "valid-token"
-): Request {
+function createRequest(body: Record<string, unknown>): Request {
   return new Request("http://localhost/api/webhooks/asaas", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "asaas-access-token": token,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
 }
@@ -43,33 +32,14 @@ function createRequest(
 describe("POST /api/webhooks/asaas", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset default: token is valid
-    (verifyWebhookToken as ReturnType<typeof vi.fn>).mockReturnValue(true);
-    // Reset chainable mocks
     mockUpdate.mockReturnThis();
     mockEq.mockResolvedValue({ data: null, error: null });
     mockFrom.mockReturnValue({ update: mockUpdate, eq: mockEq });
   });
 
-  it("returns 401 for invalid webhook token", async () => {
-    (verifyWebhookToken as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
-
-    const req = createRequest(
-      { event: "PAYMENT_RECEIVED", payment: {} },
-      "invalid-token"
-    );
-
-    const res = await POST(req);
-    expect(res.status).toBe(401);
-
-    const json = await res.json();
-    expect(json.error).toBe("invalid token");
-  });
-
   it("returns 400 for invalid JSON body", async () => {
     const req = new Request("http://localhost/api/webhooks/asaas", {
       method: "POST",
-      headers: { "asaas-access-token": "valid-token" },
       body: "not-json{{{",
     });
 

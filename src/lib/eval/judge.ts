@@ -49,7 +49,7 @@ const DEFAULT_SCORES: JudgeResult = {
 };
 
 export async function judgeResponse(input: JudgeInput): Promise<JudgeResult> {
-  const modelName = process.env.OPENAI_MODEL ?? "gpt-4o";
+  const modelName = process.env.OPENAI_MODEL ?? "gpt-5-mini";
 
   const llm = new ChatOpenAI({
     model: modelName,

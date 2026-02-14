@@ -37,7 +37,7 @@ export async function analyzeResults(
     return [];
   }
 
-  const modelName = process.env.OPENAI_MODEL ?? "gpt-4o";
+  const modelName = process.env.OPENAI_MODEL ?? "gpt-5-mini";
   const llm = new ChatOpenAI({
     model: modelName,
     maxRetries: 1,
