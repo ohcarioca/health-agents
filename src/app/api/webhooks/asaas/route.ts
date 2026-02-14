@@ -8,35 +8,25 @@ const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]);
 const OVERDUE_EVENTS = new Set(["PAYMENT_OVERDUE"]);
 
 export async function POST(request: Request) {
-  const contentType = request.headers.get("content-type") ?? "none";
-  console.log("[asaas-webhook] POST received | content-type:", contentType);
-
-  const rawBody = await request.text();
-  console.log("[asaas-webhook] Raw body (first 500 chars):", rawBody.slice(0, 500));
-
   let payload: Record<string, unknown>;
   try {
-    payload = JSON.parse(rawBody);
+    payload = await request.json();
   } catch {
-    console.error("[asaas-webhook] JSON parse failed | body length:", rawBody.length);
     return NextResponse.json({ error: "invalid JSON" }, { status: 400 });
   }
 
   const event = (payload.event as string) ?? "";
-  console.log("[asaas-webhook] Event:", event, "| Payload keys:", Object.keys(payload).join(", "));
-
   const payment = (payload.payment as Record<string, unknown>) ?? {};
   const invoiceId = (payment.externalReference as string) ?? "";
   const paymentDate = (payment.paymentDate as string) ?? null;
 
   // Only process payment completion and overdue events
   if (!PAID_EVENTS.has(event) && !OVERDUE_EVENTS.has(event)) {
-    console.log("[asaas-webhook] Ignoring event:", event);
     return NextResponse.json({ status: "ignored", event });
   }
 
   if (!invoiceId) {
-    console.warn("[asaas-webhook] No externalReference (invoice ID), skipping");
+    console.warn("[asaas-webhook] No externalReference, skipping");
     return NextResponse.json({
       status: "skipped",
       reason: "no_external_reference",
@@ -47,13 +37,11 @@ export async function POST(request: Request) {
 
   try {
     if (PAID_EVENTS.has(event)) {
-      // Mark payment link as paid
       await supabase
         .from("payment_links")
         .update({ status: "paid" })
         .eq("invoice_id", invoiceId);
 
-      // Mark invoice as paid
       await supabase
         .from("invoices")
         .update({
@@ -62,25 +50,20 @@ export async function POST(request: Request) {
         })
         .eq("id", invoiceId);
 
-      console.log(
-        `[asaas-webhook] Invoice ${invoiceId} marked as paid (${event})`
-      );
+      console.log(`[asaas-webhook] Invoice ${invoiceId} paid (${event})`);
     } else if (OVERDUE_EVENTS.has(event)) {
-      // Mark invoice as overdue
       await supabase
         .from("invoices")
         .update({ status: "overdue" })
         .eq("id", invoiceId);
 
-      console.log(
-        `[asaas-webhook] Invoice ${invoiceId} marked as overdue`
-      );
+      console.log(`[asaas-webhook] Invoice ${invoiceId} overdue`);
     }
 
     return NextResponse.json({ status: "ok", invoiceId, event });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("[asaas-webhook] processing error:", message);
+    console.error("[asaas-webhook] error:", message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
