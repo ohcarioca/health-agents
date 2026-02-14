@@ -18,7 +18,7 @@
     },
     {
       "path": "/api/cron/billing",
-      "schedule": "0 9,14 * * 1-6"
+      "schedule": "0 9 * * 1-6"
     }
   ]
 }
