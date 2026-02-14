@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { verifyWebhookToken } from "@/services/asaas";
 
 export const dynamic = "force-dynamic";
 
@@ -9,28 +8,26 @@ const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]);
 const OVERDUE_EVENTS = new Set(["PAYMENT_OVERDUE"]);
 
 export async function POST(request: Request) {
-  // Token verification: skip if ASAAS_WEBHOOK_TOKEN is not configured
-  if (process.env.ASAAS_WEBHOOK_TOKEN) {
-    const token = request.headers.get("asaas-access-token") ?? "";
-    if (!verifyWebhookToken(token)) {
-      return NextResponse.json({ error: "invalid token" }, { status: 401 });
-    }
-  }
+  console.log("[asaas-webhook] Received POST request");
 
   let payload: Record<string, unknown>;
   try {
     payload = await request.json();
   } catch {
+    console.error("[asaas-webhook] Invalid JSON body");
     return NextResponse.json({ error: "invalid JSON" }, { status: 400 });
   }
 
   const event = (payload.event as string) ?? "";
+  console.log("[asaas-webhook] Event:", event, "| Payload keys:", Object.keys(payload).join(", "));
+
   const payment = (payload.payment as Record<string, unknown>) ?? {};
   const invoiceId = (payment.externalReference as string) ?? "";
   const paymentDate = (payment.paymentDate as string) ?? null;
 
   // Only process payment completion and overdue events
   if (!PAID_EVENTS.has(event) && !OVERDUE_EVENTS.has(event)) {
+    console.log("[asaas-webhook] Ignoring event:", event);
     return NextResponse.json({ status: "ignored", event });
   }
 
