@@ -10,7 +10,10 @@
       "Bash(npm run build:*)",
       "Bash(npm run test:*)",
       "Bash(npx tsc:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(curl:*)",
+      "Bash(ls:*)",
+      "Bash(npx vitest:*)"
     ]
   }
 }
