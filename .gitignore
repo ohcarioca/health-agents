@@ -52,5 +52,8 @@ next-env.d.ts
 supabase/.temp/
 supabase/.env
 
+# eval reports
+evals/reports/
+
 # git worktrees
 .worktrees/

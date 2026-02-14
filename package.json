@@ -9,7 +9,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "eval": "tsx --conditions react-server --env-file=.env src/scripts/eval.ts",
+    "eval:verbose": "tsx --conditions react-server --env-file=.env src/scripts/eval.ts --verbose"
   },
   "dependencies": {
     "@langchain/core": "^1.1.24",
