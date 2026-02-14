@@ -50,3 +50,4 @@ import "./agents/scheduling";
 import "./agents/confirmation";
 import "./agents/nps";
 import "./agents/billing";
+import "./agents/recall";
