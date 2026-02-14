@@ -102,6 +102,7 @@ export interface EngineResult {
   newConversationStatus?: string;
   responseData?: Record<string, unknown>;
   toolCallCount: number;
+  toolCallNames: string[];
 }
 
 // ── Router Result ──
@@ -116,5 +117,6 @@ export interface ProcessMessageResult {
   responseText: string;
   module: string;
   toolCallCount: number;
+  toolCallNames: string[];
   queued: boolean;
 }

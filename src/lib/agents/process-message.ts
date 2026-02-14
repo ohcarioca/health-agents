@@ -44,6 +44,7 @@ export async function processMessage(
       responseText: "",
       module: "",
       toolCallCount: 0,
+      toolCallNames: [],
       queued: false,
     };
   }
@@ -64,6 +65,7 @@ export async function processMessage(
       responseText: "",
       module: "",
       toolCallCount: 0,
+      toolCallNames: [],
       queued: false,
     };
   }
@@ -330,6 +332,7 @@ export async function processMessage(
     responseText: finalResponse,
     module: finalModule,
     toolCallCount: engineResult.toolCallCount,
+    toolCallNames: engineResult.toolCallNames,
     queued: sendResult.success,
   };
 }

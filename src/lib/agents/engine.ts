@@ -45,6 +45,7 @@ export async function chatWithToolLoop(
 
   const runningMessages = [...messages];
   let toolCallCount = 0;
+  const toolCallNames: string[] = [];
   let appendToResponse: string | undefined;
   let newConversationStatus: string | undefined;
   let responseData: Record<string, unknown> | undefined;
@@ -61,6 +62,7 @@ export async function chatWithToolLoop(
         newConversationStatus,
         responseData,
         toolCallCount,
+        toolCallNames,
       };
     }
 
@@ -75,6 +77,7 @@ export async function chatWithToolLoop(
     // Execute each tool call
     for (const tc of toolCalls) {
       toolCallCount++;
+      toolCallNames.push(tc.name);
 
       const result = await agentConfig.handleToolCall(
         { name: tc.name, args: (tc.args ?? {}) as Record<string, unknown> },
@@ -117,5 +120,6 @@ export async function chatWithToolLoop(
     newConversationStatus,
     responseData,
     toolCallCount,
+    toolCallNames,
   };
 }
