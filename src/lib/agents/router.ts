@@ -26,7 +26,7 @@ export async function routeMessage(
 ): Promise<RouterResult> {
   const { message, patientContext, activeModules } = options;
 
-  const modelName = process.env.OPENAI_MODEL ?? "gpt-4o";
+  const modelName = process.env.OPENAI_MODEL ?? "gpt-5-mini";
 
   const llm = new ChatOpenAI({
     model: modelName,
