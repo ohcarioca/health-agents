@@ -9,10 +9,12 @@ const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]);
 const OVERDUE_EVENTS = new Set(["PAYMENT_OVERDUE"]);
 
 export async function POST(request: Request) {
-  const token = request.headers.get("asaas-access-token") ?? "";
-
-  if (!verifyWebhookToken(token)) {
-    return NextResponse.json({ error: "invalid token" }, { status: 401 });
+  // Token verification: skip if ASAAS_WEBHOOK_TOKEN is not configured
+  if (process.env.ASAAS_WEBHOOK_TOKEN) {
+    const token = request.headers.get("asaas-access-token") ?? "";
+    if (!verifyWebhookToken(token)) {
+      return NextResponse.json({ error: "invalid token" }, { status: 401 });
+    }
   }
 
   let payload: Record<string, unknown>;
