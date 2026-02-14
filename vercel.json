@@ -7,6 +7,14 @@
     {
       "path": "/api/cron/nps",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/recall",
+      "schedule": "0 10 * * 1-5"
+    },
+    {
+      "path": "/api/cron/recall-send",
+      "schedule": "30 10 * * 1-5"
     }
   ]
 }
