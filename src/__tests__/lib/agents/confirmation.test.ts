@@ -131,7 +131,7 @@ function createConfirmationMockSupabase(options: {
     }
 
     if (table === "professionals") {
-      return createChainWithSingle({
+      return createChainable({
         data: {
           google_calendar_id: "cal-123",
           google_refresh_token: "refresh-token",
