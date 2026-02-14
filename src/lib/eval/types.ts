@@ -71,7 +71,7 @@ const personaSchema = z.object({
 
 export const evalScenarioSchema = z.object({
   id: z.string(),
-  agent: z.enum(["support", "scheduling", "confirmation", "nps", "billing"]),
+  agent: z.enum(["support", "scheduling", "confirmation", "nps", "billing", "recall"]),
   locale: z.enum(["pt-BR", "en", "es"]),
   description: z.string(),
   persona: personaSchema,
