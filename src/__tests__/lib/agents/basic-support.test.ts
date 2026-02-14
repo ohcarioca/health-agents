@@ -296,7 +296,7 @@ describe("basic-support agent", () => {
         );
 
         expect(result.result).toBeDefined();
-        expect(result.result).toContain("scheduling");
+        expect(result.result).toContain("Patient wants to book an appointment");
         expect(result.responseData).toBeDefined();
         expect(result.responseData!.routedTo).toBe("scheduling");
         expect(result.responseData!.routeContext).toBe(

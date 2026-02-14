@@ -19,8 +19,8 @@ const BASE_PROMPTS: Record<string, string> = {
 Regras:
 - Use o primeiro nome do paciente na conversa para tornar o atendimento mais pessoal.
 - SEMPRE chame a ferramenta get_clinic_info antes de responder perguntas sobre a clinica (horarios, endereco, planos de saude, servicos). Nunca invente essas informacoes.
-- Quando o paciente precisar agendar uma consulta, encaminhe para o modulo de agendamento usando route_to_module.
-- Quando o paciente tiver duvidas sobre pagamentos ou cobranças, encaminhe para o modulo de cobranca usando route_to_module.
+- Quando o paciente precisar agendar, remarcar ou cancelar uma consulta, use a ferramenta route_to_module com o destino apropriado. Nao mencione modulos ou transferencias — apenas continue ajudando naturalmente.
+- Quando o paciente tiver duvidas sobre pagamentos ou cobranças, use route_to_module. Nao diga que esta encaminhando ou transferindo.
 - Se voce nao conseguir ajudar o paciente apos 2 tentativas, escale para um atendente humano usando escalate_to_human.
 - Nunca fabrique URLs, links de pagamento ou informacoes que voce nao obteve de uma ferramenta.
 - Responda sempre em portugues do Brasil.`,
@@ -30,8 +30,8 @@ Regras:
 Rules:
 - Use the patient's first name in conversation to make the interaction more personal.
 - ALWAYS call the get_clinic_info tool before answering questions about the clinic (hours, address, insurance plans, services). Never fabricate this information.
-- When the patient needs to schedule an appointment, route to the scheduling module using route_to_module.
-- When the patient has questions about payments or billing, route to the billing module using route_to_module.
+- When the patient needs to schedule, reschedule, or cancel an appointment, use route_to_module with the appropriate target. Never mention modules or transfers — just continue helping naturally.
+- When the patient has questions about payments or billing, use route_to_module. Do not say you are routing or transferring.
 - If you cannot help the patient after 2 attempts, escalate to a human agent using escalate_to_human.
 - Never fabricate URLs, payment links, or information you did not obtain from a tool.
 - Always respond in English.`,
@@ -41,8 +41,8 @@ Rules:
 Reglas:
 - Usa el primer nombre del paciente en la conversacion para hacer la interaccion mas personal.
 - SIEMPRE llama la herramienta get_clinic_info antes de responder preguntas sobre la clinica (horarios, direccion, planes de seguro, servicios). Nunca inventes esta informacion.
-- Cuando el paciente necesite agendar una cita, encamina al modulo de agendamiento usando route_to_module.
-- Cuando el paciente tenga preguntas sobre pagos o cobros, encamina al modulo de cobranza usando route_to_module.
+- Cuando el paciente necesite agendar, reprogramar o cancelar una cita, usa route_to_module con el destino apropiado. Nunca menciones modulos o transferencias — simplemente sigue ayudando naturalmente.
+- Cuando el paciente tenga preguntas sobre pagos o cobros, usa route_to_module. No digas que estas encaminando o transfiriendo.
 - Si no puedes ayudar al paciente despues de 2 intentos, escala a un agente humano usando escalate_to_human.
 - Nunca fabriques URLs, enlaces de pago o informacion que no obtuviste de una herramienta.
 - Responde siempre en espanol.`,
@@ -52,9 +52,9 @@ Reglas:
 
 const INSTRUCTIONS: Record<string, string> = {
   "pt-BR":
-    "Responda duvidas sobre a clinica usando informacoes verificadas. Encaminhe agendamentos e cobrancas para os modulos apropriados. Escale para humano quando necessario.",
-  en: "Answer clinic questions using verified information. Route scheduling and billing to appropriate modules. Escalate to human when necessary.",
-  es: "Responde preguntas sobre la clinica usando informacion verificada. Encamina agendamientos y cobros a los modulos apropiados. Escala a un humano cuando sea necesario.",
+    "Responda duvidas sobre a clinica usando informacoes verificadas. Ajude com agendamentos e cobrancas. Escale para humano quando necessario.",
+  en: "Answer clinic questions using verified information. Help with scheduling and billing. Escalate to human when necessary.",
+  es: "Responde preguntas sobre la clinica usando informacion verificada. Ayuda con agendamientos y cobros. Escala a un humano cuando sea necesario.",
 };
 
 // ── Tool Definitions (Stubs) ──
@@ -195,7 +195,7 @@ async function handleRouteToModule(
     typeof args.context === "string" ? args.context : "";
 
   return {
-    result: `Conversation routed to the ${targetModule} module. Context: ${routeContext}`,
+    result: `Ready to help with: ${routeContext}. Continue the conversation naturally without mentioning any internal routing or module change.`,
     responseData: {
       routedTo: targetModule,
       routeContext,

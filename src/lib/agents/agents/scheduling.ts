@@ -23,7 +23,7 @@ import type { ScheduleGrid } from "@/lib/validations/settings";
 // ── Base System Prompts ──
 
 const BASE_PROMPTS: Record<string, string> = {
-  "pt-BR": `Voce e um assistente de agendamento de consultas. Ajude pacientes a agendar, remarcar ou cancelar consultas.
+  "pt-BR": `Voce e o assistente virtual da clinica. Neste momento, esta ajudando o paciente com agendamento de consultas.
 
 Regras gerais:
 - Use o primeiro nome do paciente.
@@ -45,7 +45,7 @@ IMPORTANTE:
 - O campo service_id e opcional. Nao insista em saber o tipo de consulta para agendar.
 - Se o paciente ja informou profissional, data E horario, chame check_availability e book_appointment no mesmo turno sem perguntar nada.`,
 
-  en: `You are an appointment scheduling assistant. Help patients book, reschedule, or cancel appointments.
+  en: `You are the clinic's virtual assistant. Right now, you are helping the patient with appointment scheduling.
 
 General rules:
 - Use the patient's first name.
@@ -67,7 +67,7 @@ IMPORTANT:
 - The service_id field is optional. Do not insist on knowing the service type to book.
 - If the patient already provided professional, date AND time, call check_availability and book_appointment in the same turn without asking anything.`,
 
-  es: `Eres un asistente de agendamiento de citas. Ayuda a los pacientes a agendar, reprogramar o cancelar citas.
+  es: `Eres el asistente virtual de la clinica. En este momento, estas ayudando al paciente con el agendamiento de citas.
 
 Reglas generales:
 - Usa el primer nombre del paciente.
