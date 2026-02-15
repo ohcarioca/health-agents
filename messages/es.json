@@ -118,6 +118,10 @@
   "modules": {
     "title": "Módulos",
     "active": "Activo",
+    "enabled": "Activo",
+    "disabled": "Inactivo",
+    "conversations": "{count} conversaciones",
+    "noConversations": "Sin conversaciones",
     "support": {
       "name": "Soporte",
       "description": "Atención y FAQ por WhatsApp"
