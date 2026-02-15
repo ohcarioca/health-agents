@@ -44,14 +44,17 @@ describe("scenario loader", () => {
   });
 
   describe("loadScenarios", () => {
+    // readdirSync has complex overloads in @types/node v25 — cast mock to avoid Dirent generic mismatch
+    const mockReaddirSync = vi.mocked(fs.readdirSync) as unknown as ReturnType<typeof vi.fn>;
+
     it("loads all YAML files from scenario directories", () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readdirSync).mockImplementation((dir) => {
+      mockReaddirSync.mockImplementation((dir: unknown) => {
         const dirStr = String(dir);
         if (dirStr.endsWith("scenarios")) {
-          return ["support"] as unknown as fs.Dirent[];
+          return ["support"];
         }
-        return ["test.yaml"] as unknown as fs.Dirent[];
+        return ["test.yaml"];
       });
       vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
       vi.mocked(fs.readFileSync).mockReturnValue(VALID_YAML);
@@ -62,12 +65,12 @@ describe("scenario loader", () => {
 
     it("filters by agent when specified", () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readdirSync).mockImplementation((dir) => {
+      mockReaddirSync.mockImplementation((dir: unknown) => {
         const dirStr = String(dir);
         if (dirStr.endsWith("scenarios")) {
-          return ["support", "scheduling"] as unknown as fs.Dirent[];
+          return ["support", "scheduling"];
         }
-        return ["test.yaml"] as unknown as fs.Dirent[];
+        return ["test.yaml"];
       });
       vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
       vi.mocked(fs.readFileSync).mockReturnValue(VALID_YAML);
