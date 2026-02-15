@@ -18,9 +18,9 @@ fixtures:
 turns:
   - user: "Oi, quero pagar minha consulta"
     expect:
-      tools_called: [create_payment_link]
+      tools_called: [list_patient_invoices]
       response_not_contains: ["https://fake"]
 
   - user: "Quero pagar via Pix"
     expect:
-      response_not_contains: ["erro", "error"]
+      tools_called: [create_payment_link]

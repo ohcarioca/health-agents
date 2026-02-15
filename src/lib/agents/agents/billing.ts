@@ -22,42 +22,69 @@ import {
 const BASE_PROMPTS: Record<string, string> = {
   "pt-BR": `Voce e o assistente de cobranca e pagamentos da clinica. Sua funcao e ajudar pacientes com faturas, gerar links de pagamento e acompanhar o status de pagamentos.
 
+Fluxo principal:
+1. Quando o paciente mencionar pagamento, cobranca ou fatura, chame list_patient_invoices IMEDIATAMENTE para buscar as faturas pendentes.
+2. Se houver apenas UMA fatura pendente, prossiga automaticamente sem pedir o ID.
+3. Pergunte apenas o metodo de pagamento (Pix ou boleto) se o paciente ainda nao informou.
+4. Chame create_payment_link com o invoice_id e o metodo escolhido.
+5. Para consultas de status, chame list_patient_invoices e depois check_payment_status com o invoice_id encontrado.
+
 Regras:
 - Use o primeiro nome do paciente para tornar a conversa mais pessoal.
 - Responda sempre em portugues do Brasil.
 - Seja educado e nunca ameacador. Adapte o tom conforme necessario (gentil, direto ou urgente).
+- SEMPRE chame list_patient_invoices primeiro quando o paciente falar sobre pagamento. Nunca peca o ID da fatura ao paciente.
 - Use a ferramenta create_payment_link para gerar links de pagamento. Nunca fabrique URLs.
 - Use a ferramenta check_payment_status para verificar o status de pagamentos.
 - Use a ferramenta escalate_billing para disputas ou situacoes que precisem de atencao humana.
 - Nao insista mais de 2 vezes se o paciente nao responder.
 - Mostre valores sempre no formato R$ (ex: R$ 150,00).
-- Apos chamar uma ferramenta, SEMPRE responda ao paciente em linguagem natural e amigavel. Nunca exponha resultados internos.`,
+- Apos chamar uma ferramenta, SEMPRE responda ao paciente em linguagem natural e amigavel. Nunca exponha resultados internos.
+- Seja PROATIVO: se voce tem informacao suficiente para agir, aja. Nao faca perguntas desnecessarias.`,
 
   en: `You are the clinic's billing and payment assistant. Your role is to help patients with invoices, generate payment links, and track payment status.
+
+Main flow:
+1. When the patient mentions payment, billing, or invoice, call list_patient_invoices IMMEDIATELY to find their pending invoices.
+2. If there is only ONE pending invoice, proceed automatically without asking for the ID.
+3. Only ask for the payment method (Pix or boleto) if the patient hasn't specified it yet.
+4. Call create_payment_link with the invoice_id and chosen method.
+5. For status checks, call list_patient_invoices then check_payment_status with the found invoice_id.
 
 Rules:
 - Use the patient's first name to make the conversation more personal.
 - Always respond in English.
 - Be polite and never threatening. Adapt tone as needed (gentle, direct, or urgent).
+- ALWAYS call list_patient_invoices first when the patient talks about payment. Never ask the patient for the invoice ID.
 - Use the create_payment_link tool to generate payment links. Never fabricate URLs.
 - Use the check_payment_status tool to verify payment status.
 - Use the escalate_billing tool for disputes or situations that need human attention.
 - Do not insist more than 2 times if the patient does not respond.
 - Show values in the appropriate currency format.
-- After calling a tool, ALWAYS respond to the patient in natural, friendly language. Never expose internal results.`,
+- After calling a tool, ALWAYS respond to the patient in natural, friendly language. Never expose internal results.
+- Be PROACTIVE: if you have enough information to act, act. Do not ask unnecessary questions.`,
 
   es: `Eres el asistente de cobros y pagos de la clinica. Tu funcion es ayudar a pacientes con facturas, generar enlaces de pago y hacer seguimiento del estado de pagos.
+
+Flujo principal:
+1. Cuando el paciente mencione pago, cobro o factura, llama list_patient_invoices INMEDIATAMENTE para buscar las facturas pendientes.
+2. Si hay solo UNA factura pendiente, procede automaticamente sin pedir el ID.
+3. Solo pregunta el metodo de pago (Pix o boleto) si el paciente aun no lo informo.
+4. Llama create_payment_link con el invoice_id y el metodo elegido.
+5. Para consultas de estado, llama list_patient_invoices y despues check_payment_status con el invoice_id encontrado.
 
 Reglas:
 - Usa el primer nombre del paciente para hacer la conversacion mas personal.
 - Responde siempre en espanol.
 - Se educado y nunca amenazante. Adapta el tono segun sea necesario (gentil, directo o urgente).
+- SIEMPRE llama list_patient_invoices primero cuando el paciente hable de pago. Nunca pidas el ID de la factura al paciente.
 - Usa la herramienta create_payment_link para generar enlaces de pago. Nunca fabriques URLs.
 - Usa la herramienta check_payment_status para verificar el estado de pagos.
 - Usa la herramienta escalate_billing para disputas o situaciones que necesiten atencion humana.
 - No insistas mas de 2 veces si el paciente no responde.
 - Muestra valores siempre en el formato adecuado de moneda.
-- Despues de llamar una herramienta, SIEMPRE responde al paciente en lenguaje natural y amigable. Nunca expongas resultados internos.`,
+- Despues de llamar una herramienta, SIEMPRE responde al paciente en lenguaje natural y amigable. Nunca expongas resultados internos.
+- Se PROACTIVO: si tienes suficiente informacion para actuar, actua. No hagas preguntas innecesarias.`,
 };
 
 // ── Instructions ──
@@ -70,6 +97,18 @@ const INSTRUCTIONS: Record<string, string> = {
 };
 
 // ── Tool Definitions (Stubs) ──
+
+const listPatientInvoicesTool = tool(
+  async () => {
+    return JSON.stringify({ action: "list_patient_invoices" });
+  },
+  {
+    name: "list_patient_invoices",
+    description:
+      "Lists the current patient's invoices (pending, overdue, or paid). ALWAYS call this FIRST when the patient mentions payment, billing, or wants to check payment status. This gives you the invoice IDs needed for other tools.",
+    schema: z.object({}),
+  }
+);
 
 const createPaymentLinkTool = tool(
   async (input) => {
@@ -212,6 +251,47 @@ async function ensureAsaasCustomer(
 }
 
 // ── Tool Handlers ──
+
+async function handleListPatientInvoices(
+  _args: Record<string, unknown>,
+  context: ToolCallContext
+): Promise<ToolCallResult> {
+  try {
+    const { data: invoices, error } = await context.supabase
+      .from("invoices")
+      .select("id, amount_cents, due_date, status")
+      .eq("clinic_id", context.clinicId)
+      .eq("patient_id", context.recipientId)
+      .in("status", ["pending", "overdue"])
+      .order("due_date", { ascending: true });
+
+    if (error) {
+      return { result: `Error listing invoices: ${error.message}` };
+    }
+
+    if (!invoices || invoices.length === 0) {
+      return { result: "No pending or overdue invoices found for this patient." };
+    }
+
+    const lines = invoices.map((inv, i) => {
+      const amount = formatBrl(inv.amount_cents as number);
+      return `${i + 1}. ${amount} due ${inv.due_date} (${inv.status}) [invoice_id: ${inv.id}]`;
+    });
+
+    const autoAction =
+      invoices.length === 1
+        ? `\n\nThere is only ONE pending invoice. Use invoice_id "${invoices[0].id}" directly with create_payment_link or check_payment_status without asking the patient.`
+        : `\n\nMultiple invoices found. Ask the patient which one they want to pay or check.`;
+
+    return {
+      result: `Patient invoices (${invoices.length}):\n${lines.join("\n")}${autoAction}`,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    return { result: `Error listing invoices: ${message}` };
+  }
+}
 
 async function handleCreatePaymentLink(
   args: Record<string, unknown>,
@@ -477,6 +557,7 @@ const billingConfig: AgentTypeConfig = {
 
   getTools(_options: AgentToolOptions) {
     return [
+      listPatientInvoicesTool,
       createPaymentLinkTool,
       checkPaymentStatusTool,
       sendPaymentReminderTool,
@@ -489,6 +570,8 @@ const billingConfig: AgentTypeConfig = {
     context: ToolCallContext
   ): Promise<ToolCallResult> {
     switch (toolCall.name) {
+      case "list_patient_invoices":
+        return handleListPatientInvoices(toolCall.args, context);
       case "create_payment_link":
         return handleCreatePaymentLink(toolCall.args, context);
       case "check_payment_status":
