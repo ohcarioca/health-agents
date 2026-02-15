@@ -145,7 +145,7 @@
   },
   "reports": {
     "title": "Relatórios",
-    "exportPdf": "Exportar PDF",
+    "exportCsv": "Exportar CSV",
     "period": {
       "7d": "7 dias",
       "30d": "30 dias",
@@ -153,8 +153,41 @@
     },
     "chart": {
       "appointments": "Consultas",
-      "nps": "NPS"
-    }
+      "nps": "NPS",
+      "revenue": "Receita"
+    },
+    "appointments": {
+      "title": "Consultas por dia",
+      "total": "Total",
+      "completed": "Realizadas",
+      "noShow": "Faltas",
+      "cancelled": "Canceladas"
+    },
+    "nps": {
+      "title": "NPS ao longo do tempo",
+      "average": "Média",
+      "responses": "Respostas",
+      "promoters": "Promotores",
+      "passives": "Neutros",
+      "detractors": "Detratores",
+      "score": "Score NPS"
+    },
+    "revenue": {
+      "title": "Receita",
+      "paid": "Recebido",
+      "pending": "Pendente",
+      "overdue": "Vencido",
+      "conversionRate": "Taxa de conversão",
+      "total": "Total"
+    },
+    "modules": {
+      "title": "Conversas por módulo",
+      "total": "Total",
+      "escalated": "Escaladas",
+      "resolved": "Resolvidas"
+    },
+    "noData": "Nenhum dado para o período selecionado",
+    "loading": "Carregando relatórios..."
   },
   "team": {
     "title": "Equipe",
