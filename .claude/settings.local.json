@@ -13,7 +13,8 @@
       "Bash(git push:*)",
       "Bash(curl:*)",
       "Bash(ls:*)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(git worktree:*)"
     ]
   }
 }

@@ -1,0 +1,26 @@
+id: billing-payment-status-check
+agent: billing
+locale: pt-BR
+description: "Patient checks payment status then requests boleto"
+
+persona:
+  name: Ana Beatriz Costa
+  phone: "11987650011"
+  cpf: "98765432100"
+
+fixtures:
+  invoices:
+    - id: eval-inv-2
+      amount_cents: 25000
+      due_date: "2026-02-18"
+      status: pending
+
+turns:
+  - user: "Oi, quero saber se meu pagamento ja foi processado"
+    expect:
+      tools_called: [check_payment_status]
+      no_tools: [create_payment_link, escalate_billing]
+
+  - user: "Ainda esta pendente? Pode gerar um boleto pra mim?"
+    expect:
+      tools_called: [create_payment_link]

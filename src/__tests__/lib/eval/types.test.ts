@@ -73,6 +73,50 @@ describe("evalScenarioSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("validates a billing scenario with invoice fixtures and CPF", () => {
+    const scenario = {
+      id: "billing-payment-link",
+      agent: "billing",
+      locale: "pt-BR",
+      description: "Patient requests payment link",
+      persona: {
+        name: "Carlos Mendes",
+        phone: "11987650010",
+        cpf: "12345678901",
+      },
+      fixtures: {
+        invoices: [
+          {
+            id: "eval-inv-1",
+            amount_cents: 15000,
+            due_date: "2026-02-20",
+            status: "pending",
+          },
+        ],
+      },
+      turns: [
+        {
+          user: "Quero pagar minha consulta",
+          expect: { tools_called: ["create_payment_link"] },
+        },
+      ],
+      assertions: {
+        invoice_status: "paid",
+        payment_link_created: true,
+      },
+    };
+    const result = evalScenarioSchema.safeParse(scenario);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      // Verify billing-specific fields are preserved (not stripped by Zod)
+      expect(result.data.persona.cpf).toBe("12345678901");
+      expect(result.data.fixtures?.invoices).toHaveLength(1);
+      expect(result.data.fixtures?.invoices?.[0].amount_cents).toBe(15000);
+      expect(result.data.assertions?.invoice_status).toBe("paid");
+      expect(result.data.assertions?.payment_link_created).toBe(true);
+    }
+  });
+
   it("rejects invalid agent type", () => {
     const scenario = {
       id: "test",

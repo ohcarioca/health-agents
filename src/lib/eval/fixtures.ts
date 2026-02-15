@@ -57,6 +57,7 @@ export async function seedFixtures(
     clinic_id: clinicId,
     name: scenario.persona.name,
     phone: normalizedPhone,
+    cpf: scenario.persona.cpf ?? null,
     notes: scenario.persona.notes ?? null,
     custom_fields: scenario.persona.custom_fields ?? {},
   });
@@ -141,6 +142,24 @@ export async function seedFixtures(
     }
   }
 
+  if (scenario.fixtures?.invoices) {
+    for (const inv of scenario.fixtures.invoices) {
+      const invId = resolveId(idMap, inv.id);
+      const apptId = inv.appointment_id ? resolveId(idMap, inv.appointment_id) : null;
+
+      await insertRow(supabase, "invoices", {
+        id: invId,
+        clinic_id: clinicId,
+        patient_id: patientId,
+        appointment_id: apptId,
+        amount_cents: inv.amount_cents,
+        due_date: inv.due_date,
+        status: inv.status ?? "pending",
+        notes: inv.notes ?? null,
+      });
+    }
+  }
+
   return { clinicId, patientId, agentId, idMap };
 }
 
@@ -153,6 +172,8 @@ export async function cleanupFixtures(
     "recall_queue",
     "nps_responses",
     "confirmation_queue",
+    "payment_links",
+    "invoices",
     "message_queue",
     "messages",
     "conversations",

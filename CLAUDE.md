@@ -553,6 +553,11 @@ fixtures:
   services:
     - id: eval-svc-1
       name: Consulta Cardiologica
+  invoices:                              # Billing scenarios
+    - id: eval-inv-1
+      amount_cents: 15000
+      due_date: "2026-02-20"
+      status: pending
 
 turns:
   - user: "Quero marcar uma consulta com o Dr. Joao"
@@ -572,6 +577,10 @@ turns:
 - `no_tools` checks that specific tools were NOT invoked.
 - `response_contains` / `response_not_contains` check the agent's text response.
 - `response_matches` checks the response against a regex pattern.
+- `persona.cpf` (optional) seeds the patient's CPF — required for billing scenarios (Asaas customer creation).
+- Fixture `invoices` seeds rows in the `invoices` table with `amount_cents`, `due_date`, `status`.
+- Assertion `invoice_status` checks that the patient's invoice has the expected status.
+- Assertion `payment_link_created` checks that a `payment_links` row was created for the clinic.
 - Valid agent types: `support`, `scheduling`, `confirmation`, `nps`, `billing`, `recall`.
 
 ### Scoring

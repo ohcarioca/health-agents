@@ -66,6 +66,8 @@ export async function checkAssertions(
     confirmation_queue_entries?: number;
     conversation_status?: string;
     nps_score_recorded?: boolean;
+    invoice_status?: string;
+    payment_link_created?: boolean;
   } | undefined,
   clinicId: string,
   patientId: string,
@@ -125,6 +127,33 @@ export async function checkAssertions(
     if (exists !== assertions.nps_score_recorded) {
       failures.push(
         `nps_score_recorded: expected ${assertions.nps_score_recorded}, got ${exists}`
+      );
+    }
+  }
+
+  if (assertions.invoice_status !== undefined) {
+    const { data } = await supabase
+      .from("invoices")
+      .select("status")
+      .eq("clinic_id", clinicId)
+      .eq("patient_id", patientId);
+    const statuses = (data ?? []).map((r: { status: string }) => r.status);
+    if (!statuses.includes(assertions.invoice_status)) {
+      failures.push(
+        `invoice_status: expected "${assertions.invoice_status}", got [${statuses.join(", ")}]`
+      );
+    }
+  }
+
+  if (assertions.payment_link_created !== undefined) {
+    const { data } = await supabase
+      .from("payment_links")
+      .select("id")
+      .eq("clinic_id", clinicId);
+    const exists = (data ?? []).length > 0;
+    if (exists !== assertions.payment_link_created) {
+      failures.push(
+        `payment_link_created: expected ${assertions.payment_link_created}, got ${exists}`
       );
     }
   }

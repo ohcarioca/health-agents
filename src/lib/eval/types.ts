@@ -33,11 +33,21 @@ const appointmentFixtureSchema = z.object({
   status: z.enum(["scheduled", "confirmed", "completed", "cancelled", "no_show"]).optional(),
 });
 
+const invoiceFixtureSchema = z.object({
+  id: z.string(),
+  amount_cents: z.number().int().positive(),
+  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  status: z.enum(["pending", "partial", "paid", "overdue", "cancelled"]).optional(),
+  appointment_id: z.string().optional(),
+  notes: z.string().optional(),
+});
+
 const fixturesSchema = z.object({
   professionals: z.array(professionalFixtureSchema).optional(),
   services: z.array(serviceFixtureSchema).optional(),
   appointments: z.array(appointmentFixtureSchema).optional(),
   insurance_plans: z.array(z.object({ id: z.string(), name: z.string() })).optional(),
+  invoices: z.array(invoiceFixtureSchema).optional(),
 }).optional();
 
 const turnExpectSchema = z.object({
@@ -60,11 +70,14 @@ const assertionsSchema = z.object({
   confirmation_queue_entries: z.number().int().optional(),
   conversation_status: z.string().optional(),
   nps_score_recorded: z.boolean().optional(),
+  invoice_status: z.string().optional(),
+  payment_link_created: z.boolean().optional(),
 }).optional();
 
 const personaSchema = z.object({
   name: z.string(),
   phone: z.string(),
+  cpf: z.string().optional(),
   notes: z.string().optional(),
   custom_fields: z.record(z.string(), z.unknown()).optional(),
 });
