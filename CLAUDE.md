@@ -21,6 +21,7 @@ Follow strictly when generating, modifying, or reviewing code.
 | i18n | next-intl (`pt-BR`, `en`, `es`) — default: `pt-BR` |
 | Validation | Zod |
 | Testing | Vitest + React Testing Library |
+| Charts | Recharts |
 
 No alternative libraries without explicit approval.
 
@@ -464,6 +465,18 @@ Shared utility for proactive (system-initiated) messages:
 Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqual()`).
 
 **Auto-enqueue:** When `book_appointment` creates an appointment, it auto-inserts 48h/24h/2h entries into `confirmation_queue` via `enqueueConfirmations()`.
+
+### Dashboard & Reports API Routes
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/dashboard/kpis` | GET | Today's KPI metrics (appointments, NPS, revenue, escalated) |
+| `/api/dashboard/alerts` | GET | Actionable alerts (detractors, overdue invoices, escalated convos, delivery failures) |
+| `/api/reports/overview` | GET | Time-series data for reports (appointment trends, NPS, revenue, module stats) |
+
+### Analytics Utilities
+
+- `src/lib/analytics/kpis.ts` — Pure functions: `calculateNPS()`, `calculateRevenueMetrics()`, `calculateConfirmationRate()`, `formatCents()`, `groupByDate()`
 
 ---
 
