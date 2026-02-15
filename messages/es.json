@@ -61,10 +61,27 @@
       "appointments": "Consultas hoy",
       "confirmations": "Confirmaciones pendientes",
       "noShows": "Ausencias",
-      "nps": "NPS promedio"
+      "nps": "NPS promedio",
+      "revenue": "Ingresos",
+      "escalated": "Escaladas"
     },
     "funnel": "Embudo de conversión",
-    "alerts": "Alertas recientes"
+    "alerts": "Alertas recientes",
+    "noAlerts": "Sin alertas por el momento",
+    "period": {
+      "today": "Hoy",
+      "7d": "7 días",
+      "30d": "30 días",
+      "90d": "90 días"
+    },
+    "alertTypes": {
+      "detractor": "NPS Detractor",
+      "overdue": "Factura vencida",
+      "escalated": "Conversación escalada",
+      "failure": "Fallo de envío"
+    },
+    "noData": "Sin datos",
+    "viewAll": "Ver todos"
   },
   "inbox": {
     "title": "Bandeja de Entrada",

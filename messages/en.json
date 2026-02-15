@@ -61,10 +61,27 @@
       "appointments": "Appointments today",
       "confirmations": "Pending confirmations",
       "noShows": "No-shows",
-      "nps": "Average NPS"
+      "nps": "Average NPS",
+      "revenue": "Revenue",
+      "escalated": "Escalated"
     },
     "funnel": "Conversion funnel",
-    "alerts": "Recent alerts"
+    "alerts": "Recent alerts",
+    "noAlerts": "No alerts at the moment",
+    "period": {
+      "today": "Today",
+      "7d": "7 days",
+      "30d": "30 days",
+      "90d": "90 days"
+    },
+    "alertTypes": {
+      "detractor": "NPS Detractor",
+      "overdue": "Overdue invoice",
+      "escalated": "Escalated conversation",
+      "failure": "Delivery failure"
+    },
+    "noData": "No data",
+    "viewAll": "View all"
   },
   "inbox": {
     "title": "Inbox",
