@@ -281,8 +281,15 @@
     },
     "whatsapp": {
       "title": "WhatsApp Business",
+      "description": "Configure las credenciales de la API de WhatsApp Business",
+      "connected": "Conectado",
       "notConnected": "No conectado",
-      "comingSoon": "Integración con WhatsApp próximamente"
+      "phoneNumberId": "Phone Number ID",
+      "wabaId": "WABA ID",
+      "accessToken": "Access Token",
+      "currentToken": "Token actual",
+      "save": "Guardar",
+      "savedSuccess": "Credenciales guardadas exitosamente"
     },
     "scheduleGrid": {
       "title": "Horarios de trabajo",
