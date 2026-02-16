@@ -91,6 +91,26 @@ export async function POST(request: Request) {
 
   await supabase.from("module_configs").insert(moduleInserts);
 
+  // 5. Create default agents (all active)
+  const agentDefaults: Array<{ type: string; name: string }> = [
+    { type: "support", name: "Suporte" },
+    { type: "scheduling", name: "Agendamento" },
+    { type: "confirmation", name: "Confirmação" },
+    { type: "nps", name: "Pesquisa NPS" },
+    { type: "billing", name: "Financeiro" },
+    { type: "recall", name: "Reativação" },
+  ];
+
+  const agentInserts = agentDefaults.map((a) => ({
+    clinic_id: clinic.id,
+    type: a.type,
+    name: a.name,
+    active: true,
+    config: {},
+  }));
+
+  await supabase.from("agents").insert(agentInserts);
+
   return NextResponse.json(
     { data: { userId, clinicId: clinic.id } },
     { status: 201 }
