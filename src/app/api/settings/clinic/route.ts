@@ -70,8 +70,10 @@ export async function PUT(request: Request) {
     );
   }
 
-  const { name, phone, email, address, city, state, zip_code, timezone } =
-    parsed.data;
+  const {
+    name, phone, email, address, city, state, zip_code, timezone,
+    whatsapp_phone_number_id, whatsapp_waba_id, whatsapp_access_token,
+  } = parsed.data;
 
   const admin = createAdminClient();
   const { data: clinic, error: updateError } = await admin
@@ -85,6 +87,9 @@ export async function PUT(request: Request) {
       state: state || null,
       zip_code: zip_code || null,
       timezone: timezone || undefined,
+      whatsapp_phone_number_id: whatsapp_phone_number_id || null,
+      whatsapp_waba_id: whatsapp_waba_id || null,
+      whatsapp_access_token: whatsapp_access_token || null,
     })
     .eq("id", ctx.clinicId)
     .select()

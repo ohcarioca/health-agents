@@ -11,6 +11,9 @@ export const clinicSettingsSchema = z.object({
   state: z.string().max(2).optional().or(z.literal("")),
   zip_code: z.string().max(10).optional().or(z.literal("")),
   timezone: z.string().max(50).optional().or(z.literal("")),
+  whatsapp_phone_number_id: z.string().max(50).optional().or(z.literal("")),
+  whatsapp_waba_id: z.string().max(50).optional().or(z.literal("")),
+  whatsapp_access_token: z.string().max(500).optional().or(z.literal("")),
 });
 
 export type ClinicSettingsInput = z.infer<typeof clinicSettingsSchema>;
