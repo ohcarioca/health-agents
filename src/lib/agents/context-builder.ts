@@ -90,6 +90,13 @@ function formatRecipientContext(recipient: RecipientContext): string {
   const lines: string[] = [`Recipient context:`];
   lines.push(`- Name: ${recipient.fullName}`);
   lines.push(`- Phone: ${recipient.phone}`);
+  if (recipient.isNewPatient) {
+    lines.push(
+      `- NEW PATIENT: This is the patient's first contact. ` +
+        `Greet them warmly, introduce yourself, and ask how you can help. ` +
+        `Do not assume any prior history.`
+    );
+  }
   if (recipient.observations) {
     lines.push(`- Observations: ${recipient.observations}`);
   }

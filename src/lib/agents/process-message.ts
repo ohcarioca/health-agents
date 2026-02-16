@@ -21,6 +21,7 @@ interface ProcessMessageInput {
   message: string;
   externalId: string;
   clinicId: string;
+  contactName?: string;
 }
 
 export async function processMessage(
@@ -51,23 +52,69 @@ export async function processMessage(
 
   // 2. Find patient by phone
   const normalizedPhone = phone.replace(/\D/g, "");
-  const { data: patient } = await supabase
+  let { data: patient } = await supabase
     .from("patients")
     .select("id, name, phone, notes, custom_fields")
     .eq("clinic_id", clinicId)
     .eq("phone", normalizedPhone)
     .maybeSingle();
 
+  let isNewPatient = false;
+
   if (!patient) {
-    console.warn(`[process-message] no patient found for phone=${normalizedPhone} in clinic=${clinicId}`);
-    return {
-      conversationId: "",
-      responseText: "",
-      module: "",
-      toolCallCount: 0,
-      toolCallNames: [],
-      queued: false,
-    };
+    const patientName = input.contactName?.trim() || normalizedPhone;
+    const { data: newPatient, error: insertError } = await supabase
+      .from("patients")
+      .insert({
+        clinic_id: clinicId,
+        name: patientName,
+        phone: normalizedPhone,
+      })
+      .select("id, name, phone, notes, custom_fields")
+      .single();
+
+    if (insertError) {
+      // Race condition: another request may have created the patient
+      if (insertError.code === "23505") {
+        const { data: existingPatient } = await supabase
+          .from("patients")
+          .select("id, name, phone, notes, custom_fields")
+          .eq("clinic_id", clinicId)
+          .eq("phone", normalizedPhone)
+          .single();
+
+        if (!existingPatient) {
+          console.error("[process-message] patient insert conflict but re-query failed:", insertError);
+          return {
+            conversationId: "",
+            responseText: "",
+            module: "",
+            toolCallCount: 0,
+            toolCallNames: [],
+            queued: false,
+          };
+        }
+
+        patient = existingPatient;
+      } else {
+        console.error("[process-message] failed to create patient:", insertError);
+        return {
+          conversationId: "",
+          responseText: "",
+          module: "",
+          toolCallCount: 0,
+          toolCallNames: [],
+          queued: false,
+        };
+      }
+    } else {
+      patient = newPatient;
+    }
+
+    isNewPatient = true;
+    console.log(
+      `[process-message] auto-created patient name="${patient.name}" phone=${normalizedPhone} clinic=${clinicId}`
+    );
   }
 
   // 3. Find or create conversation
@@ -136,6 +183,8 @@ export async function processMessage(
 
   if (currentModule && getAgentType(currentModule)) {
     moduleType = currentModule as ModuleType;
+  } else if (isNewPatient && getAgentType("support")) {
+    moduleType = "support" as ModuleType;
   } else {
     // Get active agents from DB that are also registered in the framework
     const { data: activeAgents } = await supabase
@@ -192,6 +241,7 @@ export async function processMessage(
     phone: patient.phone,
     observations: patient.notes ?? undefined,
     customFields: patient.custom_fields as Record<string, unknown> | undefined,
+    isNewPatient,
   };
 
   // Load business context

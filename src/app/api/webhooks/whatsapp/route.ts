@@ -63,6 +63,7 @@ export async function POST(request: Request) {
   const messages = value.messages ?? [];
   // Use display_phone_number (actual phone) to look up clinic, not phone_number_id (Meta internal ID)
   const displayPhone = value.metadata.display_phone_number.replace(/\D/g, "");
+  const contactName = value.contacts?.[0]?.profile?.name;
 
   // 5. Process each message in after() for async processing
   for (const msg of messages) {
@@ -105,6 +106,7 @@ export async function POST(request: Request) {
           message: messageBody,
           externalId: messageExternalId,
           clinicId: clinic.id,
+          contactName: contactName ?? undefined,
         });
       } catch (err) {
         console.error("[webhook/whatsapp] processing error:", err);
