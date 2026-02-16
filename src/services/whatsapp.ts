@@ -4,6 +4,11 @@ import crypto from "crypto";
 const API_VERSION = "v21.0";
 const BASE_URL = `https://graph.facebook.com/${API_VERSION}`;
 
+export interface WhatsAppCredentials {
+  phoneNumberId: string;
+  accessToken: string;
+}
+
 interface SendMessageResult {
   success: boolean;
   messageId?: string;
@@ -12,22 +17,20 @@ interface SendMessageResult {
 
 export async function sendTextMessage(
   to: string,
-  text: string
+  text: string,
+  credentials: WhatsAppCredentials
 ): Promise<SendMessageResult> {
-  const phoneNumberId = process.env.TEST_WHATSAPP_PHONE_NUMBER_ID;
-  const token = process.env.WHATSAPP_TOKEN;
-
-  if (!phoneNumberId || !token) {
+  if (!credentials.phoneNumberId || !credentials.accessToken) {
     return { success: false, error: "missing WhatsApp configuration" };
   }
 
   try {
     const response = await fetch(
-      `${BASE_URL}/${phoneNumberId}/messages`,
+      `${BASE_URL}/${credentials.phoneNumberId}/messages`,
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${credentials.accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -60,22 +63,20 @@ export async function sendTemplateMessage(
   to: string,
   templateName: string,
   language: string,
-  params: string[]
+  params: string[],
+  credentials: WhatsAppCredentials
 ): Promise<SendMessageResult> {
-  const phoneNumberId = process.env.TEST_WHATSAPP_PHONE_NUMBER_ID;
-  const token = process.env.WHATSAPP_TOKEN;
-
-  if (!phoneNumberId || !token) {
+  if (!credentials.phoneNumberId || !credentials.accessToken) {
     return { success: false, error: "missing WhatsApp configuration" };
   }
 
   try {
     const response = await fetch(
-      `${BASE_URL}/${phoneNumberId}/messages`,
+      `${BASE_URL}/${credentials.phoneNumberId}/messages`,
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${credentials.accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
