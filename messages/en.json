@@ -226,7 +226,8 @@
     "tabs": {
       "clinic": "Clinic",
       "professionals": "Professionals",
-      "patients": "Patients",
+      "services": "Services",
+      "insurancePlans": "Insurance Plans",
       "integrations": "Integrations",
       "whatsapp": "WhatsApp"
     },
@@ -239,6 +240,7 @@
       "state": "State",
       "zipCode": "ZIP code",
       "timezone": "Timezone",
+      "operatingHours": "Operating hours",
       "save": "Save changes",
       "saving": "Saving...",
       "saveSuccess": "Settings saved",
@@ -257,9 +259,22 @@
       "deleteError": "Failed to delete professional",
       "saveError": "Failed to save professional"
     },
-    "patients": {
-      "comingSoon": "Patient management coming soon",
-      "csvHint": "CSV import will be available here"
+    "services": {
+      "add": "Add service",
+      "edit": "Edit service",
+      "name": "Service name",
+      "duration": "Duration (min)",
+      "price": "Price ($)",
+      "priceOptional": "Base price (optional)",
+      "empty": "No services added",
+      "deleteConfirm": "Are you sure you want to delete this service?",
+      "saveError": "Failed to save service"
+    },
+    "insurancePlans": {
+      "add": "Add",
+      "placeholder": "Insurance plan name",
+      "empty": "No insurance plans added",
+      "deleteConfirm": "Are you sure you want to delete this plan?"
     },
     "integrations": {
       "title": "Integrations",
@@ -308,6 +323,26 @@
       "friday": "Friday",
       "saturday": "Saturday",
       "sunday": "Sunday"
+    },
+    "professionalForm": {
+      "tabData": "Details",
+      "tabSchedule": "Schedule",
+      "tabServices": "Services & Pricing",
+      "noServices": "No services registered. Add services in the Services tab first.",
+      "priceRequired": "Set the price for each selected service"
+    },
+    "compactGrid": {
+      "copyToAll": "Copy Mon to all",
+      "clearAll": "Clear all"
+    },
+    "weekdaysShort": {
+      "monday": "Mon",
+      "tuesday": "Tue",
+      "wednesday": "Wed",
+      "thursday": "Thu",
+      "friday": "Fri",
+      "saturday": "Sat",
+      "sunday": "Sun"
     }
   },
   "onboarding": {

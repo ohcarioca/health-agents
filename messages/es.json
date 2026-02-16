@@ -226,7 +226,8 @@
     "tabs": {
       "clinic": "Clínica",
       "professionals": "Profesionales",
-      "patients": "Pacientes",
+      "services": "Servicios",
+      "insurancePlans": "Convenios",
       "integrations": "Integraciones",
       "whatsapp": "WhatsApp"
     },
@@ -239,6 +240,7 @@
       "state": "Estado",
       "zipCode": "Código postal",
       "timezone": "Zona horaria",
+      "operatingHours": "Horario de funcionamiento",
       "save": "Guardar cambios",
       "saving": "Guardando...",
       "saveSuccess": "Configuración guardada",
@@ -257,9 +259,22 @@
       "deleteError": "Error al eliminar profesional",
       "saveError": "Error al guardar profesional"
     },
-    "patients": {
-      "comingSoon": "Gestión de pacientes próximamente",
-      "csvHint": "Importación CSV estará disponible aquí"
+    "services": {
+      "add": "Agregar servicio",
+      "edit": "Editar servicio",
+      "name": "Nombre del servicio",
+      "duration": "Duración (min)",
+      "price": "Precio ($)",
+      "priceOptional": "Precio base (opcional)",
+      "empty": "Ningún servicio agregado",
+      "deleteConfirm": "¿Está seguro que desea eliminar este servicio?",
+      "saveError": "Error al guardar servicio"
+    },
+    "insurancePlans": {
+      "add": "Agregar",
+      "placeholder": "Nombre del convenio",
+      "empty": "Ningún convenio agregado",
+      "deleteConfirm": "¿Está seguro que desea eliminar este convenio?"
     },
     "integrations": {
       "title": "Integraciones",
@@ -308,6 +323,26 @@
       "friday": "Viernes",
       "saturday": "Sábado",
       "sunday": "Domingo"
+    },
+    "professionalForm": {
+      "tabData": "Datos",
+      "tabSchedule": "Horario",
+      "tabServices": "Servicios y Precios",
+      "noServices": "Ningún servicio registrado. Agregue servicios en la pestaña Servicios primero.",
+      "priceRequired": "Defina el precio para cada servicio seleccionado"
+    },
+    "compactGrid": {
+      "copyToAll": "Copiar lun. a todos",
+      "clearAll": "Limpiar todo"
+    },
+    "weekdaysShort": {
+      "monday": "Lun",
+      "tuesday": "Mar",
+      "wednesday": "Mié",
+      "thursday": "Jue",
+      "friday": "Vie",
+      "saturday": "Sáb",
+      "sunday": "Dom"
     }
   },
   "onboarding": {

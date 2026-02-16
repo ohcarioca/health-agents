@@ -226,7 +226,8 @@
     "tabs": {
       "clinic": "Clínica",
       "professionals": "Profissionais",
-      "patients": "Pacientes",
+      "services": "Serviços",
+      "insurancePlans": "Convênios",
       "integrations": "Integrações",
       "whatsapp": "WhatsApp"
     },
@@ -239,6 +240,7 @@
       "state": "Estado",
       "zipCode": "CEP",
       "timezone": "Fuso horário",
+      "operatingHours": "Horário de funcionamento",
       "save": "Salvar alterações",
       "saving": "Salvando...",
       "saveSuccess": "Configurações salvas",
@@ -257,9 +259,22 @@
       "deleteError": "Falha ao excluir profissional",
       "saveError": "Falha ao salvar profissional"
     },
-    "patients": {
-      "comingSoon": "Gestão de pacientes em breve",
-      "csvHint": "Importação CSV estará disponível aqui"
+    "services": {
+      "add": "Adicionar serviço",
+      "edit": "Editar serviço",
+      "name": "Nome do serviço",
+      "duration": "Duração (min)",
+      "price": "Preço (R$)",
+      "priceOptional": "Preço base (opcional)",
+      "empty": "Nenhum serviço adicionado",
+      "deleteConfirm": "Tem certeza que deseja excluir este serviço?",
+      "saveError": "Falha ao salvar serviço"
+    },
+    "insurancePlans": {
+      "add": "Adicionar",
+      "placeholder": "Nome do convênio",
+      "empty": "Nenhum convênio adicionado",
+      "deleteConfirm": "Tem certeza que deseja excluir este convênio?"
     },
     "integrations": {
       "title": "Integrações",
@@ -308,6 +323,26 @@
       "friday": "Sexta-feira",
       "saturday": "Sábado",
       "sunday": "Domingo"
+    },
+    "professionalForm": {
+      "tabData": "Dados",
+      "tabSchedule": "Horário",
+      "tabServices": "Serviços & Preços",
+      "noServices": "Nenhum serviço cadastrado. Adicione serviços na aba Serviços primeiro.",
+      "priceRequired": "Defina o preço para cada serviço selecionado"
+    },
+    "compactGrid": {
+      "copyToAll": "Copiar seg. para todos",
+      "clearAll": "Limpar tudo"
+    },
+    "weekdaysShort": {
+      "monday": "Seg",
+      "tuesday": "Ter",
+      "wednesday": "Qua",
+      "thursday": "Qui",
+      "friday": "Sex",
+      "saturday": "Sáb",
+      "sunday": "Dom"
     }
   },
   "onboarding": {
