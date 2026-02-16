@@ -70,27 +70,20 @@ export async function PUT(request: Request) {
     );
   }
 
-  const {
-    name, phone, email, address, city, state, zip_code, timezone,
-    whatsapp_phone_number_id, whatsapp_waba_id, whatsapp_access_token,
-  } = parsed.data;
-
   const admin = createAdminClient();
+
+  // Only update fields that were explicitly provided (not undefined).
+  // This prevents the WhatsApp tab from wiping phone/email/address etc.
+  const updateData: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(parsed.data)) {
+    if (value !== undefined) {
+      updateData[key] = value === "" ? null : value;
+    }
+  }
+
   const { data: clinic, error: updateError } = await admin
     .from("clinics")
-    .update({
-      name,
-      phone: phone || null,
-      email: email || null,
-      address: address || null,
-      city: city || null,
-      state: state || null,
-      zip_code: zip_code || null,
-      timezone: timezone || undefined,
-      whatsapp_phone_number_id: whatsapp_phone_number_id || null,
-      whatsapp_waba_id: whatsapp_waba_id || null,
-      whatsapp_access_token: whatsapp_access_token || null,
-    })
+    .update(updateData)
     .eq("id", ctx.clinicId)
     .select()
     .single();
