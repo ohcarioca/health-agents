@@ -132,6 +132,8 @@ const PROFESSIONAL = {
 
 const CLINIC = {
   timezone: "America/Sao_Paulo",
+  whatsapp_phone_number_id: "123456789",
+  whatsapp_access_token: "test-access-token",
 };
 
 const CONVERSATION = {

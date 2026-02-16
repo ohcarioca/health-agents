@@ -6,6 +6,7 @@ import {
   sendOutboundTemplate,
   isWithinBusinessHours,
 } from "@/lib/agents/outbound";
+import type { WhatsAppCredentials } from "@/services/whatsapp";
 
 export const dynamic = "force-dynamic";
 
@@ -156,7 +157,7 @@ export async function GET(request: Request) {
       // 6. Fetch clinic for timezone
       const { data: clinic, error: clinicError } = await supabase
         .from("clinics")
-        .select("timezone")
+        .select("timezone, whatsapp_phone_number_id, whatsapp_access_token")
         .eq("id", entry.clinic_id)
         .single();
 
@@ -171,6 +172,21 @@ export async function GET(request: Request) {
       }
 
       const timezone = clinic.timezone;
+
+      // 6b. Build WhatsApp credentials
+      const credentials: WhatsAppCredentials = {
+        phoneNumberId: (clinic.whatsapp_phone_number_id as string) ?? "",
+        accessToken: (clinic.whatsapp_access_token as string) ?? "",
+      };
+
+      if (!credentials.phoneNumberId || !credentials.accessToken) {
+        console.log(
+          `[cron/confirmations] skipping entry ${entry.id}: clinic has no WhatsApp credentials`
+        );
+        await markFailed(supabase, entry.id);
+        failed++;
+        continue;
+      }
 
       // 7. Check business hours
       if (!isWithinBusinessHours(new Date(), timezone)) {
@@ -216,6 +232,7 @@ export async function GET(request: Request) {
         localBody,
         timezone,
         conversationId,
+        credentials,
         skipBusinessHoursCheck: true,
       });
 
