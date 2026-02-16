@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendMessageSchema } from "@/lib/validations/inbox";
-import { sendTextMessage } from "@/services/whatsapp";
+import { sendTextMessage, type WhatsAppCredentials } from "@/services/whatsapp";
 
 export async function POST(
   request: NextRequest,
@@ -109,10 +109,22 @@ export async function POST(
   const patient = conversation.patient as unknown as { id: string; phone: string } | null;
   const patientPhone = patient?.phone;
 
+  // Fetch clinic WhatsApp credentials
+  const { data: clinic } = await admin
+    .from("clinics")
+    .select("whatsapp_phone_number_id, whatsapp_access_token")
+    .eq("id", membership.clinic_id)
+    .single();
+
+  const credentials: WhatsAppCredentials = {
+    phoneNumberId: (clinic?.whatsapp_phone_number_id as string) ?? "",
+    accessToken: (clinic?.whatsapp_access_token as string) ?? "",
+  };
+
   let sent = false;
 
   if (patientPhone) {
-    const result = await sendTextMessage(patientPhone, content);
+    const result = await sendTextMessage(patientPhone, content, credentials);
     sent = result.success;
 
     // Update queue status
