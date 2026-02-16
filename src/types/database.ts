@@ -94,6 +94,7 @@ export type Database = {
           ends_at: string
           google_event_id: string | null
           id: string
+          insurance_plan_id: string | null
           patient_id: string
           professional_id: string | null
           service_id: string | null
@@ -108,6 +109,7 @@ export type Database = {
           ends_at: string
           google_event_id?: string | null
           id?: string
+          insurance_plan_id?: string | null
           patient_id: string
           professional_id?: string | null
           service_id?: string | null
@@ -122,6 +124,7 @@ export type Database = {
           ends_at?: string
           google_event_id?: string | null
           id?: string
+          insurance_plan_id?: string | null
           patient_id?: string
           professional_id?: string | null
           service_id?: string | null
@@ -156,6 +159,13 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_insurance_plan_id_fkey"
+            columns: ["insurance_plan_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_plans"
             referencedColumns: ["id"]
           },
         ]
