@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   MessageSquare,
+  CalendarDays,
   Blocks,
   BarChart3,
   Users,
@@ -16,6 +17,7 @@ import * as Tooltip from "@radix-ui/react-tooltip";
 const NAV_ITEMS = [
   { href: "/", icon: LayoutDashboard, labelKey: "nav.dashboard" },
   { href: "/inbox", icon: MessageSquare, labelKey: "nav.inbox" },
+  { href: "/calendar", icon: CalendarDays, labelKey: "nav.calendar" },
   { href: "/modules", icon: Blocks, labelKey: "nav.modules" },
   { href: "/reports", icon: BarChart3, labelKey: "nav.reports" },
   { href: "/team", icon: Users, labelKey: "nav.team" },
