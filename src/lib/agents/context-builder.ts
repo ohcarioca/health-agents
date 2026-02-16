@@ -93,10 +93,5 @@ function formatRecipientContext(recipient: RecipientContext): string {
   if (recipient.observations) {
     lines.push(`- Observations: ${recipient.observations}`);
   }
-  if (recipient.isNewPatient) {
-    lines.push(
-      "- THIS IS A NEW PATIENT (first contact). Welcome them warmly, introduce yourself and the clinic's services, and ask how you can help."
-    );
-  }
   return lines.join("\n");
 }

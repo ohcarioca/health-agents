@@ -41,7 +41,6 @@ export interface RecipientContext {
   phone: string;
   observations?: string;
   customFields?: Record<string, unknown>;
-  isNewPatient?: boolean;
 }
 
 // ── Business Context ──
