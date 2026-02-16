@@ -110,7 +110,7 @@ export function PatientImportDialog({
 
     const ext = file.name.split(".").pop()?.toLowerCase();
     if (ext !== "csv" && ext !== "xlsx") {
-      setFileError(t("importMaxSize"));
+      setFileError(t("importInvalidFormat"));
       return;
     }
 
@@ -253,7 +253,13 @@ export function PatientImportDialog({
       csvRows.push(["", skip.phone, skip.reason]);
     }
 
-    const csvContent = csvRows.map((r) => r.join(",")).join("\n");
+    const escapeCsv = (v: string) =>
+      v.includes(",") || v.includes('"')
+        ? `"${v.replace(/"/g, '""')}"`
+        : v;
+    const csvContent = csvRows
+      .map((r) => r.map(escapeCsv).join(","))
+      .join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");

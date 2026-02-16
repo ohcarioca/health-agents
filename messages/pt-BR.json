@@ -418,6 +418,7 @@
     "importUpload": "Arraste um arquivo CSV ou XLSX aqui",
     "importBrowse": "ou clique para selecionar",
     "importMaxSize": "Máximo 5MB",
+    "importInvalidFormat": "Apenas arquivos CSV e XLSX são aceitos",
     "importMapping": "Mapeamento de colunas",
     "importPreview": "Prévia",
     "importIgnore": "(ignorar)",

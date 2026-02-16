@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Search,
   Plus,
@@ -45,7 +45,7 @@ function formatPhone(digits: string): string {
 
 function maskCpf(cpf: string): string {
   if (cpf.length === 11)
-    return `***.***. ${cpf.slice(6, 9)}-${cpf.slice(9)}`;
+    return `***.***.${cpf.slice(6, 9)}-${cpf.slice(9)}`;
   return cpf;
 }
 
@@ -54,6 +54,7 @@ export function PatientsView({
   initialCount,
 }: PatientsViewProps) {
   const t = useTranslations("patients");
+  const locale = useLocale();
 
   const [patients, setPatients] = useState<PatientRow[]>(initialPatients);
   const [count, setCount] = useState(initialCount);
@@ -306,7 +307,7 @@ export function PatientsView({
                       style={{ color: "var(--text-secondary)" }}
                     >
                       {patient.last_visit_at
-                        ? new Date(patient.last_visit_at).toLocaleDateString()
+                        ? new Date(patient.last_visit_at).toLocaleDateString(locale)
                         : "\u2014"}
                     </td>
                     <td className="px-4 py-3">
