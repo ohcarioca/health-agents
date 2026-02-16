@@ -6,6 +6,9 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { PatientFormDialog } from "@/components/patients/patient-form-dialog";
+import { PatientImportDialog } from "@/components/patients/patient-import-dialog";
+import { Upload, UserPlus, X } from "lucide-react";
 
 const TOTAL_STEPS = 5;
 
