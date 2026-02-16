@@ -8,14 +8,21 @@ interface DialogProps {
   onOpenChange: (open: boolean) => void;
   title: string;
   children: React.ReactNode;
+  size?: "md" | "lg" | "xl";
 }
 
-export function Dialog({ open, onOpenChange, title, children }: DialogProps) {
+const sizeClasses = {
+  md: "max-w-md",
+  lg: "max-w-lg",
+  xl: "max-w-2xl",
+};
+
+export function Dialog({ open, onOpenChange, title, children, size = "md" }: DialogProps) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
-        <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl p-6 glass-elevated">
+        <DialogPrimitive.Content className={`fixed left-1/2 top-1/2 z-50 w-full ${sizeClasses[size]} -translate-x-1/2 -translate-y-1/2 rounded-xl p-6 glass-elevated max-h-[85vh] overflow-y-auto`}>
           <div className="mb-4 flex items-center justify-between">
             <DialogPrimitive.Title
               className="text-lg font-semibold"

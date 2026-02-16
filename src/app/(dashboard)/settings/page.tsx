@@ -8,7 +8,8 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Spinner } from "@/components/ui/spinner";
 import { ClinicForm } from "@/components/settings/clinic-form";
 import { ProfessionalsList } from "@/components/settings/professionals-list";
-import { PatientsPlaceholder } from "@/components/settings/patients-placeholder";
+import { ServicesList } from "@/components/settings/services-list";
+import { InsurancePlansList } from "@/components/settings/insurance-plans-list";
 import { IntegrationsTab } from "@/components/settings/integrations-tab";
 import { WhatsAppConfig } from "@/components/settings/whatsapp-placeholder";
 import type { Clinic } from "@/types";
@@ -16,7 +17,8 @@ import type { Clinic } from "@/types";
 const TAB_KEYS = [
   "tabs.clinic",
   "tabs.professionals",
-  "tabs.patients",
+  "tabs.services",
+  "tabs.insurancePlans",
   "tabs.integrations",
   "tabs.whatsapp",
 ] as const;
@@ -24,9 +26,10 @@ const TAB_KEYS = [
 const TAB_PARAM_MAP: Record<string, number> = {
   clinic: 0,
   professionals: 1,
-  patients: 2,
-  integrations: 3,
-  whatsapp: 4,
+  services: 2,
+  "insurance-plans": 3,
+  integrations: 4,
+  whatsapp: 5,
 };
 
 export default function SettingsPage() {
@@ -93,9 +96,10 @@ export default function SettingsPage() {
           <>
             {activeTab === 0 && clinic && <ClinicForm clinic={clinic} />}
             {activeTab === 1 && <ProfessionalsList />}
-            {activeTab === 2 && <PatientsPlaceholder />}
-            {activeTab === 3 && <IntegrationsTab />}
-            {activeTab === 4 && <WhatsAppConfig />}
+            {activeTab === 2 && <ServicesList />}
+            {activeTab === 3 && <InsurancePlansList />}
+            {activeTab === 4 && <IntegrationsTab />}
+            {activeTab === 5 && <WhatsAppConfig />}
           </>
         )}
       </div>

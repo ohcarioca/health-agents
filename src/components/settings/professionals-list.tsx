@@ -165,6 +165,7 @@ export function ProfessionalsList() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         title={editing ? t("edit") : t("add")}
+        size="xl"
       >
         <ProfessionalForm
           professional={editing}
