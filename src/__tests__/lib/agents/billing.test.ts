@@ -191,7 +191,7 @@ describe("billing agent", () => {
         conversationId: "conv-123",
         locale: "pt-BR",
       });
-      expect(tools).toHaveLength(4);
+      expect(tools).toHaveLength(5);
     });
 
     it("returns tools with the correct names", () => {
@@ -202,6 +202,7 @@ describe("billing agent", () => {
         locale: "pt-BR",
       });
       const names = tools.map((t) => t.name);
+      expect(names).toContain("list_patient_invoices");
       expect(names).toContain("create_payment_link");
       expect(names).toContain("check_payment_status");
       expect(names).toContain("send_payment_reminder");
