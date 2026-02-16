@@ -122,7 +122,7 @@ export function CalendarView({ professionals }: CalendarViewProps) {
         : view === "week"
           ? { month: "long", year: "numeric" }
           : { weekday: "long", day: "numeric", month: "long", year: "numeric" };
-    return currentDate.toLocaleDateString("pt-BR", opts);
+    return currentDate.toLocaleDateString(undefined, opts);
   }, [currentDate, view]);
 
   return (
@@ -205,9 +205,7 @@ export function CalendarView({ professionals }: CalendarViewProps) {
       >
         {loading && (
           <div className="flex h-32 items-center justify-center">
-            <span className="text-sm" style={{ color: "var(--text-muted)" }}>
-              {t("noAppointments")}...
-            </span>
+            <div className="size-6 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
           </div>
         )}
 
@@ -261,6 +259,7 @@ export function CalendarView({ professionals }: CalendarViewProps) {
         professionals={professionals}
         prefillDate={prefillDate}
         prefillTime={prefillTime}
+        prefillProfessionalId={selectedProfessionalId || undefined}
         onSave={fetchAppointments}
       />
     </div>

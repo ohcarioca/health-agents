@@ -97,6 +97,7 @@ export async function POST(request: Request) {
   const { data: conflicts } = await admin
     .from("appointments")
     .select("id")
+    .eq("clinic_id", clinicId)
     .eq("professional_id", parsed.data.professional_id)
     .in("status", ["scheduled", "confirmed"])
     .lt("starts_at", parsed.data.ends_at)

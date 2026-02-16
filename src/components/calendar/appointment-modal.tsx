@@ -195,7 +195,12 @@ export function AppointmentModal({
 
     setSaving(true);
     try {
-      await fetch(`/api/calendar/appointments/${appointment.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/calendar/appointments/${appointment.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const json = await res.json();
+        setError(json.error ?? t("saveError"));
+        return;
+      }
       onSave();
       onOpenChange(false);
     } catch {

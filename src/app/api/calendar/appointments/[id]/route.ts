@@ -51,23 +51,38 @@ export async function PUT(
 
   const admin = createAdminClient();
 
-  // If time is changing, check for conflicts
-  if (parsed.data.starts_at && parsed.data.ends_at && parsed.data.professional_id) {
-    const { data: conflicts } = await admin
+  // If time or professional is changing, check for conflicts
+  if (parsed.data.starts_at || parsed.data.ends_at || parsed.data.professional_id) {
+    // Load existing appointment to fill in missing fields for the conflict check
+    const { data: existing } = await admin
       .from("appointments")
-      .select("id")
-      .eq("professional_id", parsed.data.professional_id)
-      .in("status", ["scheduled", "confirmed"])
-      .lt("starts_at", parsed.data.ends_at)
-      .gt("ends_at", parsed.data.starts_at)
-      .neq("id", id)
-      .limit(1);
+      .select("professional_id, starts_at, ends_at")
+      .eq("id", id)
+      .eq("clinic_id", clinicId)
+      .single();
 
-    if (conflicts && conflicts.length > 0) {
-      return NextResponse.json(
-        { error: "Time slot conflict" },
-        { status: 409 },
-      );
+    if (existing) {
+      const profId = parsed.data.professional_id ?? (existing.professional_id as string);
+      const startTime = parsed.data.starts_at ?? (existing.starts_at as string);
+      const endTime = parsed.data.ends_at ?? (existing.ends_at as string);
+
+      const { data: conflicts } = await admin
+        .from("appointments")
+        .select("id")
+        .eq("clinic_id", clinicId)
+        .eq("professional_id", profId)
+        .in("status", ["scheduled", "confirmed"])
+        .lt("starts_at", endTime)
+        .gt("ends_at", startTime)
+        .neq("id", id)
+        .limit(1);
+
+      if (conflicts && conflicts.length > 0) {
+        return NextResponse.json(
+          { error: "Time slot conflict" },
+          { status: 409 },
+        );
+      }
     }
   }
 

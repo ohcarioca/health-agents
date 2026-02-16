@@ -58,11 +58,9 @@ export function isSameDay(a: Date, b: Date): boolean {
 }
 
 export function formatTime(date: Date): string {
-  return date.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  const h = String(date.getHours()).padStart(2, "0");
+  const m = String(date.getMinutes()).padStart(2, "0");
+  return `${h}:${m}`;
 }
 
 // Grid constants

@@ -156,7 +156,7 @@ export function PatientSearch({ value, onChange }: PatientSearchProps) {
             color: "var(--text-muted)",
           }}
         >
-          {t("noAppointments")}
+          {t("searchPatient")}
         </div>
       )}
     </div>
