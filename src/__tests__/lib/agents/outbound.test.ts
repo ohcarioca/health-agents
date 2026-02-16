@@ -19,6 +19,7 @@ import { sendTextMessage, sendTemplateMessage } from "@/services/whatsapp";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 const TIMEZONE = "America/Sao_Paulo";
+const TEST_CREDENTIALS = { phoneNumberId: "pn-123", accessToken: "token-123" };
 
 // ── Helpers ──
 
@@ -222,6 +223,7 @@ describe("outbound", () => {
         text: "Hello!",
         timezone: TIMEZONE,
         conversationId: "conv-1",
+        credentials: TEST_CREDENTIALS,
       });
 
       expect(result.success).toBe(false);
@@ -242,12 +244,13 @@ describe("outbound", () => {
         text: "Hello!",
         timezone: TIMEZONE,
         conversationId: "conv-1",
+        credentials: TEST_CREDENTIALS,
         skipBusinessHoursCheck: true,
       });
 
       expect(result.success).toBe(true);
       expect(result.messageId).toBe("wamid-123");
-      expect(mockSend).toHaveBeenCalledWith("5511999998888", "Hello!");
+      expect(mockSend).toHaveBeenCalledWith("5511999998888", "Hello!", TEST_CREDENTIALS);
     });
 
     it("returns skippedReason when daily limit reached", async () => {
@@ -259,6 +262,7 @@ describe("outbound", () => {
         text: "Hello!",
         timezone: TIMEZONE,
         conversationId: "conv-1",
+        credentials: TEST_CREDENTIALS,
         skipBusinessHoursCheck: true,
       });
 
@@ -278,6 +282,7 @@ describe("outbound", () => {
         text: "Hello!",
         timezone: TIMEZONE,
         conversationId: "conv-1",
+        credentials: TEST_CREDENTIALS,
         skipBusinessHoursCheck: true,
       });
 
@@ -297,6 +302,7 @@ describe("outbound", () => {
         text: "Hello!",
         timezone: TIMEZONE,
         conversationId: "conv-1",
+        credentials: TEST_CREDENTIALS,
         skipBusinessHoursCheck: true,
       });
 
@@ -321,6 +327,7 @@ describe("outbound", () => {
         localBody: "Ola Maria, lembrete da consulta com Dr. Silva",
         timezone: TIMEZONE,
         conversationId: "conv-1",
+        credentials: TEST_CREDENTIALS,
         skipBusinessHoursCheck: true,
       });
 
@@ -330,7 +337,8 @@ describe("outbound", () => {
         "5511999998888",
         "lembrete_da_sua_consulta",
         "pt_BR",
-        ["Maria", "Dr. Silva"]
+        ["Maria", "Dr. Silva"],
+        TEST_CREDENTIALS
       );
     });
 
@@ -346,6 +354,7 @@ describe("outbound", () => {
         localBody: "Ola Maria",
         timezone: TIMEZONE,
         conversationId: "conv-1",
+        credentials: TEST_CREDENTIALS,
         skipBusinessHoursCheck: true,
       });
 

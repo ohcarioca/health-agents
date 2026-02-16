@@ -1,7 +1,11 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { sendTextMessage, sendTemplateMessage } from "@/services/whatsapp";
+import {
+  sendTextMessage,
+  sendTemplateMessage,
+  type WhatsAppCredentials,
+} from "@/services/whatsapp";
 
 // ── Constants ──
 
@@ -24,6 +28,7 @@ export interface SendOutboundMessageOptions {
   text: string;
   timezone: string;
   conversationId: string;
+  credentials: WhatsAppCredentials;
   skipBusinessHoursCheck?: boolean;
 }
 
@@ -37,6 +42,7 @@ export interface SendOutboundTemplateOptions {
   localBody: string;
   timezone: string;
   conversationId: string;
+  credentials: WhatsAppCredentials;
   skipBusinessHoursCheck?: boolean;
 }
 
@@ -140,7 +146,7 @@ export async function sendOutboundMessage(
     return { success: false, skippedReason: "queue_insert_failed" };
   }
 
-  const result = await sendTextMessage(patientPhone, text);
+  const result = await sendTextMessage(patientPhone, text, options.credentials);
 
   const newStatus = result.success ? "sent" : "failed";
   await supabase
@@ -206,7 +212,8 @@ export async function sendOutboundTemplate(
     patientPhone,
     templateName,
     templateLanguage,
-    templateParams
+    templateParams,
+    options.credentials
   );
 
   const newStatus = result.success ? "sent" : "failed";
