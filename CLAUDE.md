@@ -143,6 +143,8 @@ return NextResponse.json({ status: "ok" });
 - Foreign keys should cascade deletes only when the child has no independent meaning.
 - WhatsApp credentials (`whatsapp_phone_number_id`, `whatsapp_waba_id`, `whatsapp_access_token`) are stored per clinic in `clinics` table — NOT in env vars.
 - Signup creates 6 `module_configs` (all enabled) AND 6 `agents` rows (all active). Both are required for routing to work.
+- `professional_services` junction table: links professionals to services with per-professional `price_cents`. Cascade deletes on both FKs. Unique constraint on `(professional_id, service_id)`.
+- `clinics.operating_hours` (JSONB): same `ScheduleGrid` format as `professionals.schedule_grid`.
 
 ---
 
@@ -467,6 +469,19 @@ Shared utility for proactive (system-initiated) messages:
 Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqual()`).
 
 **Auto-enqueue:** When `book_appointment` creates an appointment, it auto-inserts 48h/24h/2h entries into `confirmation_queue` via `enqueueConfirmations()`.
+
+### Settings API Routes
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/settings/clinic` | GET, PUT | Clinic info + operating hours |
+| `/api/settings/professionals` | GET, POST | Professionals list/create |
+| `/api/settings/professionals/[id]` | PUT, DELETE | Professional update/delete |
+| `/api/settings/professionals/[id]/services` | GET, PUT | Professional service assignments with pricing |
+| `/api/settings/services` | GET, POST | Services CRUD (list/create) |
+| `/api/settings/services/[id]` | PUT, DELETE | Service update/delete |
+| `/api/settings/insurance-plans` | GET, POST | Insurance plans CRUD (list/create) |
+| `/api/settings/insurance-plans/[id]` | DELETE | Insurance plan delete |
 
 ### Dashboard & Reports API Routes
 
