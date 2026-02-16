@@ -27,6 +27,11 @@ export default function SetupPage() {
   const [profName, setProfName] = useState("");
   const [specialty, setSpecialty] = useState("");
 
+  // Step 3: Patients
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [addedPatients, setAddedPatients] = useState<Array<{ id: string; name: string; phone: string }>>([]);
+
   function nextStep() {
     if (step < TOTAL_STEPS) setStep(step + 1);
   }
@@ -63,6 +68,38 @@ export default function SetupPage() {
     } catch (err) {
       console.error("[setup] onboarding error:", err);
       setLoading(false);
+    }
+  }
+
+  async function handlePatientAdded() {
+    // Fetch latest patients to update the mini list
+    try {
+      const res = await fetch("/api/patients?page=1");
+      if (res.ok) {
+        const json = await res.json();
+        setAddedPatients(
+          (json.data ?? []).slice(0, 10).map((p: { id: string; name: string; phone: string }) => ({
+            id: p.id,
+            name: p.name,
+            phone: p.phone,
+          }))
+        );
+      }
+    } catch {
+      // silent fail
+    }
+    setAddDialogOpen(false);
+  }
+
+  function handleImportDone() {
+    handlePatientAdded();
+    setImportDialogOpen(false);
+  }
+
+  async function removePatient(id: string) {
+    const res = await fetch(`/api/patients/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setAddedPatients((prev) => prev.filter((p) => p.id !== id));
     }
   }
 
@@ -150,9 +187,85 @@ export default function SetupPage() {
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               {t("step3.description")}
             </p>
+
+            {/* Two action cards */}
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setImportDialogOpen(true)}
+                className="flex flex-col items-center gap-2 rounded-xl border p-6 transition-colors hover:border-[var(--accent)]"
+                style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)" }}
+              >
+                <Upload className="size-8" style={{ color: "var(--accent)" }} strokeWidth={1.5} />
+                <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                  {t("step3.importCard")}
+                </span>
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  {t("step3.importCardHint")}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAddDialogOpen(true)}
+                className="flex flex-col items-center gap-2 rounded-xl border p-6 transition-colors hover:border-[var(--accent)]"
+                style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)" }}
+              >
+                <UserPlus className="size-8" style={{ color: "var(--accent)" }} strokeWidth={1.5} />
+                <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                  {t("step3.addCard")}
+                </span>
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  {t("step3.addCardHint")}
+                </span>
+              </button>
+            </div>
+
+            {/* Mini list of added patients */}
+            {addedPatients.length > 0 && (
+              <div>
+                <p className="mb-2 text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                  {t("step3.addedCount", { count: addedPatients.length })}
+                </p>
+                <div className="space-y-1">
+                  {addedPatients.map((p) => (
+                    <div
+                      key={p.id}
+                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm"
+                      style={{ backgroundColor: "var(--surface)" }}
+                    >
+                      <span style={{ color: "var(--text-primary)" }}>
+                        {p.name} — <span style={{ color: "var(--text-muted)" }}>{p.phone}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removePatient(p.id)}
+                        className="rounded p-1 transition-colors hover:bg-[rgba(239,68,68,0.1)]"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>
               {t("step3.skipHint")}
             </p>
+
+            {/* Dialogs */}
+            <PatientFormDialog
+              open={addDialogOpen}
+              onOpenChange={setAddDialogOpen}
+              onSuccess={handlePatientAdded}
+            />
+            <PatientImportDialog
+              open={importDialogOpen}
+              onOpenChange={setImportDialogOpen}
+              onSuccess={handleImportDone}
+            />
           </div>
         )}
 

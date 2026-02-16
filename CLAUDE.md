@@ -22,6 +22,7 @@ Follow strictly when generating, modifying, or reviewing code.
 | Validation | Zod |
 | Testing | Vitest + React Testing Library |
 | Charts | Recharts |
+| File parsing | papaparse (CSV) + xlsx (XLSX) |
 
 No alternative libraries without explicit approval.
 
@@ -493,6 +494,16 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 | `/api/calendar/appointments/[id]` | PUT | Update appointment (+ Google Calendar sync) |
 | `/api/calendar/appointments/[id]` | DELETE | Delete appointment (+ Google Calendar delete) |
 | `/api/calendar/patients/search` | GET | Search patients by name or phone (autocomplete, limit 10) |
+
+### Patient API Routes
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/patients` | GET | List patients (paginated, searchable) |
+| `/api/patients` | POST | Create single patient |
+| `/api/patients/[id]` | PUT | Update patient |
+| `/api/patients/[id]` | DELETE | Delete patient (if no appointments) |
+| `/api/patients/batch` | POST | Bulk create (max 500, skip duplicates) |
 
 ### Dashboard & Reports API Routes
 
