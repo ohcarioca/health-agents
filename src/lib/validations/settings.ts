@@ -102,3 +102,22 @@ export type UpsertProfessionalServicesInput = z.infer<typeof upsertProfessionalS
 
 export const operatingHoursSchema = scheduleGridSchema;
 export type OperatingHours = ScheduleGrid;
+
+// --- Calendar Appointments ---
+
+export const createAppointmentSchema = z.object({
+  patient_id: z.string().uuid(),
+  professional_id: z.string().uuid(),
+  service_id: z.string().uuid().optional(),
+  starts_at: z.string().datetime(),
+  ends_at: z.string().datetime(),
+  insurance_plan_id: z.string().uuid().optional(),
+});
+
+export const updateAppointmentSchema = createAppointmentSchema.partial().extend({
+  status: z.enum(["scheduled", "confirmed", "completed", "cancelled", "no_show"]).optional(),
+  cancellation_reason: z.string().max(500).optional(),
+});
+
+export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>;
+export type UpdateAppointmentInput = z.infer<typeof updateAppointmentSchema>;
