@@ -21,7 +21,7 @@ export function PatientSearch({ value, onChange }: PatientSearchProps) {
   const [results, setResults] = useState<PatientResult[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

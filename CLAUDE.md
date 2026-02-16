@@ -145,6 +145,7 @@ return NextResponse.json({ status: "ok" });
 - Signup creates 6 `module_configs` (all enabled) AND 6 `agents` rows (all active). Both are required for routing to work.
 - `professional_services` junction table: links professionals to services with per-professional `price_cents`. Cascade deletes on both FKs. Unique constraint on `(professional_id, service_id)`.
 - `clinics.operating_hours` (JSONB): same `ScheduleGrid` format as `professionals.schedule_grid`.
+- `appointments.insurance_plan_id` (nullable FK to `insurance_plans`) — optional insurance plan per appointment.
 
 ---
 
@@ -482,6 +483,16 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 | `/api/settings/services/[id]` | PUT, DELETE | Service update/delete |
 | `/api/settings/insurance-plans` | GET, POST | Insurance plans CRUD (list/create) |
 | `/api/settings/insurance-plans/[id]` | DELETE | Insurance plan delete |
+
+### Calendar API Routes
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/calendar/appointments` | GET | List appointments by date range + optional professional filter |
+| `/api/calendar/appointments` | POST | Create appointment (+ Google Calendar sync + enqueue confirmations) |
+| `/api/calendar/appointments/[id]` | PUT | Update appointment (+ Google Calendar sync) |
+| `/api/calendar/appointments/[id]` | DELETE | Delete appointment (+ Google Calendar delete) |
+| `/api/calendar/patients/search` | GET | Search patients by name or phone (autocomplete, limit 10) |
 
 ### Dashboard & Reports API Routes
 
