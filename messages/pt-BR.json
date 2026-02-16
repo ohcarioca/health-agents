@@ -22,6 +22,7 @@
   "nav": {
     "dashboard": "Painel",
     "inbox": "Caixa de Entrada",
+    "calendar": "Agenda",
     "modules": "Módulos",
     "reports": "Relatórios",
     "team": "Equipe",
@@ -114,6 +115,49 @@
     "actionError": "Ação falhou",
     "sendError": "Falha ao enviar mensagem",
     "unknownPatient": "Paciente desconhecido"
+  },
+  "calendar": {
+    "title": "Agenda",
+    "today": "Hoje",
+    "views": {
+      "day": "Dia",
+      "week": "Semana",
+      "month": "Mês"
+    },
+    "allProfessionals": "Todos os profissionais",
+    "newAppointment": "Novo agendamento",
+    "editAppointment": "Editar agendamento",
+    "patient": "Paciente",
+    "professional": "Profissional",
+    "service": "Serviço",
+    "date": "Data",
+    "startTime": "Horário",
+    "endTime": "Término",
+    "duration": "Duração",
+    "insurancePlan": "Convênio",
+    "status": "Status",
+    "cancellationReason": "Motivo do cancelamento",
+    "searchPatient": "Buscar paciente...",
+    "noAppointments": "Nenhum agendamento",
+    "appointmentCount": "{count} consultas",
+    "saveSuccess": "Agendamento salvo",
+    "saveError": "Falha ao salvar agendamento",
+    "deleteConfirm": "Excluir este agendamento?",
+    "cancelConfirm": "Cancelar este agendamento?",
+    "deleteSuccess": "Agendamento excluído",
+    "cancelSuccess": "Agendamento cancelado",
+    "conflict": "Horário já ocupado",
+    "selectPatient": "Selecione um paciente",
+    "selectProfessional": "Selecione um profissional",
+    "selectService": "Selecione um serviço",
+    "minutes": "{count} min",
+    "statuses": {
+      "scheduled": "Agendado",
+      "confirmed": "Confirmado",
+      "completed": "Realizado",
+      "cancelled": "Cancelado",
+      "no_show": "Falta"
+    }
   },
   "modules": {
     "title": "Módulos",

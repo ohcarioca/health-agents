@@ -22,6 +22,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "inbox": "Inbox",
+    "calendar": "Calendar",
     "modules": "Modules",
     "reports": "Reports",
     "team": "Team",
@@ -114,6 +115,49 @@
     "actionError": "Action failed",
     "sendError": "Failed to send message",
     "unknownPatient": "Unknown patient"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "today": "Today",
+    "views": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "allProfessionals": "All professionals",
+    "newAppointment": "New appointment",
+    "editAppointment": "Edit appointment",
+    "patient": "Patient",
+    "professional": "Professional",
+    "service": "Service",
+    "date": "Date",
+    "startTime": "Start time",
+    "endTime": "End time",
+    "duration": "Duration",
+    "insurancePlan": "Insurance plan",
+    "status": "Status",
+    "cancellationReason": "Cancellation reason",
+    "searchPatient": "Search patient...",
+    "noAppointments": "No appointments",
+    "appointmentCount": "{count} appointments",
+    "saveSuccess": "Appointment saved",
+    "saveError": "Failed to save appointment",
+    "deleteConfirm": "Delete this appointment?",
+    "cancelConfirm": "Cancel this appointment?",
+    "deleteSuccess": "Appointment deleted",
+    "cancelSuccess": "Appointment cancelled",
+    "conflict": "Time slot already taken",
+    "selectPatient": "Select a patient",
+    "selectProfessional": "Select a professional",
+    "selectService": "Select a service",
+    "minutes": "{count} min",
+    "statuses": {
+      "scheduled": "Scheduled",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_show": "No show"
+    }
   },
   "modules": {
     "title": "Modules",

@@ -22,6 +22,7 @@
   "nav": {
     "dashboard": "Panel",
     "inbox": "Bandeja de Entrada",
+    "calendar": "Agenda",
     "modules": "Módulos",
     "reports": "Informes",
     "team": "Equipo",
@@ -114,6 +115,49 @@
     "actionError": "La acción falló",
     "sendError": "Error al enviar mensaje",
     "unknownPatient": "Paciente desconocido"
+  },
+  "calendar": {
+    "title": "Agenda",
+    "today": "Hoy",
+    "views": {
+      "day": "Día",
+      "week": "Semana",
+      "month": "Mes"
+    },
+    "allProfessionals": "Todos los profesionales",
+    "newAppointment": "Nueva cita",
+    "editAppointment": "Editar cita",
+    "patient": "Paciente",
+    "professional": "Profesional",
+    "service": "Servicio",
+    "date": "Fecha",
+    "startTime": "Hora de inicio",
+    "endTime": "Hora de fin",
+    "duration": "Duración",
+    "insurancePlan": "Seguro",
+    "status": "Estado",
+    "cancellationReason": "Motivo de cancelación",
+    "searchPatient": "Buscar paciente...",
+    "noAppointments": "Sin citas",
+    "appointmentCount": "{count} citas",
+    "saveSuccess": "Cita guardada",
+    "saveError": "Error al guardar cita",
+    "deleteConfirm": "¿Eliminar esta cita?",
+    "cancelConfirm": "¿Cancelar esta cita?",
+    "deleteSuccess": "Cita eliminada",
+    "cancelSuccess": "Cita cancelada",
+    "conflict": "Horario ya ocupado",
+    "selectPatient": "Seleccione un paciente",
+    "selectProfessional": "Seleccione un profesional",
+    "selectService": "Seleccione un servicio",
+    "minutes": "{count} min",
+    "statuses": {
+      "scheduled": "Programada",
+      "confirmed": "Confirmada",
+      "completed": "Completada",
+      "cancelled": "Cancelada",
+      "no_show": "No asistió"
+    }
   },
   "modules": {
     "title": "Módulos",
