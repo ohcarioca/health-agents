@@ -17,6 +17,7 @@ export type ConfirmationQueueItem = Tables["confirmation_queue"]["Row"];
 export type NpsResponse = Tables["nps_responses"]["Row"];
 export type Invoice = Tables["invoices"]["Row"];
 export type PaymentLink = Tables["payment_links"]["Row"];
+export type ProfessionalService = Tables["professional_services"]["Row"];
 export type RecallQueueItem = Tables["recall_queue"]["Row"];
 export type Agent = Tables["agents"]["Row"];
 export type Conversation = Tables["conversations"]["Row"];

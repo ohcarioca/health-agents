@@ -836,6 +836,45 @@ export type Database = {
           },
         ]
       }
+      professional_services: {
+        Row: {
+          created_at: string
+          id: string
+          price_cents: number
+          professional_id: string
+          service_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          price_cents: number
+          professional_id: string
+          service_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          price_cents?: number
+          professional_id?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_services_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recall_queue: {
         Row: {
           attempts: number
