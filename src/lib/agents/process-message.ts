@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { sendTextMessage } from "@/services/whatsapp";
+import { sendTextMessage, type WhatsAppCredentials } from "@/services/whatsapp";
 
 import { getAgentType } from "./registry";
 import { buildMessages } from "./history";
@@ -197,7 +197,7 @@ export async function processMessage(
   // Load business context
   const { data: clinic } = await supabase
     .from("clinics")
-    .select("name, phone, address, timezone")
+    .select("name, phone, address, timezone, whatsapp_phone_number_id, whatsapp_access_token")
     .eq("id", clinicId)
     .single();
 
@@ -232,6 +232,11 @@ export async function processMessage(
         })),
       }
     : undefined;
+
+  const whatsappCredentials: WhatsAppCredentials = {
+    phoneNumberId: (clinic?.whatsapp_phone_number_id as string) ?? "",
+    accessToken: (clinic?.whatsapp_access_token as string) ?? "",
+  };
 
   const promptParams: SystemPromptParams = {
     agentName,
@@ -312,7 +317,7 @@ export async function processMessage(
     .single();
 
   // 16. Send via WhatsApp
-  const sendResult = await sendTextMessage(normalizedPhone, finalResponse);
+  const sendResult = await sendTextMessage(normalizedPhone, finalResponse, whatsappCredentials);
 
   // 17. Update queue status
   if (queueRow) {
