@@ -141,6 +141,8 @@ return NextResponse.json({ status: "ok" });
 - Prefer partial unique indexes over application-level uniqueness checks.
 - Use `agent_id` as nullable FK — module-based flows may not have a linked agent.
 - Foreign keys should cascade deletes only when the child has no independent meaning.
+- WhatsApp credentials (`whatsapp_phone_number_id`, `whatsapp_waba_id`, `whatsapp_access_token`) are stored per clinic in `clinics` table — NOT in env vars.
+- Signup creates 6 `module_configs` (all enabled) AND 6 `agents` rows (all active). Both are required for routing to work.
 
 ---
 
@@ -441,7 +443,7 @@ Before shipping a new agent type, verify:
 | `scheduling` | `agents/scheduling.ts` | `check_availability`, `book_appointment`, `reschedule_appointment`, `cancel_appointment`, `list_patient_appointments`, `escalate_to_human` | whatsapp |
 | `confirmation` | `agents/confirmation.ts` | `confirm_attendance`, `reschedule_from_confirmation`, `mark_no_show` | whatsapp |
 | `nps` | `agents/nps.ts` | `collect_nps_score`, `collect_nps_comment`, `redirect_to_google_reviews`, `alert_detractor` | whatsapp |
-| `billing` | `agents/billing.ts` | `create_payment_link`, `check_payment_status`, `send_payment_reminder`, `escalate_billing` | whatsapp |
+| `billing` | `agents/billing.ts` | `list_patient_invoices`, `create_payment_link`, `check_payment_status`, `send_payment_reminder`, `escalate_billing` | whatsapp |
 | `recall` | `agents/recall.ts` | `send_reactivation_message`, `route_to_scheduling`, `mark_patient_inactive` | whatsapp |
 
 ### Outbound Messaging (`src/lib/agents/outbound.ts`)
