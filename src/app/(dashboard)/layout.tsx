@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { hasTimeBlocks } from "@/lib/onboarding/requirements";
 
 export default async function DashboardLayout({
   children,
@@ -32,7 +33,7 @@ export default async function DashboardLayout({
     is_active: boolean;
     operating_hours: unknown;
   } | null;
-  if (!clinic?.is_active && !clinic?.operating_hours) {
+  if (!clinic?.is_active && !hasTimeBlocks(clinic?.operating_hours)) {
     redirect("/setup");
   }
 
