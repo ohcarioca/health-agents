@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { OnboardingModal } from "@/components/onboarding/onboarding-modal";
 import { hasTimeBlocks } from "@/lib/onboarding/requirements";
 
 export default async function DashboardLayout({
@@ -27,15 +28,14 @@ export default async function DashboardLayout({
     .limit(1)
     .single();
 
-  // Redirect to onboarding if clinic is brand new (never completed Step 1)
   const clinic = membership?.clinics as {
     name: string;
     is_active: boolean;
     operating_hours: unknown;
   } | null;
-  if (!clinic?.is_active && !hasTimeBlocks(clinic?.operating_hours)) {
-    redirect("/setup");
-  }
+
+  // Show onboarding modal if clinic never completed initial setup
+  const needsOnboarding = !clinic?.is_active && !hasTimeBlocks(clinic?.operating_hours);
 
   const isActive = clinic?.is_active ?? false;
   const clinicName = clinic?.name || "My Clinic";
@@ -51,6 +51,7 @@ export default async function DashboardLayout({
       isActive={isActive}
     >
       {children}
+      {needsOnboarding && <OnboardingModal />}
     </DashboardShell>
   );
 }

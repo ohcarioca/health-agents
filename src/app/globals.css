@@ -90,3 +90,39 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+/* Glass card (onboarding wizard, modals) */
+.glass {
+  background-color: var(--surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Phone input (react-phone-number-input) theme overrides */
+.PhoneInput {
+  --PhoneInput-color--focus: var(--accent);
+  --PhoneInputCountryFlag-borderColor: var(--border);
+  --PhoneInputCountrySelectArrow-color: var(--text-muted);
+}
+
+.PhoneInputInput {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0.5rem !important;
+  color: var(--text-primary) !important;
+  padding: 0.625rem 0.75rem !important;
+  font-size: 0.875rem !important;
+  outline: 2px solid transparent !important;
+  outline-offset: 2px !important;
+  transition: border-color 0.15s, outline-color 0.15s !important;
+}
+
+.PhoneInputInput:focus {
+  border-color: var(--accent) !important;
+  outline-color: var(--accent-ring) !important;
+}
+
+.PhoneInputCountrySelect {
+  background: var(--surface) !important;
+  color: var(--text-primary) !important;
+}

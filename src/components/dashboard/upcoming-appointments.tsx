@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
@@ -26,9 +26,9 @@ const STATUS_BADGE_VARIANT: Record<string, "success" | "warning" | "danger" | "a
   no_show: "warning",
 };
 
-function formatTime(dateStr: string): string {
+function formatTime(dateStr: string, locale: string): string {
   const d = new Date(dateStr);
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
 }
 
 function getWeekDays(weekOffset: number): Date[] {
@@ -59,6 +59,7 @@ function countAppointmentsForDay(appointments: AppointmentRow[], day: Date): num
 export function UpcomingAppointments() {
   const t = useTranslations("dashboard");
   const tCal = useTranslations("calendar");
+  const locale = useLocale();
   const [allAppointments, setAllAppointments] = useState<AppointmentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -150,7 +151,7 @@ export function UpcomingAppointments() {
             const isToday = isSameDay(day, today);
             const isSelected = isSameDay(day, selectedDate);
             const count = countAppointmentsForDay(allAppointments, day);
-            const weekday = day.toLocaleDateString(undefined, { weekday: "short" });
+            const weekday = day.toLocaleDateString(locale, { weekday: "short" });
             const dayNum = day.getDate();
 
             return (
@@ -240,7 +241,7 @@ export function UpcomingAppointments() {
                     className="font-mono text-sm font-semibold"
                     style={{ color: "var(--text-primary)" }}
                   >
-                    {formatTime(apt.starts_at)}
+                    {formatTime(apt.starts_at, locale)}
                   </span>
                 </div>
 

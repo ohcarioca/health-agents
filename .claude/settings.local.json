@@ -14,7 +14,8 @@
       "Bash(curl:*)",
       "Bash(ls:*)",
       "Bash(npx vitest:*)",
-      "Bash(git worktree:*)"
+      "Bash(git worktree:*)",
+      "Bash(xargs cat:*)"
     ]
   }
 }

@@ -30,7 +30,6 @@
     "settings": "Configuración"
   },
   "topBar": {
-    "searchPlaceholder": "Buscar...",
     "notifications": "Notificaciones",
     "profile": "Perfil",
     "settings": "Configuración",
@@ -452,29 +451,35 @@
   },
   "onboarding": {
     "step1": {
-      "title": "Clínica y Horarios",
-      "description": "Configure los datos de la clínica y el horario de atención.",
+      "title": "Clínica",
+      "description": "Configure los datos básicos de su clínica.",
       "clinicName": "Nombre de la Clínica",
+      "clinicType": "Tipo de Clínica",
+      "clinicTypePlaceholder": "Seleccione el tipo...",
+      "clinicDescription": "Descripción",
       "phone": "Teléfono",
       "address": "Dirección",
-      "timezone": "Zona Horaria",
-      "operatingHours": "Horario de Atención",
-      "operatingHoursHint": "Haga clic y arrastre para definir los horarios."
+      "timezone": "Zona Horaria"
+    },
+    "stepHours": {
+      "title": "Horarios",
+      "description": "Defina el horario de atención de la clínica. Haga clic y arrastre para seleccionar los horarios."
     },
     "step2": {
-      "title": "Profesional y Servicio",
-      "description": "Agregue el primer profesional, configure su agenda y cree un servicio.",
+      "title": "Equipo y Servicios",
+      "description": "Agregue el profesional principal y los servicios ofrecidos.",
       "profSection": "Profesional",
       "name": "Nombre",
       "specialty": "Especialidad",
-      "duration": "Duración de la consulta (min)",
-      "schedule": "Agenda del Profesional",
-      "scheduleHint": "Haga clic y arrastre para definir los horarios de atención.",
-      "serviceSection": "Servicio",
-      "serviceName": "Nombre del Servicio",
+      "duration": "Duración predeterminada de la consulta (min)",
+      "serviceSection": "Servicios",
+      "selectService": "Seleccionar servicio...",
+      "customService": "Otro (personalizado)",
+      "customServiceName": "Nombre del servicio",
       "serviceDuration": "Duración (min)",
       "servicePrice": "Precio",
-      "servicePriceHint": "En su moneda. Ej: 150,00"
+      "noServices": "Agregue al menos un servicio.",
+      "removeService": "Eliminar"
     },
     "step3": {
       "title": "WhatsApp",
@@ -496,27 +501,6 @@
       "notConnected": "No conectado",
       "connect": "Conectar Google Calendar",
       "waitingCallback": "Esperando autorización..."
-    },
-    "step5": {
-      "title": "Pacientes y Revisión",
-      "description": "Agregue pacientes (opcional) y revise los requisitos.",
-      "patientsSection": "Pacientes",
-      "patientsOptional": "Opcional — puede agregar después.",
-      "importCard": "Importar archivo",
-      "importCardHint": "CSV o XLSX",
-      "addCard": "Agregar manualmente",
-      "addCardHint": "Uno a la vez",
-      "addedCount": "{count} pacientes agregados",
-      "checklistSection": "Requisitos para Activación",
-      "requirement": {
-        "operating_hours": "Horario de atención",
-        "professional_schedule": "Profesional con agenda",
-        "service_with_price": "Servicio con precio",
-        "whatsapp": "WhatsApp configurado",
-        "google_calendar": "Google Calendar conectado"
-      },
-      "allMet": "¡Todos los requisitos cumplidos!",
-      "pending": "requisitos pendientes"
     },
     "back": "Volver",
     "next": "Siguiente",

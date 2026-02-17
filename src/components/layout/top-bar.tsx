@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Search, Bell, ChevronDown, Settings, LogOut } from "lucide-react";
+import { Bell, ChevronDown, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
@@ -54,24 +54,7 @@ export function TopBar({ userName, userEmail, collapsed }: TopBarProps) {
         borderColor: "var(--border)",
       }}
     >
-      {/* Search */}
-      <div className="relative max-w-md flex-1">
-        <Search
-          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
-          strokeWidth={1.75}
-          style={{ color: "var(--text-muted)" }}
-        />
-        <input
-          type="text"
-          placeholder={t("searchPlaceholder")}
-          className="h-9 w-full rounded-lg border pl-9 pr-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-[var(--accent-ring)]"
-          style={{
-            backgroundColor: "var(--surface)",
-            borderColor: "var(--border)",
-            color: "var(--text-primary)",
-          }}
-        />
-      </div>
+      <div />
 
       {/* Right section */}
       <div className="flex items-center gap-1">

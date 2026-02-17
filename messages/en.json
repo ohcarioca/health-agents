@@ -30,7 +30,6 @@
     "settings": "Settings"
   },
   "topBar": {
-    "searchPlaceholder": "Search...",
     "notifications": "Notifications",
     "profile": "Profile",
     "settings": "Settings",
@@ -452,29 +451,35 @@
   },
   "onboarding": {
     "step1": {
-      "title": "Clinic & Hours",
-      "description": "Set up your clinic details and operating hours.",
+      "title": "Clinic",
+      "description": "Set up your clinic's basic information.",
       "clinicName": "Clinic Name",
+      "clinicType": "Clinic Type",
+      "clinicTypePlaceholder": "Select type...",
+      "clinicDescription": "Description",
       "phone": "Phone",
       "address": "Address",
-      "timezone": "Timezone",
-      "operatingHours": "Operating Hours",
-      "operatingHoursHint": "Click and drag to set hours."
+      "timezone": "Timezone"
+    },
+    "stepHours": {
+      "title": "Hours",
+      "description": "Set your clinic's operating hours. Click and drag to select time slots."
     },
     "step2": {
-      "title": "Professional & Service",
-      "description": "Add your first professional, set their schedule, and create a service.",
+      "title": "Team & Services",
+      "description": "Add the main professional and the services offered.",
       "profSection": "Professional",
       "name": "Name",
       "specialty": "Specialty",
-      "duration": "Appointment duration (min)",
-      "schedule": "Professional Schedule",
-      "scheduleHint": "Click and drag to set availability.",
-      "serviceSection": "Service",
-      "serviceName": "Service Name",
+      "duration": "Default appointment duration (min)",
+      "serviceSection": "Services",
+      "selectService": "Select service...",
+      "customService": "Other (custom)",
+      "customServiceName": "Service name",
       "serviceDuration": "Duration (min)",
       "servicePrice": "Price",
-      "servicePriceHint": "In your currency. E.g.: 150.00"
+      "noServices": "Add at least one service.",
+      "removeService": "Remove"
     },
     "step3": {
       "title": "WhatsApp",
@@ -496,27 +501,6 @@
       "notConnected": "Not connected",
       "connect": "Connect Google Calendar",
       "waitingCallback": "Waiting for authorization..."
-    },
-    "step5": {
-      "title": "Patients & Review",
-      "description": "Add patients (optional) and review requirements.",
-      "patientsSection": "Patients",
-      "patientsOptional": "Optional — you can add later.",
-      "importCard": "Import file",
-      "importCardHint": "CSV or XLSX",
-      "addCard": "Add manually",
-      "addCardHint": "One at a time",
-      "addedCount": "{count} patients added",
-      "checklistSection": "Activation Requirements",
-      "requirement": {
-        "operating_hours": "Operating hours",
-        "professional_schedule": "Professional with schedule",
-        "service_with_price": "Service with price",
-        "whatsapp": "WhatsApp configured",
-        "google_calendar": "Google Calendar connected"
-      },
-      "allMet": "All requirements met!",
-      "pending": "requirements pending"
     },
     "back": "Back",
     "next": "Next",
