@@ -149,7 +149,7 @@ export function TeamContent({
                     {isOwner && !isSelf && (
                       <button
                         onClick={() => handleRemove(member)}
-                        className="rounded-lg p-1.5 transition-colors hover:bg-[rgba(239,68,68,0.1)]"
+                        className="rounded-lg p-1.5 transition-colors hover:bg-[rgba(239,68,68,0.08)]"
                         style={{ color: "var(--danger)" }}
                       >
                         <Trash2 className="size-4" strokeWidth={1.75} />
