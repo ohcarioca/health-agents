@@ -77,6 +77,8 @@ export default function PublicPageEditor() {
   const [clinicInfo, setClinicInfo] = useState<ClinicInfo | null>(null);
   const [services, setServices] = useState<ServiceInfo[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
+  const [logoUrl, setLogoUrl] = useState("");
+  const [hasLogoChange, setHasLogoChange] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -116,6 +118,7 @@ export default function PublicPageEditor() {
               operating_hours: clinicJson.data.operating_hours,
               google_reviews_url: clinicJson.data.google_reviews_url,
             });
+            setLogoUrl(clinicJson.data.logo_url || "");
           }
         }
 
@@ -162,6 +165,22 @@ export default function PublicPageEditor() {
       console.error("Failed to save:", err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveLogo = async () => {
+    try {
+      const res = await fetch("/api/settings/clinic", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logo_url: logoUrl || null }),
+      });
+      if (res.ok) {
+        setHasLogoChange(false);
+        setClinicInfo((prev) => prev ? { ...prev, logo_url: logoUrl || null } : prev);
+      }
+    } catch (err) {
+      console.error("Failed to save logo:", err);
     }
   };
 
@@ -362,7 +381,7 @@ export default function PublicPageEditor() {
             </div>
           </div>
 
-          {/* Clinic Info Reference */}
+          {/* Clinic Info + Logo */}
           <div
             className="rounded-xl border p-5"
             style={{
@@ -382,9 +401,61 @@ export default function PublicPageEditor() {
                 {t("editInSettings")} →
               </a>
             </div>
-            <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
-              {clinicInfo?.name || "—"} · {clinicInfo?.type || t("noDescription")}
-            </p>
+
+            <div className="mt-3 flex items-center gap-3">
+              {clinicInfo?.logo_url ? (
+                <img
+                  src={clinicInfo.logo_url}
+                  alt=""
+                  className="size-10 rounded-full object-cover"
+                />
+              ) : (
+                <div
+                  className="flex size-10 items-center justify-center rounded-full text-sm font-bold text-white"
+                  style={{ backgroundColor: config.accent_color }}
+                >
+                  {(clinicInfo?.name || "?").charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                  {clinicInfo?.name || "—"}
+                </p>
+                <p className="truncate text-xs" style={{ color: "var(--text-muted)" }}>
+                  {clinicInfo?.type || t("noDescription")}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3">
+              <label className="mb-1.5 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+                Logo URL
+              </label>
+              <input
+                type="url"
+                placeholder="https://exemplo.com/logo.png"
+                value={logoUrl}
+                onChange={(e) => {
+                  setLogoUrl(e.target.value);
+                  setHasLogoChange(true);
+                }}
+                className="w-full rounded-lg px-3 py-2 text-xs"
+                style={{
+                  backgroundColor: "var(--background)",
+                  color: "var(--text-primary)",
+                  border: "1px solid var(--border)",
+                }}
+              />
+              {hasLogoChange && (
+                <button
+                  onClick={handleSaveLogo}
+                  className="mt-2 rounded-lg px-3 py-1.5 text-xs font-medium text-white"
+                  style={{ backgroundColor: config.accent_color }}
+                >
+                  {tCommon("save")} logo
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Links */}

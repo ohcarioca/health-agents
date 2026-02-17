@@ -39,14 +39,14 @@ export interface PublicClinicPageProps {
 // ---------------------------------------------------------------------------
 
 const LINK_TYPE_ICONS: Record<string, string> = {
-  instagram: "\u{1F4F7}",
-  facebook: "\u{1F4D8}",
-  website: "\u{1F310}",
-  youtube: "\u25B6\uFE0F",
-  tiktok: "\u{1F3B5}",
-  linkedin: "\u{1F4BC}",
-  google_maps: "\u{1F4CD}",
-  other: "\u{1F517}",
+  instagram: "📷",
+  facebook: "📘",
+  website: "🌐",
+  youtube: "▶️",
+  tiktok: "🎵",
+  linkedin: "💼",
+  google_maps: "📍",
+  other: "🔗",
 };
 
 const WEEKDAY_ORDER = [
@@ -65,7 +65,7 @@ const WEEKDAY_SHORT: Record<string, string> = {
   wednesday: "Qua",
   thursday: "Qui",
   friday: "Sex",
-  saturday: "S\u00E1b",
+  saturday: "Sáb",
   sunday: "Dom",
 };
 
@@ -158,15 +158,22 @@ export function PublicClinicPage({ clinic, services }: PublicClinicPageProps) {
       {/* Hero                                                             */}
       {/* ---------------------------------------------------------------- */}
       <section className="text-center">
-        {clinic.logo_url && (
-          <div className="mb-4 flex justify-center">
+        <div className="mb-4 flex justify-center">
+          {clinic.logo_url ? (
             <img
               src={clinic.logo_url}
               alt={clinic.name}
               className="size-24 rounded-full border-2 border-white object-cover shadow-md"
             />
-          </div>
-        )}
+          ) : (
+            <div
+              className="flex size-24 items-center justify-center rounded-full text-3xl font-bold text-white shadow-md"
+              style={{ backgroundColor: clinic.accent_color }}
+            >
+              {clinic.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
 
         <h1 className="text-2xl font-bold text-gray-900">{clinic.name}</h1>
 
@@ -208,12 +215,39 @@ export function PublicClinicPage({ clinic, services }: PublicClinicPageProps) {
       )}
 
       {/* ---------------------------------------------------------------- */}
+      {/* Social Links                                                     */}
+      {/* ---------------------------------------------------------------- */}
+      {hasSocialLinks && (
+        <section className="mt-6">
+          <div className="space-y-2">
+            {clinic.social_links.map((link, i) => (
+              <a
+                key={`${link.type}-${i}`}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex w-full items-center gap-3 rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-sm transition-colors hover:bg-gray-50"
+              >
+                <span className="text-lg leading-none">
+                  {LINK_TYPE_ICONS[link.type] || LINK_TYPE_ICONS.other}
+                </span>
+                <span className="flex-1 text-sm font-medium text-gray-700">
+                  {link.label}
+                </span>
+                <ExternalLink className="size-4 text-gray-300" />
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ---------------------------------------------------------------- */}
       {/* Services                                                         */}
       {/* ---------------------------------------------------------------- */}
       {hasServices && (
         <section className="mt-8">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-            Servi\u00E7os
+            Serviços
           </h2>
           <div className="space-y-2">
             {services.map((service) => (
@@ -314,7 +348,7 @@ export function PublicClinicPage({ clinic, services }: PublicClinicPageProps) {
       {operatingHours && (
         <section className="mt-8">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-            Hor\u00E1rio de Funcionamento
+            Horário de Funcionamento
           </h2>
           <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
             {WEEKDAY_ORDER.map((day) => {
@@ -344,40 +378,13 @@ export function PublicClinicPage({ clinic, services }: PublicClinicPageProps) {
       )}
 
       {/* ---------------------------------------------------------------- */}
-      {/* Social Links                                                     */}
-      {/* ---------------------------------------------------------------- */}
-      {hasSocialLinks && (
-        <section className="mt-8">
-          <div className="space-y-2">
-            {clinic.social_links.map((link, i) => (
-              <a
-                key={`${link.type}-${i}`}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex w-full items-center gap-3 rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-sm transition-colors hover:bg-gray-50"
-              >
-                <span className="text-lg leading-none">
-                  {LINK_TYPE_ICONS[link.type] || LINK_TYPE_ICONS.other}
-                </span>
-                <span className="flex-1 text-sm font-medium text-gray-700">
-                  {link.label}
-                </span>
-                <ExternalLink className="size-4 text-gray-300" />
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ---------------------------------------------------------------- */}
       {/* Footer                                                           */}
       {/* ---------------------------------------------------------------- */}
       <footer className="mt-12 pb-6 text-center">
         <p className="text-xs text-gray-300">
           Powered by{" "}
           <span className="font-semibold" style={{ color: clinic.accent_color }}>
-            \u00D3rbita
+            Órbita
           </span>
         </p>
       </footer>
