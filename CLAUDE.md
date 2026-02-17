@@ -148,6 +148,10 @@ return NextResponse.json({ status: "ok" });
 - `clinics.operating_hours` (JSONB): same `ScheduleGrid` format as `professionals.schedule_grid`.
 - `appointments.insurance_plan_id` (nullable FK to `insurance_plans`) — optional insurance plan per appointment.
 - `clinics.is_active` (boolean, default false): controls whether agents respond to WhatsApp messages and crons process the clinic. Requires 5 minimum requirements to activate via `PUT /api/onboarding/activate`.
+- `clinics.public_page_enabled` (boolean, default false): toggles public clinic page visibility at `/c/{slug}`.
+- `clinics.accent_color` (text, default `#0EA5E9`): hex color for public page branding.
+- `clinics.social_links` (JSONB, default `[]`): array of `{ type, url, label }` for Linktree-style links.
+- `clinics.show_prices` (boolean, default true): toggles service price display on public page.
 
 ---
 
@@ -485,6 +489,13 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 | `/api/settings/services/[id]` | PUT, DELETE | Service update/delete |
 | `/api/settings/insurance-plans` | GET, POST | Insurance plans CRUD (list/create) |
 | `/api/settings/insurance-plans/[id]` | DELETE | Insurance plan delete |
+| `/api/settings/public-page` | GET, PUT | Public page config (accent color, links, toggle) |
+
+### Public API Routes
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/public/clinics/[slug]` | GET | Public clinic data + services (no auth, admin client, cached 5min) |
 
 ### Calendar API Routes
 
