@@ -122,7 +122,7 @@ export async function GET(request: Request) {
       // 5. Fetch clinic for timezone
       const { data: clinic, error: clinicError } = await supabase
         .from("clinics")
-        .select("timezone, whatsapp_phone_number_id, whatsapp_access_token")
+        .select("timezone, whatsapp_phone_number_id, whatsapp_access_token, is_active")
         .eq("id", appointment.clinic_id)
         .single();
 
@@ -130,6 +130,14 @@ export async function GET(request: Request) {
         console.error(
           `[cron/nps] clinic not found for appointment ${appointment.id}:`,
           clinicError?.message
+        );
+        skipped++;
+        continue;
+      }
+
+      if (!clinic.is_active) {
+        console.log(
+          `[cron/nps] skipping appointment ${appointment.id}: clinic is not active`
         );
         skipped++;
         continue;

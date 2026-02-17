@@ -42,10 +42,11 @@ export async function GET(request: Request) {
   cutoffDate.setDate(cutoffDate.getDate() - INACTIVE_DAYS);
   const cutoff = cutoffDate.toISOString();
 
-  // Get all clinics
+  // Get all active clinics
   const { data: clinics, error: clinicsError } = await supabase
     .from("clinics")
-    .select("id");
+    .select("id")
+    .eq("is_active", true);
 
   if (clinicsError || !clinics) {
     return NextResponse.json(

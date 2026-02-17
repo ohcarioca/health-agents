@@ -97,9 +97,17 @@ export async function GET(request: Request) {
       // Fetch clinic for timezone and name
       const { data: clinic } = await supabase
         .from("clinics")
-        .select("timezone, name, whatsapp_phone_number_id, whatsapp_access_token")
+        .select("timezone, name, whatsapp_phone_number_id, whatsapp_access_token, is_active")
         .eq("id", entry.clinic_id)
         .single();
+
+      if (clinic && !clinic.is_active) {
+        console.log(
+          `[cron/recall-send] skipping entry ${entry.id}: clinic is not active`
+        );
+        skipped++;
+        continue;
+      }
 
       const timezone = (clinic?.timezone as string) || "America/Sao_Paulo";
       const clinicName = (clinic?.name as string) || "a clinica";

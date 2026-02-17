@@ -88,9 +88,17 @@ export async function GET(request: Request) {
 
     const { data: clinic } = await supabase
       .from("clinics")
-      .select("timezone, whatsapp_phone_number_id, whatsapp_access_token")
+      .select("timezone, whatsapp_phone_number_id, whatsapp_access_token, is_active")
       .eq("id", invoice.clinic_id)
       .single();
+
+    if (clinic && !clinic.is_active) {
+      console.log(
+        `[cron/billing] skipping invoice ${invoice.id}: clinic is not active`
+      );
+      skipped++;
+      continue;
+    }
 
     const timezone = (clinic?.timezone as string) || "America/Sao_Paulo";
 
