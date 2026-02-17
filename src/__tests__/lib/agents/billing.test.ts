@@ -99,7 +99,7 @@ function createBillingMockSupabase(options: {
       id: "inv-123",
       amount_cents: 15000,
       due_date: "2026-03-01",
-      description: "Consulta",
+      notes: "Consulta",
       clinic_id: "clinic-789",
       status: "pending",
       patients: {
@@ -184,7 +184,7 @@ describe("billing agent", () => {
   });
 
   describe("getTools", () => {
-    it("returns exactly 4 tools", () => {
+    it("returns exactly 5 tools", () => {
       const config = getAgentType("billing")!;
       const tools = config.getTools({
         clinicId: "clinic-789",
@@ -313,6 +313,40 @@ describe("billing agent", () => {
         expect(result.appendToResponse).toContain("https://www.asaas.com/i/abc123");
         expect(mockSupabase.from).toHaveBeenCalledWith("invoices");
         expect(mockSupabase.from).toHaveBeenCalledWith("payment_links");
+      });
+    });
+
+    describe("create_payment_link credit_card", () => {
+      it("creates a credit card payment link and returns URL", async () => {
+        const { createCharge: mockCreateCharge } = await import("@/services/asaas");
+
+        const mockSupabase = createBillingMockSupabase();
+        const context = createToolCallContext({
+          supabase: mockSupabase as unknown as ToolCallContext["supabase"],
+        });
+
+        const result: ToolCallResult = await config.handleToolCall(
+          {
+            name: "create_payment_link",
+            args: { invoice_id: "inv-123", method: "credit_card" },
+          },
+          context
+        );
+
+        expect(result.result).toBeDefined();
+        expect(result.result).toContain("Payment link created");
+        expect(result.result).toContain("CREDIT_CARD");
+        expect(result.appendToResponse).toBeDefined();
+        expect(result.appendToResponse).toContain("https://www.asaas.com/i/abc123");
+
+        // Should NOT call getPixQrCode for credit card
+        const { getPixQrCode: mockGetPixQrCode } = await import("@/services/asaas");
+        expect(mockGetPixQrCode).not.toHaveBeenCalled();
+
+        // Verify billingType passed to createCharge
+        expect(mockCreateCharge).toHaveBeenCalledWith(
+          expect.objectContaining({ billingType: "CREDIT_CARD" })
+        );
       });
     });
 

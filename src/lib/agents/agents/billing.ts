@@ -25,7 +25,7 @@ const BASE_PROMPTS: Record<string, string> = {
 Fluxo principal:
 1. Quando o paciente mencionar pagamento, cobranca ou fatura, chame list_patient_invoices IMEDIATAMENTE para buscar as faturas pendentes.
 2. Se houver apenas UMA fatura pendente, prossiga automaticamente sem pedir o ID.
-3. Pergunte apenas o metodo de pagamento (Pix ou boleto) se o paciente ainda nao informou.
+3. Pergunte apenas o metodo de pagamento (Pix, boleto ou cartao de credito/debito) se o paciente ainda nao informou.
 4. Chame create_payment_link com o invoice_id e o metodo escolhido.
 5. Para consultas de status, chame list_patient_invoices e depois check_payment_status com o invoice_id encontrado.
 
@@ -47,7 +47,7 @@ Regras:
 Main flow:
 1. When the patient mentions payment, billing, or invoice, call list_patient_invoices IMMEDIATELY to find their pending invoices.
 2. If there is only ONE pending invoice, proceed automatically without asking for the ID.
-3. Only ask for the payment method (Pix or boleto) if the patient hasn't specified it yet.
+3. Only ask for the payment method (Pix, boleto, or credit/debit card) if the patient hasn't specified it yet.
 4. Call create_payment_link with the invoice_id and chosen method.
 5. For status checks, call list_patient_invoices then check_payment_status with the found invoice_id.
 
@@ -69,7 +69,7 @@ Rules:
 Flujo principal:
 1. Cuando el paciente mencione pago, cobro o factura, llama list_patient_invoices INMEDIATAMENTE para buscar las facturas pendientes.
 2. Si hay solo UNA factura pendiente, procede automaticamente sin pedir el ID.
-3. Solo pregunta el metodo de pago (Pix o boleto) si el paciente aun no lo informo.
+3. Solo pregunta el metodo de pago (Pix, boleto o tarjeta de credito/debito) si el paciente aun no lo informo.
 4. Llama create_payment_link con el invoice_id y el metodo elegido.
 5. Para consultas de estado, llama list_patient_invoices y despues check_payment_status con el invoice_id encontrado.
 
@@ -91,9 +91,9 @@ Reglas:
 
 const INSTRUCTIONS: Record<string, string> = {
   "pt-BR":
-    "Gerencie cobrancas e pagamentos via Pix e boleto, envie lembretes com tom adaptado e processe confirmacoes de pagamento.",
-  en: "Manage billing and payments via Pix and boleto, send reminders with adapted tone, and process payment confirmations.",
-  es: "Gestiona cobros y pagos via Pix y boleto, envia recordatorios con tono adaptado y procesa confirmaciones de pago.",
+    "Gerencie cobrancas e pagamentos via Pix, boleto e cartao de credito/debito, envie lembretes com tom adaptado e processe confirmacoes de pagamento.",
+  en: "Manage billing and payments via Pix, boleto, and credit/debit card, send reminders with adapted tone, and process payment confirmations.",
+  es: "Gestiona cobros y pagos via Pix, boleto y tarjeta de credito/debito, envia recordatorios con tono adaptado y procesa confirmaciones de pago.",
 };
 
 // ── Tool Definitions (Stubs) ──
@@ -121,14 +121,14 @@ const createPaymentLinkTool = tool(
   {
     name: "create_payment_link",
     description:
-      "Generates a payment link for a specific invoice. Call this when the patient needs a link to pay via Pix or boleto.",
+      "Generates a payment link for a specific invoice. Call this when the patient needs a link to pay via Pix, boleto, or credit/debit card.",
     schema: z.object({
       invoice_id: z
         .string()
         .describe("The ID of the invoice to generate a payment link for"),
       method: z
-        .enum(["pix", "boleto"])
-        .describe("The payment method: 'pix' for instant Pix payment or 'boleto' for bank slip"),
+        .enum(["pix", "boleto", "credit_card"])
+        .describe("The payment method: 'pix' for instant Pix payment, 'boleto' for bank slip, or 'credit_card' for credit/debit card"),
     }),
   }
 );
@@ -307,7 +307,7 @@ async function handleCreatePaymentLink(
     const { data: invoice, error: invoiceError } = await context.supabase
       .from("invoices")
       .select(
-        "id, amount_cents, due_date, description, clinic_id, patients!inner(id, name, phone, email, cpf, asaas_customer_id)"
+        "id, amount_cents, due_date, notes, clinic_id, patients!inner(id, name, phone, email, cpf, asaas_customer_id)"
       )
       .eq("id", invoiceId)
       .single();
@@ -338,13 +338,18 @@ async function handleCreatePaymentLink(
     }
 
     // Create charge in Asaas
-    const billingType = method === "pix" ? "PIX" : "BOLETO";
+    const BILLING_TYPE_MAP: Record<string, "PIX" | "BOLETO" | "CREDIT_CARD"> = {
+      pix: "PIX",
+      boleto: "BOLETO",
+      credit_card: "CREDIT_CARD",
+    };
+    const billingType = BILLING_TYPE_MAP[method] ?? "PIX";
     const chargeResult = await createCharge({
       customerId,
-      billingType: billingType as "PIX" | "BOLETO",
+      billingType,
       valueCents: invoice.amount_cents as number,
       dueDate: invoice.due_date as string,
-      description: (invoice.description as string) ?? undefined,
+      description: (invoice.notes as string) ?? undefined,
       externalReference: invoiceId,
     });
 
