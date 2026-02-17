@@ -505,7 +505,19 @@
     "back": "Back",
     "next": "Next",
     "finish": "Finish",
-    "finishing": "Finishing..."
+    "finishing": "Finishing...",
+    "completion": {
+      "title": "Setup complete!",
+      "subtitle": "Your clinic is almost ready to start serving patients.",
+      "requirementsTitle": "Activation requirements",
+      "allMet": "All requirements are met. Activate your clinic to start receiving appointments via WhatsApp.",
+      "someMissing": "Some requirements still need to be completed. You can finish later in Settings.",
+      "activate": "Activate Clinic",
+      "activating": "Activating...",
+      "goToDashboard": "Go to Dashboard",
+      "activated": "Clinic activated successfully!",
+      "activationError": "Could not activate. Please try again."
+    }
   },
   "activation": {
     "active": "Active",

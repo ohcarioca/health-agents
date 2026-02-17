@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -13,6 +13,7 @@ import { StepProfessional } from "@/components/onboarding/step-professional";
 import type { ServiceItem } from "@/components/onboarding/step-professional";
 import { StepWhatsapp } from "@/components/onboarding/step-whatsapp";
 import { StepCalendar } from "@/components/onboarding/step-calendar";
+import { StepCompletion } from "@/components/onboarding/step-completion";
 import type { ScheduleGrid } from "@/lib/validations/settings";
 
 const TOTAL_STEPS = 5;
@@ -29,7 +30,6 @@ const EMPTY_SCHEDULE: ScheduleGrid = {
 
 export function SetupWizard() {
   const t = useTranslations("onboarding");
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // Navigation
@@ -66,6 +66,9 @@ export function SetupWizard() {
   // Step 5 state — Google Calendar
   const [calendarConnected, setCalendarConnected] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
+
+  // Completion state
+  const [showCompletion, setShowCompletion] = useState(false);
 
   // --- Data loading ---
 
@@ -383,17 +386,8 @@ export function SetupWizard() {
     if (step > 1) setStep(step - 1);
   }
 
-  async function handleFinish() {
-    setLoading(true);
-    try {
-      // Clear onboarding cookie so the modal stops showing
-      document.cookie = "onboarding_active=; path=/; max-age=0";
-      router.push("/");
-      router.refresh();
-    } catch (err) {
-      console.error("[setup] finish error:", err);
-      setLoading(false);
-    }
+  function handleFinish() {
+    setShowCompletion(true);
   }
 
   // --- Labels for stepper ---
@@ -414,6 +408,10 @@ export function SetupWizard() {
         <Spinner size="lg" />
       </div>
     );
+  }
+
+  if (showCompletion) {
+    return <StepCompletion />;
   }
 
   function renderStep() {

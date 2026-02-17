@@ -505,7 +505,19 @@
     "back": "Volver",
     "next": "Siguiente",
     "finish": "Finalizar",
-    "finishing": "Finalizando..."
+    "finishing": "Finalizando...",
+    "completion": {
+      "title": "¡Configuración completada!",
+      "subtitle": "Su clínica está casi lista para comenzar a atender.",
+      "requirementsTitle": "Requisitos para activación",
+      "allMet": "Todos los requisitos fueron cumplidos. Active su clínica para comenzar a recibir citas por WhatsApp.",
+      "someMissing": "Algunos requisitos aún necesitan ser completados. Puede finalizar después en Configuraciones.",
+      "activate": "Activar Clínica",
+      "activating": "Activando...",
+      "goToDashboard": "Ir al Panel",
+      "activated": "¡Clínica activada con éxito!",
+      "activationError": "No se pudo activar. Intente nuevamente."
+    }
   },
   "activation": {
     "active": "Activo",
