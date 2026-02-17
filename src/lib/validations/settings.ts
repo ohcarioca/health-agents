@@ -103,6 +103,14 @@ export type UpsertProfessionalServicesInput = z.infer<typeof upsertProfessionalS
 export const operatingHoursSchema = scheduleGridSchema;
 export type OperatingHours = ScheduleGrid;
 
+// --- Onboarding Activation ---
+
+export const activateClinicSchema = z.object({
+  active: z.boolean(),
+});
+
+export type ActivateClinicInput = z.infer<typeof activateClinicSchema>;
+
 // --- Calendar Appointments ---
 
 export const createAppointmentSchema = z.object({
