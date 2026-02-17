@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -114,7 +113,14 @@ export function ConversationDetail({
   }
 
   return (
-    <Card variant="glass" className="flex h-full flex-col">
+    <div
+      className="flex h-full flex-col rounded-xl border"
+      style={{
+        backgroundColor: "var(--surface)",
+        borderColor: "var(--border)",
+        boxShadow: "var(--shadow-sm)",
+      }}
+    >
       {/* Header */}
       <div
         className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4"
@@ -221,6 +227,6 @@ export function ConversationDetail({
           </Button>
         </form>
       )}
-    </Card>
+    </div>
   );
 }

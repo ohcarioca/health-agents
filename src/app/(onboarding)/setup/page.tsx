@@ -134,7 +134,7 @@ export default function SetupPage() {
         </div>
       </div>
 
-      <Card variant="glass">
+      <Card>
         {/* Step 1: Clinic Data */}
         {step === 1 && (
           <div className="space-y-4">
@@ -240,7 +240,7 @@ export default function SetupPage() {
                       <button
                         type="button"
                         onClick={() => removePatient(p.id)}
-                        className="rounded p-1 transition-colors hover:bg-[rgba(239,68,68,0.1)]"
+                        className="rounded p-1 transition-colors hover:bg-[rgba(239,68,68,0.08)]"
                         style={{ color: "var(--text-muted)" }}
                       >
                         <X className="size-3.5" />

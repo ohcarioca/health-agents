@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { CalendarView } from "@/components/calendar/calendar-view";
 import { getProfessionalColor } from "@/lib/calendar/utils";
+import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 
 export default async function CalendarPage() {
   const t = await getTranslations("calendar");
@@ -40,14 +42,11 @@ export default async function CalendarPage() {
   }));
 
   return (
-    <div>
-      <h1
-        className="mb-6 text-xl font-semibold"
-        style={{ color: "var(--text-primary)" }}
-      >
-        {t("title")}
-      </h1>
-      <CalendarView professionals={professionalOptions} />
-    </div>
+    <PageContainer>
+      <PageHeader title={t("title")} />
+      <div className="mt-6">
+        <CalendarView professionals={professionalOptions} />
+      </div>
+    </PageContainer>
   );
 }

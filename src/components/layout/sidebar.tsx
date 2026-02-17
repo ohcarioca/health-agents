@@ -1,30 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PanelLeftClose, PanelLeft, Menu, X } from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
-import { SidebarUserMenu } from "./sidebar-user-menu";
-import { LocaleSwitcher } from "@/components/shared/locale-switcher";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface SidebarProps {
   clinicName: string;
-  userName: string;
-  userEmail: string;
+  onCollapseChange?: (collapsed: boolean) => void;
 }
 
-export function Sidebar({ clinicName, userName, userEmail }: SidebarProps) {
+export function Sidebar({ clinicName, onCollapseChange }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const updateCollapsed = useCallback(
+    (value: boolean) => {
+      setCollapsed(value);
+      onCollapseChange?.(value);
+    },
+    [onCollapseChange]
+  );
+
   useEffect(() => {
     const stored = localStorage.getItem("sidebar-collapsed");
-    if (stored === "true") setCollapsed(true);
-  }, []);
+    if (stored === "true") {
+      updateCollapsed(true);
+    }
+  }, [updateCollapsed]);
 
   function toggleCollapsed() {
     const next = !collapsed;
-    setCollapsed(next);
+    updateCollapsed(next);
     localStorage.setItem("sidebar-collapsed", String(next));
   }
 
@@ -33,7 +39,7 @@ export function Sidebar({ clinicName, userName, userEmail }: SidebarProps) {
       {/* Mobile hamburger button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed left-4 top-4 z-40 rounded-lg p-2 lg:hidden"
+        className="fixed left-4 top-4 z-50 rounded-lg p-2 lg:hidden"
         style={{ color: "var(--text-primary)" }}
       >
         <Menu className="size-5" strokeWidth={1.75} />
@@ -42,7 +48,7 @@ export function Sidebar({ clinicName, userName, userEmail }: SidebarProps) {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -51,20 +57,18 @@ export function Sidebar({ clinicName, userName, userEmail }: SidebarProps) {
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r transition-all duration-200 ${
           mobileOpen
-            ? "translate-x-0 w-[280px]"
+            ? "translate-x-0 w-[240px]"
             : "-translate-x-full lg:translate-x-0"
-        } ${collapsed ? "lg:w-16" : "lg:w-[260px]"}`}
+        } ${collapsed ? "lg:w-16" : "lg:w-[240px]"}`}
         style={{
           backgroundColor: "var(--sidebar-bg)",
-          backdropFilter: "blur(var(--glass-blur))",
-          WebkitBackdropFilter: "blur(var(--glass-blur))",
-          borderColor: "var(--glass-border)",
+          borderColor: "var(--border)",
         }}
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between border-b px-4 py-4"
-          style={{ borderColor: "var(--glass-border)" }}
+          className="flex h-16 items-center justify-between border-b px-4"
+          style={{ borderColor: "var(--border)" }}
         >
           {!collapsed && (
             <span
@@ -97,21 +101,6 @@ export function Sidebar({ clinicName, userName, userEmail }: SidebarProps) {
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto py-4">
           <SidebarNav collapsed={collapsed} />
-        </div>
-
-        {/* Bottom: locale + theme + user */}
-        <div className="space-y-2">
-          {!collapsed && (
-            <div className="flex items-center justify-between px-4">
-              <LocaleSwitcher />
-              <ThemeToggle />
-            </div>
-          )}
-          <SidebarUserMenu
-            collapsed={collapsed}
-            userName={userName}
-            userEmail={userEmail}
-          />
         </div>
       </aside>
     </>

@@ -69,18 +69,19 @@ export default function SettingsPage() {
       <div className="mt-6 space-y-6">
         {/* Tab bar */}
         <div
-          className="flex gap-1 overflow-x-auto border-b"
-          style={{ borderColor: "var(--border)" }}
+          className="flex flex-wrap gap-1 overflow-x-auto rounded-lg p-1"
+          style={{ backgroundColor: "var(--background)" }}
         >
           {TAB_KEYS.map((tab, i) => (
             <button
               key={tab}
               onClick={() => setActiveTab(i)}
-              className={`whitespace-nowrap px-4 py-2 text-sm font-medium transition-colors ${
+              className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 i === activeTab
-                  ? "border-b-2 border-[var(--accent)] text-[var(--accent)]"
+                  ? "bg-[var(--surface)] text-[var(--accent)]"
                   : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               }`}
+              style={i === activeTab ? { boxShadow: "var(--shadow-sm)" } : undefined}
             >
               {t(tab)}
             </button>

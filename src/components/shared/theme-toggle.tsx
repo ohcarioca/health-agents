@@ -9,7 +9,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="inline-flex items-center justify-center rounded-lg p-2 transition-colors hover:bg-[rgba(255,255,255,0.04)]"
+      className="inline-flex items-center justify-center rounded-lg p-2 transition-colors hover:bg-[var(--nav-hover-bg)]"
       style={{ color: "var(--text-secondary)" }}
     >
       {theme === "dark" ? (

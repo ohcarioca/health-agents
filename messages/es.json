@@ -29,6 +29,13 @@
     "team": "Equipo",
     "settings": "Configuración"
   },
+  "topBar": {
+    "searchPlaceholder": "Buscar...",
+    "notifications": "Notificaciones",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "signOut": "Cerrar sesión"
+  },
   "home": {
     "title": "Órbita",
     "subtitle": "Plataforma de agentes para salud"
@@ -83,7 +90,15 @@
       "failure": "Fallo de envío"
     },
     "noData": "Sin datos",
-    "viewAll": "Ver todos"
+    "viewAll": "Ver todos",
+    "upcomingAppointments": "Próximas Citas",
+    "addNew": "Agregar",
+    "service": "Servicio",
+    "patient": "Paciente",
+    "dateTime": "Fecha y Hora",
+    "status": "Estado",
+    "noAppointments": "No hay citas para hoy",
+    "noAppointmentsForDate": "No hay citas para esta fecha"
   },
   "inbox": {
     "title": "Bandeja de Entrada",

@@ -7,27 +7,23 @@ export default function AuthLayout({
 }) {
   return (
     <div
-      className="relative flex min-h-screen items-center justify-center px-4"
+      className="flex min-h-screen items-center justify-center px-4"
       style={{ backgroundColor: "var(--background)" }}
     >
-      {/* Atmospheric background glow */}
       <div
-        className="pointer-events-none fixed inset-0"
+        className="w-full max-w-sm rounded-2xl border p-8"
         style={{
-          backgroundImage: "var(--atmosphere-primary)",
+          backgroundColor: "var(--surface)",
+          borderColor: "var(--border)",
+          boxShadow: "var(--shadow-lg)",
         }}
-      />
-
-      {/* Glass card */}
-      <div className="glass-elevated relative w-full max-w-sm rounded-2xl p-8">
-        {/* Decorative accent icon */}
+      >
         <div
           className="mx-auto mb-6 flex size-12 items-center justify-center rounded-xl"
           style={{ backgroundColor: "var(--accent)" }}
         >
           <Zap className="size-6 text-white" strokeWidth={2} />
         </div>
-
         {children}
       </div>
     </div>

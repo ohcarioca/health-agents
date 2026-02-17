@@ -95,7 +95,7 @@ export function TeamContent({
             const isSelf = member.user_id === currentUserId;
 
             return (
-              <Card key={member.id} variant="glass">
+              <Card key={member.id}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar name={member.name || member.email} size="sm" />
@@ -149,7 +149,7 @@ export function TeamContent({
                     {isOwner && !isSelf && (
                       <button
                         onClick={() => handleRemove(member)}
-                        className="rounded-lg p-1.5 transition-colors hover:bg-[rgba(239,68,68,0.1)]"
+                        className="rounded-lg p-1.5 transition-colors hover:bg-[rgba(239,68,68,0.08)]"
                         style={{ color: "var(--danger)" }}
                       >
                         <Trash2 className="size-4" strokeWidth={1.75} />

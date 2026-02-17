@@ -6,11 +6,11 @@ interface BadgeProps {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  success: "bg-[rgba(34,197,94,0.15)] text-[var(--success)]",
-  warning: "bg-[rgba(245,158,11,0.15)] text-[var(--warning)]",
-  danger: "bg-[rgba(239,68,68,0.15)] text-[var(--danger)]",
-  accent: "bg-[rgba(139,92,246,0.15)] text-[var(--accent)]",
-  neutral: "bg-[rgba(255,255,255,0.06)] text-[var(--text-muted)]",
+  success: "bg-[rgba(34,197,94,0.1)] text-[var(--success)]",
+  warning: "bg-[rgba(245,158,11,0.1)] text-[var(--warning)]",
+  danger: "bg-[rgba(239,68,68,0.1)] text-[var(--danger)]",
+  accent: "bg-[rgba(139,92,246,0.1)] text-[var(--accent)]",
+  neutral: "bg-[var(--nav-hover-bg)] text-[var(--text-muted)]",
 };
 
 export function Badge({ children, variant = "neutral" }: BadgeProps) {

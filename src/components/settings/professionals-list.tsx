@@ -121,7 +121,7 @@ export function ProfessionalsList() {
       ) : (
         <div className="space-y-3">
           {professionals.map((prof) => (
-            <Card key={prof.id} variant="glass">
+            <Card key={prof.id}>
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <p
@@ -142,14 +142,14 @@ export function ProfessionalsList() {
                   </button>
                   <button
                     onClick={() => openEdit(prof)}
-                    className="rounded-lg p-1.5 transition-colors hover:bg-[rgba(255,255,255,0.06)]"
+                    className="rounded-lg p-1.5 transition-colors hover:bg-[var(--nav-hover-bg)]"
                     style={{ color: "var(--text-muted)" }}
                   >
                     <Pencil className="size-4" strokeWidth={1.75} />
                   </button>
                   <button
                     onClick={() => handleDelete(prof)}
-                    className="rounded-lg p-1.5 transition-colors hover:bg-[rgba(239,68,68,0.1)]"
+                    className="rounded-lg p-1.5 transition-colors hover:bg-[rgba(239,68,68,0.08)]"
                     style={{ color: "var(--danger)" }}
                   >
                     <Trash2 className="size-4" strokeWidth={1.75} />

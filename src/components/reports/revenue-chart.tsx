@@ -36,7 +36,7 @@ export function RevenueChart({ trend, metrics }: RevenueChartProps) {
   const t = useTranslations("reports.revenue");
 
   return (
-    <Card variant="glass">
+    <Card>
       <div className="mb-4 flex items-start justify-between">
         <p
           className="text-sm font-medium"

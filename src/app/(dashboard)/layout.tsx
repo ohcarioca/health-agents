@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { Sidebar } from "@/components/layout/sidebar";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
 
 export default async function DashboardLayout({
   children,
@@ -38,24 +38,12 @@ export default async function DashboardLayout({
   const userEmail = user.email || "";
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ backgroundColor: "var(--background)" }}
+    <DashboardShell
+      clinicName={clinicName}
+      userName={userName}
+      userEmail={userEmail}
     >
-      <Sidebar
-        clinicName={clinicName}
-        userName={userName}
-        userEmail={userEmail}
-      />
-      <main className="relative min-h-screen pt-14 transition-all duration-200 lg:pl-[260px] lg:pt-0">
-        <div
-          className="pointer-events-none fixed inset-0"
-          style={{
-            backgroundImage: "var(--atmosphere-dashboard)",
-          }}
-        />
-        <div className="relative">{children}</div>
-      </main>
-    </div>
+      {children}
+    </DashboardShell>
   );
 }

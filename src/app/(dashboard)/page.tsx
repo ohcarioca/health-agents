@@ -3,6 +3,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { AlertsList } from "@/components/dashboard/alerts-list";
+import { UpcomingAppointments } from "@/components/dashboard/upcoming-appointments";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getClinicId } from "@/lib/supabase/server";
 import { calculateNPS, formatCents } from "@/lib/analytics/kpis";
@@ -104,27 +105,14 @@ export default async function DashboardPage() {
     <PageContainer>
       <PageHeader title={t("title")} />
       <div className="mt-6 space-y-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {/* Row 1: Primary KPI cards — 3 columns */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <KpiCard
             label={t("kpi.appointments")}
             value={appointments.count || 0}
             icon={Calendar}
             iconBg="rgba(139,92,246,0.15)"
             iconColor="var(--accent)"
-          />
-          <KpiCard
-            label={t("kpi.confirmations")}
-            value={confirmations.count || 0}
-            icon={CheckCircle2}
-            iconBg="rgba(34,197,94,0.15)"
-            iconColor="var(--success)"
-          />
-          <KpiCard
-            label={t("kpi.noShows")}
-            value={noShows.count || 0}
-            icon={UserX}
-            iconBg="rgba(245,158,11,0.15)"
-            iconColor="var(--warning)"
           />
           <KpiCard
             label={t("kpi.nps")}
@@ -142,15 +130,72 @@ export default async function DashboardPage() {
             iconColor="var(--danger)"
             subtitle={overdueTotal > 0 ? "overdue" : undefined}
           />
-          <KpiCard
-            label={t("kpi.escalated")}
-            value={escalated.count || 0}
-            icon={MessageSquare}
-            iconBg="rgba(139,92,246,0.15)"
-            iconColor="var(--accent)"
-          />
         </div>
-        <AlertsList />
+
+        {/* Row 2: Upcoming Appointments (2/3) + Alerts (1/3) */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <UpcomingAppointments />
+          </div>
+          <div className="lg:col-span-1">
+            <AlertsList />
+          </div>
+        </div>
+
+        {/* Row 3: Secondary stats — inline badges */}
+        <div
+          className="flex flex-wrap items-center gap-3 rounded-xl border px-5 py-4"
+          style={{
+            backgroundColor: "var(--surface)",
+            borderColor: "var(--border)",
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="size-4" style={{ color: "var(--success)" }} />
+            <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              {t("kpi.confirmations")}
+            </span>
+            <span
+              className="font-mono text-sm font-semibold"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {confirmations.count || 0}
+            </span>
+          </div>
+          <div
+            className="hidden h-4 w-px sm:block"
+            style={{ backgroundColor: "var(--border)" }}
+          />
+          <div className="flex items-center gap-2">
+            <UserX className="size-4" style={{ color: "var(--warning)" }} />
+            <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              {t("kpi.noShows")}
+            </span>
+            <span
+              className="font-mono text-sm font-semibold"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {noShows.count || 0}
+            </span>
+          </div>
+          <div
+            className="hidden h-4 w-px sm:block"
+            style={{ backgroundColor: "var(--border)" }}
+          />
+          <div className="flex items-center gap-2">
+            <MessageSquare className="size-4" style={{ color: "var(--accent)" }} />
+            <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              {t("kpi.escalated")}
+            </span>
+            <span
+              className="font-mono text-sm font-semibold"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {escalated.count || 0}
+            </span>
+          </div>
+        </div>
       </div>
     </PageContainer>
   );

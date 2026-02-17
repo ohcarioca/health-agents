@@ -116,7 +116,7 @@ export function InsurancePlansList() {
               {plan.name}
               <button
                 onClick={() => handleDelete(plan)}
-                className="rounded-full p-0.5 transition-colors hover:bg-[rgba(239,68,68,0.2)]"
+                className="rounded-full p-0.5 transition-colors hover:bg-[rgba(239,68,68,0.08)]"
                 style={{ color: "var(--text-muted)" }}
               >
                 <X className="size-3" strokeWidth={2} />

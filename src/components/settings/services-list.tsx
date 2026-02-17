@@ -158,7 +158,7 @@ export function ServicesList() {
       ) : (
         <div className="space-y-3">
           {services.map((svc) => (
-            <Card key={svc.id} variant="glass">
+            <Card key={svc.id}>
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <p
@@ -174,14 +174,14 @@ export function ServicesList() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => openEdit(svc)}
-                    className="rounded-lg p-1.5 transition-colors hover:bg-[rgba(255,255,255,0.06)]"
+                    className="rounded-lg p-1.5 transition-colors hover:bg-[var(--nav-hover-bg)]"
                     style={{ color: "var(--text-muted)" }}
                   >
                     <Pencil className="size-4" strokeWidth={1.75} />
                   </button>
                   <button
                     onClick={() => handleDelete(svc)}
-                    className="rounded-lg p-1.5 transition-colors hover:bg-[rgba(239,68,68,0.1)]"
+                    className="rounded-lg p-1.5 transition-colors hover:bg-[rgba(239,68,68,0.08)]"
                     style={{ color: "var(--danger)" }}
                   >
                     <Trash2 className="size-4" strokeWidth={1.75} />

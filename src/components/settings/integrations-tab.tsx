@@ -132,7 +132,7 @@ export function IntegrationsTab() {
           {t("connectDescription")}
         </p>
 
-        <Card variant="glass">
+        <Card>
           <div className="space-y-3">
             {professionals.length === 0 ? (
               <p
@@ -153,7 +153,7 @@ export function IntegrationsTab() {
                     key={professional.id}
                     className="flex items-center gap-3 rounded-lg px-3 py-2"
                     style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.02)",
+                      backgroundColor: "var(--nav-hover-bg)",
                     }}
                   >
                     <div className="min-w-0 flex-1">
@@ -222,7 +222,7 @@ export function IntegrationsTab() {
 
       {/* Gmail and Pagar.me placeholder sections */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Card variant="glass">
+        <Card>
           <div className="flex items-center gap-3">
             <Mail
               className="size-5"
@@ -247,7 +247,7 @@ export function IntegrationsTab() {
           </div>
         </Card>
 
-        <Card variant="glass">
+        <Card>
           <div className="flex items-center gap-3">
             <CreditCard
               className="size-5"

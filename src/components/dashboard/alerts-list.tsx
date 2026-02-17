@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -53,7 +52,14 @@ export function AlertsList() {
 
   if (loading) {
     return (
-      <Card variant="glass">
+      <div
+        className="rounded-xl border p-5"
+        style={{
+          backgroundColor: "var(--surface)",
+          borderColor: "var(--border)",
+          boxShadow: "var(--shadow-sm)",
+        }}
+      >
         <p
           className="text-sm font-medium"
           style={{ color: "var(--text-secondary)" }}
@@ -63,12 +69,19 @@ export function AlertsList() {
         <div className="mt-4 flex justify-center py-8">
           <Spinner size="md" />
         </div>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card variant="glass">
+    <div
+      className="rounded-xl border p-5"
+      style={{
+        backgroundColor: "var(--surface)",
+        borderColor: "var(--border)",
+        boxShadow: "var(--shadow-sm)",
+      }}
+    >
       <p
         className="text-sm font-medium"
         style={{ color: "var(--text-secondary)" }}
@@ -87,8 +100,7 @@ export function AlertsList() {
             return (
               <div
                 key={alert.id}
-                className="flex items-start gap-3 rounded-lg p-3"
-                style={{ backgroundColor: "var(--surface)" }}
+                className="flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-[var(--nav-hover-bg)]"
               >
                 <Icon
                   className="mt-0.5 size-4 shrink-0"
@@ -125,6 +137,6 @@ export function AlertsList() {
           })}
         </div>
       )}
-    </Card>
+    </div>
   );
 }

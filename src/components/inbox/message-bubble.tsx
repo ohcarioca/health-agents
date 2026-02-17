@@ -22,7 +22,7 @@ export function MessageBubble({
         <span
           className="inline-block max-w-md rounded-full px-4 py-1.5 text-xs"
           style={{
-            backgroundColor: "rgba(255,255,255,0.06)",
+            backgroundColor: "var(--nav-hover-bg)",
             color: "var(--text-muted)",
           }}
         >
@@ -43,8 +43,7 @@ export function MessageBubble({
         style={
           isUser
             ? {
-                backgroundColor: "rgba(255,255,255,0.06)",
-                backdropFilter: "blur(12px)",
+                backgroundColor: "var(--nav-hover-bg)",
                 color: "var(--text-primary)",
               }
             : {
@@ -65,8 +64,8 @@ export function MessageBubble({
             <span
               className="rounded-full px-1.5 py-0.5 text-[10px] font-medium"
               style={{
-                backgroundColor: "rgba(255,255,255,0.15)",
-                color: isUser ? "var(--text-muted)" : "rgba(255,255,255,0.8)",
+                backgroundColor: "var(--accent-muted)",
+                color: isUser ? "var(--text-muted)" : "var(--accent-foreground)",
               }}
             >
               human
@@ -77,7 +76,7 @@ export function MessageBubble({
             style={{
               color: isUser
                 ? "var(--text-muted)"
-                : "rgba(255,255,255,0.7)",
+                : "var(--accent-foreground)",
             }}
           >
             {formatTime(createdAt)}

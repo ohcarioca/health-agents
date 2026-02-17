@@ -85,7 +85,7 @@ export function MonthView({ date, appointments, onDayClick }: MonthViewProps) {
               <button
                 key={di}
                 onClick={() => onDayClick(day)}
-                className="flex min-h-20 flex-col items-center border-b border-r p-1.5 transition-colors hover:bg-[rgba(255,255,255,0.02)]"
+                className="flex min-h-20 flex-col items-center border-b border-r p-1.5 transition-colors hover:bg-[var(--nav-hover-bg)]"
                 style={{
                   borderColor: "var(--border)",
                   opacity: isCurrentMonth ? 1 : 0.35,

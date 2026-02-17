@@ -63,7 +63,7 @@ export default async function ModulesPage() {
           const count = conversationCounts[key] || 0;
 
           return (
-            <Card key={key} interactive variant="glass">
+            <Card key={key} interactive>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div
