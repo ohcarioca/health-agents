@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { PanelLeftClose, PanelLeft, Menu, X } from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
 import { SidebarUserMenu } from "./sidebar-user-menu";
+import { ClinicStatusToggle } from "./clinic-status-toggle";
 import { LocaleSwitcher } from "@/components/shared/locale-switcher";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 
@@ -11,9 +12,10 @@ interface SidebarProps {
   clinicName: string;
   userName: string;
   userEmail: string;
+  isActive: boolean;
 }
 
-export function Sidebar({ clinicName, userName, userEmail }: SidebarProps) {
+export function Sidebar({ clinicName, userName, userEmail, isActive }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -97,6 +99,14 @@ export function Sidebar({ clinicName, userName, userEmail }: SidebarProps) {
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto py-4">
           <SidebarNav collapsed={collapsed} />
+        </div>
+
+        {/* Activation toggle */}
+        <div
+          className="border-t"
+          style={{ borderColor: "var(--glass-border)" }}
+        >
+          <ClinicStatusToggle initialActive={isActive} collapsed={collapsed} />
         </div>
 
         {/* Bottom: locale + theme + user */}
