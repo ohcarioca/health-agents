@@ -57,7 +57,7 @@ No alternative libraries without explicit approval.
 
 ---
 
-## Components & Rendering
+## Components & Rendering#
 
 - **Server Components by default.** Add `"use client"` only when the component uses state, effects, event handlers, or browser APIs.
 - Props interface: `{ComponentName}Props`.
