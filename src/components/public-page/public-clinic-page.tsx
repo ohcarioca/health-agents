@@ -219,6 +219,9 @@ export function PublicClinicPage({ clinic, services }: PublicClinicPageProps) {
       {/* ---------------------------------------------------------------- */}
       {hasSocialLinks && (
         <section className="mt-6">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+            Links
+          </h2>
           <div className="space-y-2">
             {clinic.social_links.map((link, i) => (
               <a
