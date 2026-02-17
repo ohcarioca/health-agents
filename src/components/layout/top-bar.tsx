@@ -64,12 +64,11 @@ export function TopBar({ userName, userEmail, collapsed }: TopBarProps) {
         <input
           type="text"
           placeholder={t("searchPlaceholder")}
-          className="h-9 w-full rounded-lg border pl-9 pr-3 text-sm outline-none transition-colors focus:ring-2"
+          className="h-9 w-full rounded-lg border pl-9 pr-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-[var(--accent-ring)]"
           style={{
             backgroundColor: "var(--surface)",
             borderColor: "var(--border)",
             color: "var(--text-primary)",
-            ringColor: "var(--ring)",
           }}
         />
       </div>

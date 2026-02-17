@@ -65,7 +65,7 @@ export function MessageBubble({
               className="rounded-full px-1.5 py-0.5 text-[10px] font-medium"
               style={{
                 backgroundColor: "var(--accent-muted)",
-                color: isUser ? "var(--text-muted)" : "rgba(255,255,255,0.8)",
+                color: isUser ? "var(--text-muted)" : "var(--accent-foreground)",
               }}
             >
               human
@@ -76,7 +76,7 @@ export function MessageBubble({
             style={{
               color: isUser
                 ? "var(--text-muted)"
-                : "rgba(255,255,255,0.7)",
+                : "var(--accent-foreground)",
             }}
           >
             {formatTime(createdAt)}

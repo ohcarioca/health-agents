@@ -134,7 +134,7 @@ export function PatientSearch({ value, onChange }: PatientSearchProps) {
                 setOpen(false);
                 setQuery("");
               }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-[rgba(255,255,255,0.04)]"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-[var(--nav-hover-bg)]"
             >
               <span style={{ color: "var(--text-primary)" }}>
                 {patient.name}

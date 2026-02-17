@@ -19,6 +19,7 @@
   --accent-hover: #7c3aed;
   --accent-muted: rgba(139,92,246,0.15);
   --accent-ring: rgba(139,92,246,0.40);
+  --accent-foreground: rgba(255,255,255,0.75);
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -47,6 +48,7 @@
   --accent-hover: #6d28d9;
   --accent-muted: rgba(124,58,237,0.10);
   --accent-ring: rgba(124,58,237,0.30);
+  --accent-foreground: rgba(255,255,255,0.75);
   --sidebar-bg: #ffffff;
   --topbar-bg: #ffffff;
   --nav-active-bg: rgba(124,58,237,0.08);

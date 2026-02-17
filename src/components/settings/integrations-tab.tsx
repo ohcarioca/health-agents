@@ -153,7 +153,7 @@ export function IntegrationsTab() {
                     key={professional.id}
                     className="flex items-center gap-3 rounded-lg px-3 py-2"
                     style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.02)",
+                      backgroundColor: "var(--nav-hover-bg)",
                     }}
                   >
                     <div className="min-w-0 flex-1">
