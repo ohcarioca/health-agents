@@ -207,7 +207,50 @@ export default function PublicPageEditor() {
 
   return (
     <PageContainer>
-      <PageHeader title={t("title")} subtitle={t("description")} />
+      <PageHeader
+        title={t("title")}
+        subtitle={t("description")}
+        actions={
+          config.slug ? (
+            <div className="flex items-center gap-2">
+              <div
+                className="flex items-center gap-2 rounded-lg border px-3 py-2"
+                style={{
+                  backgroundColor: "var(--surface)",
+                  borderColor: "var(--border)",
+                }}
+              >
+                <Globe className="size-4" style={{ color: config.public_page_enabled ? config.accent_color : "var(--text-muted)" }} />
+                <span
+                  className="max-w-[240px] truncate font-mono text-sm"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  /c/{config.slug}
+                </span>
+                <button
+                  onClick={copyUrl}
+                  className="rounded p-1 transition-colors hover:bg-white/10"
+                  title={t("copyUrl")}
+                >
+                  {copied ? (
+                    <Check className="size-4 text-green-500" />
+                  ) : (
+                    <Copy className="size-4" style={{ color: "var(--text-secondary)" }} />
+                  )}
+                </button>
+                <a
+                  href={pageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded p-1 transition-colors hover:bg-white/10"
+                >
+                  <ExternalLink className="size-4" style={{ color: "var(--text-secondary)" }} />
+                </a>
+              </div>
+            </div>
+          ) : undefined
+        }
+      />
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Left: Editor Form */}
@@ -250,38 +293,6 @@ export default function PublicPageEditor() {
               </button>
             </div>
 
-            {config.slug && (
-              <div className="mt-4 flex items-center gap-2">
-                <div
-                  className="flex-1 truncate rounded-lg px-3 py-2 text-xs font-mono"
-                  style={{
-                    backgroundColor: "var(--background)",
-                    color: "var(--text-secondary)",
-                  }}
-                >
-                  {pageUrl}
-                </div>
-                <button
-                  onClick={copyUrl}
-                  className="rounded-lg p-2 transition-colors hover:bg-white/10"
-                  title={t("copyUrl")}
-                >
-                  {copied ? (
-                    <Check className="size-4 text-green-500" />
-                  ) : (
-                    <Copy className="size-4" style={{ color: "var(--text-secondary)" }} />
-                  )}
-                </button>
-                <a
-                  href={pageUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-lg p-2 transition-colors hover:bg-white/10"
-                >
-                  <ExternalLink className="size-4" style={{ color: "var(--text-secondary)" }} />
-                </a>
-              </div>
-            )}
           </div>
 
           {/* Appearance */}
