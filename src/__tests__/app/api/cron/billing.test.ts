@@ -57,6 +57,7 @@ const INVOICE = {
 
 const CLINIC = {
   timezone: "America/Sao_Paulo",
+  is_active: true,
   whatsapp_phone_number_id: "123456789",
   whatsapp_access_token: "test-access-token",
 };

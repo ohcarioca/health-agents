@@ -157,7 +157,7 @@ export async function GET(request: Request) {
       // 6. Fetch clinic for timezone
       const { data: clinic, error: clinicError } = await supabase
         .from("clinics")
-        .select("timezone, whatsapp_phone_number_id, whatsapp_access_token")
+        .select("timezone, whatsapp_phone_number_id, whatsapp_access_token, is_active")
         .eq("id", entry.clinic_id)
         .single();
 
@@ -165,6 +165,15 @@ export async function GET(request: Request) {
         console.error(
           `[cron/confirmations] clinic not found for entry ${entry.id}:`,
           clinicError?.message
+        );
+        await markFailed(supabase, entry.id);
+        failed++;
+        continue;
+      }
+
+      if (!clinic.is_active) {
+        console.log(
+          `[cron/confirmations] skipping entry ${entry.id}: clinic is not active`
         );
         await markFailed(supabase, entry.id);
         failed++;

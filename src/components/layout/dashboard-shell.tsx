@@ -8,6 +8,7 @@ interface DashboardShellProps {
   clinicName: string;
   userName: string;
   userEmail: string;
+  isActive: boolean;
   children: React.ReactNode;
 }
 
@@ -15,6 +16,7 @@ export function DashboardShell({
   clinicName,
   userName,
   userEmail,
+  isActive,
   children,
 }: DashboardShellProps) {
   const [collapsed, setCollapsed] = useState(false);
@@ -29,7 +31,7 @@ export function DashboardShell({
       className="min-h-screen"
       style={{ backgroundColor: "var(--background)" }}
     >
-      <Sidebar clinicName={clinicName} onCollapseChange={setCollapsed} />
+      <Sidebar clinicName={clinicName} isActive={isActive} onCollapseChange={setCollapsed} />
       <TopBar
         userName={userName}
         userEmail={userEmail}

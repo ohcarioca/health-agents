@@ -3,13 +3,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { PanelLeftClose, PanelLeft, Menu, X } from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
+import { ClinicStatusToggle } from "./clinic-status-toggle";
 
 interface SidebarProps {
   clinicName: string;
+  isActive: boolean;
   onCollapseChange?: (collapsed: boolean) => void;
 }
 
-export function Sidebar({ clinicName, onCollapseChange }: SidebarProps) {
+export function Sidebar({ clinicName, isActive, onCollapseChange }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -101,6 +103,14 @@ export function Sidebar({ clinicName, onCollapseChange }: SidebarProps) {
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto py-4">
           <SidebarNav collapsed={collapsed} />
+        </div>
+
+        {/* Activation toggle */}
+        <div
+          className="border-t"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <ClinicStatusToggle initialActive={isActive} collapsed={collapsed} />
         </div>
       </aside>
     </>

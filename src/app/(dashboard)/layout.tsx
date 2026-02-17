@@ -21,17 +21,22 @@ export default async function DashboardLayout({
   const admin = createAdminClient();
   const { data: membership } = await admin
     .from("clinic_users")
-    .select("clinic_id, role, clinics(name, phone)")
+    .select("clinic_id, role, clinics(name, is_active, operating_hours)")
     .eq("user_id", user.id)
     .limit(1)
     .single();
 
-  // Redirect to onboarding if clinic setup is incomplete (phone is NULL until onboarding saves it)
-  const clinic = membership?.clinics as { name: string; phone: string | null } | null;
-  if (clinic?.phone === null || clinic?.phone === undefined) {
+  // Redirect to onboarding if clinic is brand new (never completed Step 1)
+  const clinic = membership?.clinics as {
+    name: string;
+    is_active: boolean;
+    operating_hours: unknown;
+  } | null;
+  if (!clinic?.is_active && !clinic?.operating_hours) {
     redirect("/setup");
   }
 
+  const isActive = clinic?.is_active ?? false;
   const clinicName = clinic?.name || "My Clinic";
   const userName =
     user.user_metadata?.full_name || user.email || "User";
@@ -42,6 +47,7 @@ export default async function DashboardLayout({
       clinicName={clinicName}
       userName={userName}
       userEmail={userEmail}
+      isActive={isActive}
     >
       {children}
     </DashboardShell>
