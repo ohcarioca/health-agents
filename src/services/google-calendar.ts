@@ -71,13 +71,13 @@ function getCalendarClient(
 
 // --- OAuth helpers ---
 
-export function getConsentUrl(professionalId: string): string {
+export function getConsentUrl(oauthState: string): string {
   const oauth2Client = getOAuth2Client();
   return oauth2Client.generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
     scope: SCOPES,
-    state: professionalId,
+    state: oauthState,
   });
 }
 

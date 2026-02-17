@@ -9,22 +9,33 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get("state");
   const error = searchParams.get("error");
 
+  // Decode state: "professionalId" or "professionalId::returnTo"
+  let professionalId = state ?? "";
+  let returnTo = "/settings?tab=integrations";
+
+  if (state && state.includes("::")) {
+    const parts = state.split("::");
+    professionalId = parts[0];
+    returnTo = parts.slice(1).join("::");
+  }
+
+  const appendParam = (base: string, param: string) =>
+    `${base}${base.includes("?") ? "&" : "?"}${param}`;
+
   if (error) {
     return NextResponse.redirect(
-      new URL("/settings?tab=integrations&error=calendar_denied", request.url)
+      new URL(appendParam(returnTo, "error=calendar_denied"), request.url)
     );
   }
 
   if (!code || !state) {
     return NextResponse.redirect(
       new URL(
-        "/settings?tab=integrations&error=calendar_missing_params",
+        appendParam(returnTo, "error=calendar_missing_params"),
         request.url
       )
     );
   }
-
-  const professionalId = state;
 
   const supabase = await createServerSupabaseClient();
   const {
@@ -33,7 +44,7 @@ export async function GET(request: NextRequest) {
 
   if (!user) {
     return NextResponse.redirect(
-      new URL("/settings?tab=integrations&error=unauthorized", request.url)
+      new URL(appendParam(returnTo, "error=unauthorized"), request.url)
     );
   }
 
@@ -45,7 +56,7 @@ export async function GET(request: NextRequest) {
     );
     return NextResponse.redirect(
       new URL(
-        "/settings?tab=integrations&error=calendar_exchange_failed",
+        appendParam(returnTo, "error=calendar_exchange_failed"),
         request.url
       )
     );
@@ -61,7 +72,7 @@ export async function GET(request: NextRequest) {
     );
     return NextResponse.redirect(
       new URL(
-        "/settings?tab=integrations&error=calendar_id_failed",
+        appendParam(returnTo, "error=calendar_id_failed"),
         request.url
       )
     );
@@ -78,7 +89,7 @@ export async function GET(request: NextRequest) {
 
   if (!membership) {
     return NextResponse.redirect(
-      new URL("/settings?tab=integrations&error=unauthorized", request.url)
+      new URL(appendParam(returnTo, "error=unauthorized"), request.url)
     );
   }
 
@@ -93,7 +104,7 @@ export async function GET(request: NextRequest) {
   if (!professional) {
     return NextResponse.redirect(
       new URL(
-        "/settings?tab=integrations&error=professional_not_found",
+        appendParam(returnTo, "error=professional_not_found"),
         request.url
       )
     );
@@ -114,7 +125,7 @@ export async function GET(request: NextRequest) {
     );
     return NextResponse.redirect(
       new URL(
-        "/settings?tab=integrations&error=calendar_save_failed",
+        appendParam(returnTo, "error=calendar_save_failed"),
         request.url
       )
     );
@@ -122,7 +133,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.redirect(
     new URL(
-      "/settings?tab=integrations&success=calendar_connected",
+      appendParam(returnTo, "success=calendar_connected"),
       request.url
     )
   );

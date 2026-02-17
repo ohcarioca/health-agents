@@ -6,6 +6,7 @@ import { getConsentUrl } from "@/services/google-calendar";
 
 const connectSchema = z.object({
   professional_id: z.string().uuid(),
+  return_to: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { professional_id } = parsed.data;
+  const { professional_id, return_to } = parsed.data;
 
   const supabase = await createServerSupabaseClient();
   const {
@@ -63,7 +64,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const url = getConsentUrl(professional_id);
+  const state = return_to
+    ? `${professional_id}::${return_to}`
+    : professional_id;
+  const url = getConsentUrl(state);
 
   return NextResponse.json({ data: { url } });
 }
