@@ -210,6 +210,7 @@ export type Database = {
           email: string | null
           google_reviews_url: string | null
           id: string
+          is_active: boolean
           logo_url: string | null
           name: string
           operating_hours: Json
@@ -230,6 +231,7 @@ export type Database = {
           email?: string | null
           google_reviews_url?: string | null
           id?: string
+          is_active?: boolean
           logo_url?: string | null
           name: string
           operating_hours?: Json
@@ -250,6 +252,7 @@ export type Database = {
           email?: string | null
           google_reviews_url?: string | null
           id?: string
+          is_active?: boolean
           logo_url?: string | null
           name?: string
           operating_hours?: Json
