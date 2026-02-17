@@ -29,6 +29,13 @@
     "team": "Equipo",
     "settings": "Configuración"
   },
+  "topBar": {
+    "searchPlaceholder": "Buscar...",
+    "notifications": "Notificaciones",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "signOut": "Cerrar sesión"
+  },
   "home": {
     "title": "Órbita",
     "subtitle": "Plataforma de agentes para salud"

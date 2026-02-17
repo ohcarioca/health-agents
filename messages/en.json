@@ -29,6 +29,13 @@
     "team": "Team",
     "settings": "Settings"
   },
+  "topBar": {
+    "searchPlaceholder": "Search...",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
   "home": {
     "title": "Órbita",
     "subtitle": "Healthcare agent platform"
