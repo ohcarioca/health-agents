@@ -131,7 +131,7 @@ export default function InboxPage() {
         {/* Right panel: conversation detail */}
         <div className="lg:col-span-2">
           {detailLoading && !detail ? (
-            <Card variant="glass">
+            <Card>
               <div className="flex min-h-[400px] items-center justify-center">
                 <Spinner size="lg" />
               </div>
@@ -142,7 +142,7 @@ export default function InboxPage() {
               onRefresh={handleRefresh}
             />
           ) : (
-            <Card variant="glass">
+            <Card>
               <div className="flex min-h-[400px] items-center justify-center">
                 <p
                   className="text-sm"

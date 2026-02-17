@@ -29,7 +29,7 @@ export function AppointmentChart({ data }: AppointmentChartProps) {
   const t = useTranslations("reports.appointments");
 
   return (
-    <Card variant="glass">
+    <Card>
       <p
         className="mb-4 text-sm font-medium"
         style={{ color: "var(--text-secondary)" }}

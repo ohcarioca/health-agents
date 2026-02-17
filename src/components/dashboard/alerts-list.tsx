@@ -53,7 +53,7 @@ export function AlertsList() {
 
   if (loading) {
     return (
-      <Card variant="glass">
+      <Card>
         <p
           className="text-sm font-medium"
           style={{ color: "var(--text-secondary)" }}
@@ -68,7 +68,7 @@ export function AlertsList() {
   }
 
   return (
-    <Card variant="glass">
+    <Card>
       <p
         className="text-sm font-medium"
         style={{ color: "var(--text-secondary)" }}

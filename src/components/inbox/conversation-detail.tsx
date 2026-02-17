@@ -114,7 +114,7 @@ export function ConversationDetail({
   }
 
   return (
-    <Card variant="glass" className="flex h-full flex-col">
+    <Card className="flex h-full flex-col">
       {/* Header */}
       <div
         className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4"

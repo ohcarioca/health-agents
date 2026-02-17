@@ -158,7 +158,7 @@ export function ServicesList() {
       ) : (
         <div className="space-y-3">
           {services.map((svc) => (
-            <Card key={svc.id} variant="glass">
+            <Card key={svc.id}>
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <p

@@ -121,7 +121,7 @@ export function ProfessionalsList() {
       ) : (
         <div className="space-y-3">
           {professionals.map((prof) => (
-            <Card key={prof.id} variant="glass">
+            <Card key={prof.id}>
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <p

@@ -95,7 +95,7 @@ export function TeamContent({
             const isSelf = member.user_id === currentUserId;
 
             return (
-              <Card key={member.id} variant="glass">
+              <Card key={member.id}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar name={member.name || member.email} size="sm" />

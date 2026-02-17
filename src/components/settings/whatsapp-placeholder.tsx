@@ -103,7 +103,7 @@ export function WhatsAppConfig() {
 
   if (loading) {
     return (
-      <Card variant="glass">
+      <Card>
         <div className="flex justify-center py-8">
           <Spinner />
         </div>
@@ -112,7 +112,7 @@ export function WhatsAppConfig() {
   }
 
   return (
-    <Card variant="glass">
+    <Card>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">

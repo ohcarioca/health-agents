@@ -35,7 +35,7 @@ export function NpsChart({ trend, breakdown }: NpsChartProps) {
   const t = useTranslations("reports.nps");
 
   return (
-    <Card variant="glass">
+    <Card>
       <div className="mb-4 flex items-start justify-between">
         <p
           className="text-sm font-medium"

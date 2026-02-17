@@ -84,7 +84,6 @@ export function ConversationList({
                 onClick={() => onSelect(conversation.id)}
               >
                 <Card
-                  variant="glass"
                   interactive
                   className={
                     isSelected

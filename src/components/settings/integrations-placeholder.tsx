@@ -19,7 +19,7 @@ export function IntegrationsPlaceholder() {
       </p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {INTEGRATIONS.map(({ key, icon: Icon }) => (
-          <Card key={key} variant="glass">
+          <Card key={key}>
             <div className="flex items-center gap-3">
               <Icon
                 className="size-5"

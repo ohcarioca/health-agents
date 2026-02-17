@@ -129,7 +129,7 @@ export default function ReportsPage() {
             </div>
 
             {Object.keys(data.moduleStats).length > 0 && (
-              <Card variant="glass">
+              <Card>
                 <p
                   className="mb-4 text-sm font-medium"
                   style={{ color: "var(--text-secondary)" }}

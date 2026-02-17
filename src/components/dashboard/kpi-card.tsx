@@ -19,7 +19,7 @@ export function KpiCard({
   subtitle,
 }: KpiCardProps) {
   return (
-    <Card variant="glass">
+    <Card>
       <div className="flex items-center gap-3">
         <div
           className="flex size-10 items-center justify-center rounded-xl"
