@@ -155,6 +155,36 @@ describe("asaas service", () => {
       expect(callBody.value).toBe(250.5);
       expect(callBody.billingType).toBe("BOLETO");
     });
+
+    it("creates CREDIT_CARD charge", async () => {
+      global.fetch = mockFetchSuccess({
+        id: "pay_card_003",
+        invoiceUrl: "https://asaas.com/i/pay_card_003",
+        status: "PENDING",
+      });
+
+      const result = await createCharge({
+        customerId: "cus_abc123",
+        billingType: "CREDIT_CARD",
+        valueCents: 30000,
+        dueDate: "2026-03-20",
+        description: "Consulta cardiologia",
+      });
+
+      expect(result).toEqual({
+        success: true,
+        chargeId: "pay_card_003",
+        invoiceUrl: "https://asaas.com/i/pay_card_003",
+        bankSlipUrl: undefined,
+        status: "PENDING",
+      });
+
+      const callBody = JSON.parse(
+        (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body
+      );
+      expect(callBody.value).toBe(300);
+      expect(callBody.billingType).toBe("CREDIT_CARD");
+    });
   });
 
   describe("getChargeStatus", () => {
