@@ -89,6 +89,24 @@ export async function POST(request: Request) {
 
       console.log(`[asaas-webhook] Invoice ${invoiceId} overdue`);
     } else if (REFUND_EVENTS.has(event)) {
+      // Idempotency: skip if not currently paid
+      const { data: refundInvoice } = await supabase
+        .from("invoices")
+        .select("status")
+        .eq("id", invoiceId)
+        .single();
+
+      if (refundInvoice?.status !== "paid") {
+        console.log(
+          `[asaas-webhook] Invoice ${invoiceId} not paid, skipping refund`
+        );
+        return NextResponse.json({
+          status: "already_processed",
+          invoiceId,
+          event,
+        });
+      }
+
       await supabase
         .from("payment_links")
         .update({ status: "active" })

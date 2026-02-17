@@ -269,6 +269,23 @@ describe("POST /api/webhooks/asaas", () => {
   });
 
   it("handles PAYMENT_REFUNDED by reverting invoice status", async () => {
+    const mockSelect = vi.fn().mockReturnThis();
+    const mockSingle = vi
+      .fn()
+      .mockResolvedValue({ data: { status: "paid" }, error: null });
+    const mockSelectEq = vi.fn().mockReturnValue({ single: mockSingle });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "invoices") {
+        return {
+          select: mockSelect,
+          eq: mockSelectEq,
+          update: mockUpdate,
+        };
+      }
+      return { update: mockUpdate, eq: mockEq };
+    });
+
     const req = createRequest({
       event: "PAYMENT_REFUNDED",
       payment: {
@@ -286,5 +303,42 @@ describe("POST /api/webhooks/asaas", () => {
 
     expect(mockFrom).toHaveBeenCalledWith("invoices");
     expect(mockFrom).toHaveBeenCalledWith("payment_links");
+    expect(mockUpdate).toHaveBeenCalledWith({ status: "active" });
+    expect(mockUpdate).toHaveBeenCalledWith({ status: "pending", paid_at: null });
+  });
+
+  it("skips refund when invoice is not paid", async () => {
+    const mockSelect = vi.fn().mockReturnThis();
+    const mockSingle = vi
+      .fn()
+      .mockResolvedValue({ data: { status: "pending" }, error: null });
+    const mockSelectEq = vi.fn().mockReturnValue({ single: mockSingle });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "invoices") {
+        return {
+          select: mockSelect,
+          eq: mockSelectEq,
+          update: mockUpdate,
+        };
+      }
+      return { update: mockUpdate, eq: mockEq };
+    });
+
+    const req = createRequest({
+      event: "PAYMENT_REFUNDED",
+      payment: {
+        id: "pay_refund_002",
+        externalReference: "invoice-pending",
+      },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const json = await res.json();
+    expect(json.status).toBe("already_processed");
+
+    expect(mockUpdate).not.toHaveBeenCalled();
   });
 });

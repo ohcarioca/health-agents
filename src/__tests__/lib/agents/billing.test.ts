@@ -184,7 +184,7 @@ describe("billing agent", () => {
   });
 
   describe("getTools", () => {
-    it("returns exactly 4 tools", () => {
+    it("returns exactly 5 tools", () => {
       const config = getAgentType("billing")!;
       const tools = config.getTools({
         clinicId: "clinic-789",
