@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { verifyWebhookToken } from "@/services/asaas";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,12 @@ export async function POST(request: Request) {
     payload = await request.json();
   } catch {
     return NextResponse.json({ error: "invalid JSON" }, { status: 400 });
+  }
+
+  const receivedToken = request.headers.get("asaas-access-token") ?? "";
+  if (!verifyWebhookToken(receivedToken)) {
+    console.warn("[asaas-webhook] Invalid or missing webhook token");
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const event = (payload.event as string) ?? "";

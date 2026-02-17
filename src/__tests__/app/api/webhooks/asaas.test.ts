@@ -4,6 +4,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
+vi.mock("@/services/asaas", () => ({
+  verifyWebhookToken: vi.fn().mockReturnValue(true),
+}));
+
 const mockUpdate = vi.fn().mockReturnThis();
 const mockEq = vi.fn().mockResolvedValue({ data: null, error: null });
 const mockFrom = vi.fn(() => ({
@@ -16,13 +20,22 @@ vi.mock("@/lib/supabase/admin", () => ({
 }));
 
 import { POST } from "@/app/api/webhooks/asaas/route";
+import { verifyWebhookToken } from "@/services/asaas";
+
+const mockVerifyWebhookToken = vi.mocked(verifyWebhookToken);
 
 // ── Helpers ──
 
-function createRequest(body: Record<string, unknown>): Request {
+function createRequest(
+  body: Record<string, unknown>,
+  headers?: Record<string, string>
+): Request {
   return new Request("http://localhost/api/webhooks/asaas", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...headers,
+    },
     body: JSON.stringify(body),
   });
 }
@@ -32,6 +45,7 @@ function createRequest(body: Record<string, unknown>): Request {
 describe("POST /api/webhooks/asaas", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockVerifyWebhookToken.mockReturnValue(true);
     mockUpdate.mockReturnThis();
     mockEq.mockResolvedValue({ data: null, error: null });
     mockFrom.mockReturnValue({ update: mockUpdate, eq: mockEq });
@@ -48,6 +62,37 @@ describe("POST /api/webhooks/asaas", () => {
 
     const json = await res.json();
     expect(json.error).toBe("invalid JSON");
+  });
+
+  it("returns 401 when webhook token is invalid", async () => {
+    mockVerifyWebhookToken.mockReturnValue(false);
+
+    const req = createRequest(
+      { event: "PAYMENT_RECEIVED", payment: { id: "pay_abc" } },
+      { "asaas-access-token": "bad-token" }
+    );
+
+    const res = await POST(req);
+    expect(res.status).toBe(401);
+
+    const json = await res.json();
+    expect(json.error).toBe("unauthorized");
+  });
+
+  it("accepts request when webhook token is valid", async () => {
+    mockVerifyWebhookToken.mockReturnValue(true);
+
+    const req = createRequest(
+      { event: "PAYMENT_CREATED", payment: { id: "pay_abc" } },
+      { "asaas-access-token": "valid-token" }
+    );
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const json = await res.json();
+    expect(json.status).toBe("ignored");
+    expect(mockVerifyWebhookToken).toHaveBeenCalledWith("valid-token");
   });
 
   it("ignores non-payment events and returns 200", async () => {
