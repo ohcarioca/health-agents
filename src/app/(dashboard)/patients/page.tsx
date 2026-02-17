@@ -3,6 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { PatientsView } from "@/components/patients/patients-view";
+import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 
 const PER_PAGE = 25;
 
@@ -36,17 +38,14 @@ export default async function PatientsPage() {
     .range(0, PER_PAGE - 1);
 
   return (
-    <div>
-      <h1
-        className="mb-6 text-xl font-semibold"
-        style={{ color: "var(--text-primary)" }}
-      >
-        {t("title")}
-      </h1>
-      <PatientsView
-        initialPatients={patients ?? []}
-        initialCount={count ?? 0}
-      />
-    </div>
+    <PageContainer>
+      <PageHeader title={t("title")} />
+      <div className="mt-6">
+        <PatientsView
+          initialPatients={patients ?? []}
+          initialCount={count ?? 0}
+        />
+      </div>
+    </PageContainer>
   );
 }
