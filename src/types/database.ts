@@ -204,9 +204,11 @@ export type Database = {
       }
       clinics: {
         Row: {
+          accent_color: string
           address: string | null
           city: string | null
           created_at: string
+          description: string | null
           email: string | null
           google_reviews_url: string | null
           id: string
@@ -215,9 +217,13 @@ export type Database = {
           name: string
           operating_hours: Json
           phone: string | null
+          public_page_enabled: boolean
+          show_prices: boolean
           slug: string
+          social_links: Json
           state: string | null
           timezone: string
+          type: string | null
           updated_at: string
           whatsapp_access_token: string | null
           whatsapp_phone_number_id: string | null
@@ -225,9 +231,11 @@ export type Database = {
           zip_code: string | null
         }
         Insert: {
+          accent_color?: string
           address?: string | null
           city?: string | null
           created_at?: string
+          description?: string | null
           email?: string | null
           google_reviews_url?: string | null
           id?: string
@@ -236,9 +244,13 @@ export type Database = {
           name: string
           operating_hours?: Json
           phone?: string | null
+          public_page_enabled?: boolean
+          show_prices?: boolean
           slug: string
+          social_links?: Json
           state?: string | null
           timezone?: string
+          type?: string | null
           updated_at?: string
           whatsapp_access_token?: string | null
           whatsapp_phone_number_id?: string | null
@@ -246,9 +258,11 @@ export type Database = {
           zip_code?: string | null
         }
         Update: {
+          accent_color?: string
           address?: string | null
           city?: string | null
           created_at?: string
+          description?: string | null
           email?: string | null
           google_reviews_url?: string | null
           id?: string
@@ -257,9 +271,13 @@ export type Database = {
           name?: string
           operating_hours?: Json
           phone?: string | null
+          public_page_enabled?: boolean
+          show_prices?: boolean
           slug?: string
+          social_links?: Json
           state?: string | null
           timezone?: string
+          type?: string | null
           updated_at?: string
           whatsapp_access_token?: string | null
           whatsapp_phone_number_id?: string | null

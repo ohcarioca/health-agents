@@ -40,6 +40,15 @@ export type AppointmentStatus = "scheduled" | "confirmed" | "completed" | "cance
 // Conversation status
 export type ConversationStatus = "active" | "escalated" | "resolved";
 
+// Social links for public clinic page
+export type SocialLinkType = 'instagram' | 'facebook' | 'website' | 'youtube' | 'tiktok' | 'linkedin' | 'google_maps' | 'other';
+
+export interface SocialLink {
+  type: SocialLinkType;
+  url: string;
+  label: string;
+}
+
 // Enriched team member (clinic_user + auth metadata)
 export interface TeamMember {
   id: string;

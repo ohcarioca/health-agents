@@ -131,3 +131,21 @@ export const updateAppointmentSchema = createAppointmentSchema.partial().extend(
 
 export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>;
 export type UpdateAppointmentInput = z.infer<typeof updateAppointmentSchema>;
+
+// --- Public Page ---
+
+export const socialLinkSchema = z.object({
+  type: z.enum(['instagram', 'facebook', 'website', 'youtube', 'tiktok', 'linkedin', 'google_maps', 'other']),
+  url: z.string().url(),
+  label: z.string().min(1).max(50),
+});
+
+export const publicPageSchema = z.object({
+  public_page_enabled: z.boolean().optional(),
+  accent_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  social_links: z.array(socialLinkSchema).max(20).optional(),
+  show_prices: z.boolean().optional(),
+});
+
+export type SocialLinkInput = z.infer<typeof socialLinkSchema>;
+export type PublicPageInput = z.infer<typeof publicPageSchema>;
