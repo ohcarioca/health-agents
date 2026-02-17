@@ -26,6 +26,7 @@
     "patients": "Patients",
     "modules": "Modules",
     "reports": "Reports",
+    "publicPage": "My Page",
     "team": "Team",
     "settings": "Settings"
   },
@@ -539,6 +540,56 @@
     "tooltip": {
       "active": "Agents responding",
       "inactive": "Agents paused"
+    }
+  },
+  "publicPage": {
+    "title": "My Page",
+    "description": "Configure your public landing page",
+    "enabled": "Page active",
+    "disabled": "Page inactive",
+    "enableToggle": "Enable public page",
+    "accentColor": "Accent color",
+    "showPrices": "Show service prices",
+    "links": "Links",
+    "addLink": "Add link",
+    "removeLink": "Remove",
+    "linkLabel": "Link text",
+    "linkUrl": "URL",
+    "linkType": "Type",
+    "copyUrl": "Copy link",
+    "urlCopied": "Link copied!",
+    "preview": "Preview",
+    "editInSettings": "Edit in Settings",
+    "noDescription": "No description",
+    "pageUrl": "Page URL",
+    "sections": {
+      "hero": "Clinic Information",
+      "whatsapp": "WhatsApp",
+      "services": "Services",
+      "contact": "Contact & Hours",
+      "links": "Links",
+      "appearance": "Appearance"
+    },
+    "linkTypes": {
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "website": "Website",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "linkedin": "LinkedIn",
+      "google_maps": "Google Maps",
+      "other": "Other"
+    },
+    "public": {
+      "whatsappCta": "Chat on WhatsApp",
+      "services": "Services",
+      "contact": "Contact",
+      "hours": "Business Hours",
+      "startingAt": "Starting at",
+      "minutes": "min",
+      "poweredBy": "Powered by",
+      "notFound": "Page not found",
+      "notFoundDescription": "This clinic does not have an active public page."
     }
   }
 }

@@ -26,6 +26,7 @@
     "patients": "Pacientes",
     "modules": "Módulos",
     "reports": "Informes",
+    "publicPage": "Mi Página",
     "team": "Equipo",
     "settings": "Configuración"
   },
@@ -539,6 +540,56 @@
     "tooltip": {
       "active": "Agentes respondiendo",
       "inactive": "Agentes pausados"
+    }
+  },
+  "publicPage": {
+    "title": "Mi Página",
+    "description": "Configure su página pública de divulgación",
+    "enabled": "Página activa",
+    "disabled": "Página inactiva",
+    "enableToggle": "Activar página pública",
+    "accentColor": "Color de destaque",
+    "showPrices": "Mostrar precios de servicios",
+    "links": "Enlaces",
+    "addLink": "Agregar enlace",
+    "removeLink": "Eliminar",
+    "linkLabel": "Texto del enlace",
+    "linkUrl": "URL",
+    "linkType": "Tipo",
+    "copyUrl": "Copiar enlace",
+    "urlCopied": "¡Enlace copiado!",
+    "preview": "Vista previa",
+    "editInSettings": "Editar en Configuración",
+    "noDescription": "Sin descripción",
+    "pageUrl": "URL de la página",
+    "sections": {
+      "hero": "Información de la Clínica",
+      "whatsapp": "WhatsApp",
+      "services": "Servicios",
+      "contact": "Contacto & Horarios",
+      "links": "Enlaces",
+      "appearance": "Apariencia"
+    },
+    "linkTypes": {
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "website": "Website",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "linkedin": "LinkedIn",
+      "google_maps": "Google Maps",
+      "other": "Otro"
+    },
+    "public": {
+      "whatsappCta": "Hablar por WhatsApp",
+      "services": "Servicios",
+      "contact": "Contacto",
+      "hours": "Horario de Atención",
+      "startingAt": "Desde",
+      "minutes": "min",
+      "poweredBy": "Powered by",
+      "notFound": "Página no encontrada",
+      "notFoundDescription": "Esta clínica no tiene una página pública activa."
     }
   }
 }
