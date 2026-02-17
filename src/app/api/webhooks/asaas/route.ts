@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 /** Events that mean the payment was completed. */
 const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]);
 const OVERDUE_EVENTS = new Set(["PAYMENT_OVERDUE"]);
+const REFUND_EVENTS = new Set(["PAYMENT_REFUNDED"]);
 
 export async function POST(request: Request) {
   let payload: Record<string, unknown>;
@@ -27,8 +28,12 @@ export async function POST(request: Request) {
   const invoiceId = (payment.externalReference as string) ?? "";
   const paymentDate = (payment.paymentDate as string) ?? null;
 
-  // Only process payment completion and overdue events
-  if (!PAID_EVENTS.has(event) && !OVERDUE_EVENTS.has(event)) {
+  // Only process payment completion, overdue, and refund events
+  if (
+    !PAID_EVENTS.has(event) &&
+    !OVERDUE_EVENTS.has(event) &&
+    !REFUND_EVENTS.has(event)
+  ) {
     return NextResponse.json({ status: "ignored", event });
   }
 
@@ -44,6 +49,24 @@ export async function POST(request: Request) {
 
   try {
     if (PAID_EVENTS.has(event)) {
+      // Idempotency: skip if already paid
+      const { data: invoice } = await supabase
+        .from("invoices")
+        .select("status")
+        .eq("id", invoiceId)
+        .single();
+
+      if (invoice?.status === "paid") {
+        console.log(
+          `[asaas-webhook] Invoice ${invoiceId} already paid, skipping`
+        );
+        return NextResponse.json({
+          status: "already_processed",
+          invoiceId,
+          event,
+        });
+      }
+
       await supabase
         .from("payment_links")
         .update({ status: "paid" })
@@ -65,6 +88,18 @@ export async function POST(request: Request) {
         .eq("id", invoiceId);
 
       console.log(`[asaas-webhook] Invoice ${invoiceId} overdue`);
+    } else if (REFUND_EVENTS.has(event)) {
+      await supabase
+        .from("payment_links")
+        .update({ status: "active" })
+        .eq("invoice_id", invoiceId);
+
+      await supabase
+        .from("invoices")
+        .update({ status: "pending", paid_at: null })
+        .eq("id", invoiceId);
+
+      console.log(`[asaas-webhook] Invoice ${invoiceId} refunded (${event})`);
     }
 
     return NextResponse.json({ status: "ok", invoiceId, event });

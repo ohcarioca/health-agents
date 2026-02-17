@@ -125,6 +125,23 @@ describe("POST /api/webhooks/asaas", () => {
   });
 
   it("marks invoice and payment_link as paid on PAYMENT_RECEIVED", async () => {
+    const mockSelect = vi.fn().mockReturnThis();
+    const mockSingle = vi
+      .fn()
+      .mockResolvedValue({ data: { status: "pending" }, error: null });
+    const mockSelectEq = vi.fn().mockReturnValue({ single: mockSingle });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "invoices") {
+        return {
+          select: mockSelect,
+          eq: mockSelectEq,
+          update: mockUpdate,
+        };
+      }
+      return { update: mockUpdate, eq: mockEq };
+    });
+
     const req = createRequest({
       event: "PAYMENT_RECEIVED",
       payment: {
@@ -152,6 +169,23 @@ describe("POST /api/webhooks/asaas", () => {
   });
 
   it("marks invoice and payment_link as paid on PAYMENT_CONFIRMED", async () => {
+    const mockSelect = vi.fn().mockReturnThis();
+    const mockSingle = vi
+      .fn()
+      .mockResolvedValue({ data: { status: "pending" }, error: null });
+    const mockSelectEq = vi.fn().mockReturnValue({ single: mockSingle });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "invoices") {
+        return {
+          select: mockSelect,
+          eq: mockSelectEq,
+          update: mockUpdate,
+        };
+      }
+      return { update: mockUpdate, eq: mockEq };
+    });
+
     const req = createRequest({
       event: "PAYMENT_CONFIRMED",
       payment: {
@@ -194,5 +228,63 @@ describe("POST /api/webhooks/asaas", () => {
       (call: string[]) => call[0] === "payment_links"
     );
     expect(paymentLinksCalls).toHaveLength(0);
+  });
+
+  it("skips duplicate paid event when invoice is already paid", async () => {
+    const mockSelect = vi.fn().mockReturnThis();
+    const mockSingle = vi
+      .fn()
+      .mockResolvedValue({ data: { status: "paid" }, error: null });
+    const mockSelectEq = vi.fn().mockReturnValue({ single: mockSingle });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "invoices") {
+        return {
+          select: mockSelect,
+          eq: mockSelectEq,
+          update: mockUpdate,
+        };
+      }
+      return { update: mockUpdate, eq: mockEq };
+    });
+
+    const req = createRequest({
+      event: "PAYMENT_RECEIVED",
+      payment: {
+        id: "pay_dup",
+        externalReference: "invoice-already-paid",
+        paymentDate: "2026-02-14",
+      },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const json = await res.json();
+    expect(json.status).toBe("already_processed");
+    expect(json.invoiceId).toBe("invoice-already-paid");
+
+    // Should NOT call update since invoice is already paid
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it("handles PAYMENT_REFUNDED by reverting invoice status", async () => {
+    const req = createRequest({
+      event: "PAYMENT_REFUNDED",
+      payment: {
+        id: "pay_refund_001",
+        externalReference: "invoice-uuid-4",
+      },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const json = await res.json();
+    expect(json.status).toBe("ok");
+    expect(json.event).toBe("PAYMENT_REFUNDED");
+
+    expect(mockFrom).toHaveBeenCalledWith("invoices");
+    expect(mockFrom).toHaveBeenCalledWith("payment_links");
   });
 });
