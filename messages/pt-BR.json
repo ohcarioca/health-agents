@@ -90,7 +90,14 @@
       "failure": "Falha de envio"
     },
     "noData": "Sem dados",
-    "viewAll": "Ver todos"
+    "viewAll": "Ver todos",
+    "upcomingAppointments": "Próximas Consultas",
+    "addNew": "Adicionar",
+    "service": "Serviço",
+    "patient": "Paciente",
+    "dateTime": "Data e Hora",
+    "status": "Status",
+    "noAppointments": "Nenhuma consulta para hoje"
   },
   "inbox": {
     "title": "Caixa de Entrada",

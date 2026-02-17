@@ -90,7 +90,14 @@
       "failure": "Delivery failure"
     },
     "noData": "No data",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "upcomingAppointments": "Upcoming Appointments",
+    "addNew": "Add New",
+    "service": "Service",
+    "patient": "Patient",
+    "dateTime": "Date & Time",
+    "status": "Status",
+    "noAppointments": "No appointments for today"
   },
   "inbox": {
     "title": "Inbox",

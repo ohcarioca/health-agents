@@ -90,7 +90,14 @@
       "failure": "Fallo de envío"
     },
     "noData": "Sin datos",
-    "viewAll": "Ver todos"
+    "viewAll": "Ver todos",
+    "upcomingAppointments": "Próximas Citas",
+    "addNew": "Agregar",
+    "service": "Servicio",
+    "patient": "Paciente",
+    "dateTime": "Fecha y Hora",
+    "status": "Estado",
+    "noAppointments": "No hay citas para hoy"
   },
   "inbox": {
     "title": "Bandeja de Entrada",
