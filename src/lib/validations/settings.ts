@@ -24,7 +24,7 @@ export type TimeSlot = z.infer<typeof timeSlotSchema>;
 // --- Clinic Settings ---
 
 export const clinicSettingsSchema = z.object({
-  name: z.string().min(2).max(100),
+  name: z.string().min(2).max(100).optional(),
   type: z.string().max(50).optional().or(z.literal("")),
   description: z.string().max(500).optional().or(z.literal("")),
   phone: z.string().max(20).optional().or(z.literal("")),
@@ -34,6 +34,7 @@ export const clinicSettingsSchema = z.object({
   state: z.string().max(2).optional().or(z.literal("")),
   zip_code: z.string().max(10).optional().or(z.literal("")),
   timezone: z.string().max(50).optional().or(z.literal("")),
+  logo_url: z.string().url().optional().or(z.literal("")).or(z.null()),
   whatsapp_phone_number_id: z.string().max(50).optional().or(z.literal("")),
   whatsapp_waba_id: z.string().max(50).optional().or(z.literal("")),
   whatsapp_access_token: z.string().max(500).optional().or(z.literal("")),
