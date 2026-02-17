@@ -14,7 +14,7 @@ Follow strictly when generating, modifying, or reviewing code.
 | Styling | Tailwind CSS v4 (CSS-first config — no `tailwind.config.*`) |
 | AI | LangChain + OpenAI |
 | Database | Supabase (PostgreSQL + Auth + RLS) |
-| Payments | Asaas (Pix + boleto) |
+| Payments | Asaas (Pix + boleto + credit/debit card) |
 | Email | Gmail API + Google Pub/Sub |
 | WhatsApp | Meta WhatsApp Business API |
 | Calendar | Google Calendar API |
