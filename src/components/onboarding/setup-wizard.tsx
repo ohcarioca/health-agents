@@ -69,6 +69,11 @@ export function SetupWizard() {
 
   // --- Data loading ---
 
+  // Mark onboarding as active so dashboard layout keeps showing the modal
+  useEffect(() => {
+    document.cookie = "onboarding_active=1; path=/; max-age=86400";
+  }, []);
+
   useEffect(() => {
     async function loadExistingData() {
       try {
@@ -77,6 +82,9 @@ export function SetupWizard() {
           fetch("/api/settings/professionals"),
           fetch("/api/settings/services"),
         ]);
+
+        let autoStep = 1;
+        let hasWhatsApp = false;
 
         if (clinicRes.ok) {
           const { data: clinic } = await clinicRes.json();
@@ -91,8 +99,25 @@ export function SetupWizard() {
             if (clinic.whatsapp_phone_number_id) setWhatsappPhoneNumberId(clinic.whatsapp_phone_number_id);
             if (clinic.whatsapp_waba_id) setWhatsappWabaId(clinic.whatsapp_waba_id);
             if (clinic.whatsapp_access_token) setWhatsappAccessToken(clinic.whatsapp_access_token);
+
+            // Auto-step detection
+            const hasClinic = clinic.name?.trim().length >= 2 && clinic.phone?.trim().length > 0;
+            const hasHours = clinic.operating_hours &&
+              Object.values(clinic.operating_hours as Record<string, unknown>).some(
+                (day) => Array.isArray(day) && day.length > 0
+              );
+            hasWhatsApp = Boolean(
+              clinic.whatsapp_phone_number_id &&
+              clinic.whatsapp_waba_id &&
+              clinic.whatsapp_access_token
+            );
+
+            if (hasClinic) autoStep = 2;
+            if (autoStep >= 2 && hasHours) autoStep = 3;
           }
         }
+
+        let hasProfessional = false;
 
         if (profRes.ok) {
           const { data: professionals } = await profRes.json();
@@ -103,6 +128,7 @@ export function SetupWizard() {
             if (prof.specialty) setSpecialty(prof.specialty);
             if (prof.appointment_duration_minutes) setDuration(prof.appointment_duration_minutes);
             if (prof.google_calendar_id) setCalendarConnected(true);
+            hasProfessional = prof.name?.trim().length >= 2;
           }
         }
 
@@ -118,7 +144,14 @@ export function SetupWizard() {
                   : "",
               }))
             );
+            if (autoStep >= 3 && hasProfessional && svcList.length > 0) autoStep = 4;
+            if (autoStep >= 4 && hasWhatsApp) autoStep = 5;
           }
+        }
+
+        // Use auto-detected step when no explicit step param is set
+        if (!searchParams.get("step") && autoStep > 1) {
+          setStep(autoStep);
         }
       } catch (err) {
         console.error("[setup] failed to load existing data:", err);
@@ -128,7 +161,7 @@ export function SetupWizard() {
     }
 
     loadExistingData();
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     if (searchParams.get("success") === "calendar_connected") {
@@ -296,7 +329,7 @@ export function SetupWizard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           professional_id: createdProfId,
-          return_to: "/setup?step=5",
+          return_to: "/",
         }),
       });
       if (res.ok) {
@@ -353,6 +386,8 @@ export function SetupWizard() {
   async function handleFinish() {
     setLoading(true);
     try {
+      // Clear onboarding cookie so the modal stops showing
+      document.cookie = "onboarding_active=; path=/; max-age=0";
       router.push("/");
       router.refresh();
     } catch (err) {

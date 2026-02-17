@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
@@ -34,8 +35,11 @@ export default async function DashboardLayout({
     operating_hours: unknown;
   } | null;
 
-  // Show onboarding modal if clinic never completed initial setup
-  const needsOnboarding = !clinic?.is_active && !hasTimeBlocks(clinic?.operating_hours);
+  // Show onboarding modal if clinic never completed initial setup,
+  // or if user is mid-onboarding (e.g. returning from Google Calendar OAuth)
+  const cookieStore = await cookies();
+  const isOnboardingActive = cookieStore.has("onboarding_active");
+  const needsOnboarding = !clinic?.is_active && (!hasTimeBlocks(clinic?.operating_hours) || isOnboardingActive);
 
   const isActive = clinic?.is_active ?? false;
   const clinicName = clinic?.name || "My Clinic";
