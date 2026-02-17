@@ -97,7 +97,8 @@
     "patient": "Paciente",
     "dateTime": "Fecha y Hora",
     "status": "Estado",
-    "noAppointments": "No hay citas para hoy"
+    "noAppointments": "No hay citas para hoy",
+    "noAppointmentsForDate": "No hay citas para esta fecha"
   },
   "inbox": {
     "title": "Bandeja de Entrada",

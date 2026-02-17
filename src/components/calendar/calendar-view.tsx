@@ -130,16 +130,38 @@ export function CalendarView({ professionals }: CalendarViewProps) {
       {/* Toolbar */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
         {/* Navigation */}
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex size-9 items-center justify-center rounded-full transition-colors"
+            style={{ color: "var(--text-secondary)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--nav-hover-bg)")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+          >
             <ChevronLeft className="size-4" />
-          </Button>
-          <Button variant="secondary" size="sm" onClick={goToToday}>
+          </button>
+          <button
+            onClick={goToToday}
+            className="rounded-full border px-4 py-1.5 text-xs font-medium transition-colors"
+            style={{
+              borderColor: "var(--accent)",
+              color: "var(--accent)",
+              backgroundColor: "transparent",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-muted)")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+          >
             {t("today")}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate(1)}>
+          </button>
+          <button
+            onClick={() => navigate(1)}
+            className="flex size-9 items-center justify-center rounded-full transition-colors"
+            style={{ color: "var(--text-secondary)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--nav-hover-bg)")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+          >
             <ChevronRight className="size-4" />
-          </Button>
+          </button>
         </div>
 
         <span
@@ -154,7 +176,7 @@ export function CalendarView({ professionals }: CalendarViewProps) {
           <select
             value={selectedProfessionalId}
             onChange={(e) => setSelectedProfessionalId(e.target.value)}
-            className="rounded-lg border px-2 py-1.5 text-xs"
+            className="h-9 rounded-lg border px-3 text-xs"
             style={{
               borderColor: "var(--border)",
               backgroundColor: "var(--surface)",
@@ -167,19 +189,28 @@ export function CalendarView({ professionals }: CalendarViewProps) {
             ))}
           </select>
 
-          {/* View toggle */}
-          <div className="rounded-lg p-1" style={{ backgroundColor: "var(--background)" }}>
+          {/* View toggle — pill segmented control */}
+          <div
+            className="flex rounded-full border p-1"
+            style={{
+              borderColor: "var(--border)",
+              backgroundColor: "var(--background)",
+            }}
+          >
             {(["day", "week", "month"] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                  view === v
-                    ? "bg-[var(--accent)] text-white"
-                    : "hover:text-[var(--text-primary)]"
-                }`}
+                className="rounded-full px-4 py-1.5 text-xs font-medium transition-all"
                 style={{
-                  color: view === v ? undefined : "var(--text-secondary)",
+                  backgroundColor: view === v ? "var(--accent)" : "transparent",
+                  color: view === v ? "#fff" : "var(--text-secondary)",
+                }}
+                onMouseEnter={(e) => {
+                  if (view !== v) e.currentTarget.style.color = "var(--text-primary)";
+                }}
+                onMouseLeave={(e) => {
+                  if (view !== v) e.currentTarget.style.color = "var(--text-secondary)";
                 }}
               >
                 {t(`views.${v}`)}

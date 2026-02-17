@@ -97,7 +97,8 @@
     "patient": "Patient",
     "dateTime": "Date & Time",
     "status": "Status",
-    "noAppointments": "No appointments for today"
+    "noAppointments": "No appointments for today",
+    "noAppointmentsForDate": "No appointments for this date"
   },
   "inbox": {
     "title": "Inbox",

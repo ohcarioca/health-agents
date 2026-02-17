@@ -97,7 +97,8 @@
     "patient": "Paciente",
     "dateTime": "Data e Hora",
     "status": "Status",
-    "noAppointments": "Nenhuma consulta para hoje"
+    "noAppointments": "Nenhuma consulta para hoje",
+    "noAppointmentsForDate": "Nenhuma consulta para esta data"
   },
   "inbox": {
     "title": "Caixa de Entrada",

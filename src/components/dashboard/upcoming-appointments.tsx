@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
-import { Calendar, Plus } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 interface AppointmentRow {
   id: string;
@@ -13,6 +13,7 @@ interface AppointmentRow {
   status: string;
   patients: { id: string; name: string; phone: string } | null;
   services: { id: string; name: string; duration_minutes: number } | null;
+  professionals: { id: string; name: string } | null;
 }
 
 const MAX_ROWS = 8;
@@ -25,44 +26,79 @@ const STATUS_BADGE_VARIANT: Record<string, "success" | "warning" | "danger" | "a
   no_show: "warning",
 };
 
-function formatTimeRange(startsAt: string, endsAt: string): string {
-  const start = new Date(startsAt);
-  const end = new Date(endsAt);
-  const fmt = (d: Date) =>
-    d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  return `${fmt(start)} - ${fmt(end)}`;
+function formatTime(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function getWeekDays(weekOffset: number): Date[] {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((dayOfWeek === 0 ? 7 : dayOfWeek) - 1) + weekOffset * 7);
+
+  const days: Date[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    days.push(d);
+  }
+  return days;
+}
+
+function isSameDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear()
+    && a.getMonth() === b.getMonth()
+    && a.getDate() === b.getDate();
+}
+
+function countAppointmentsForDay(appointments: AppointmentRow[], day: Date): number {
+  return appointments.filter((apt) => isSameDay(new Date(apt.starts_at), day)).length;
 }
 
 export function UpcomingAppointments() {
   const t = useTranslations("dashboard");
   const tCal = useTranslations("calendar");
-  const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
+  const [allAppointments, setAllAppointments] = useState<AppointmentRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  const weekDays = useMemo(() => getWeekDays(weekOffset), [weekOffset]);
+
+  const fetchWeekAppointments = useCallback(async () => {
+    setLoading(true);
+    try {
+      const start = weekDays[0].toISOString().split("T")[0];
+      const lastDay = new Date(weekDays[6]);
+      lastDay.setDate(lastDay.getDate() + 1);
+      const end = lastDay.toISOString().split("T")[0];
+
+      const res = await fetch(`/api/calendar/appointments?start=${start}&end=${end}`);
+      if (res.ok) {
+        const body: { data?: AppointmentRow[] } = await res.json();
+        setAllAppointments(body.data ?? []);
+      }
+    } catch {
+      // Supplementary widget — silently handle
+    } finally {
+      setLoading(false);
+    }
+  }, [weekDays]);
 
   useEffect(() => {
-    async function fetchAppointments() {
-      try {
-        const today = new Date();
-        const start = today.toISOString().split("T")[0];
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const end = tomorrow.toISOString().split("T")[0];
+    fetchWeekAppointments();
+  }, [fetchWeekAppointments]);
 
-        const res = await fetch(
-          `/api/calendar/appointments?start=${start}&end=${end}`,
-        );
-        if (res.ok) {
-          const body: { data?: AppointmentRow[] } = await res.json();
-          setAppointments((body.data ?? []).slice(0, MAX_ROWS));
-        }
-      } catch {
-        // Supplementary widget — silently handle
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchAppointments();
-  }, []);
+  const dayAppointments = useMemo(
+    () => allAppointments
+      .filter((apt) => isSameDay(new Date(apt.starts_at), selectedDate))
+      .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
+      .slice(0, MAX_ROWS),
+    [allAppointments, selectedDate],
+  );
+
+  const today = new Date();
 
   return (
     <div
@@ -73,6 +109,7 @@ export function UpcomingAppointments() {
         boxShadow: "var(--shadow-sm)",
       }}
     >
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calendar className="size-4" style={{ color: "var(--accent)" }} />
@@ -96,67 +133,149 @@ export function UpcomingAppointments() {
         </a>
       </div>
 
-      {loading ? (
-        <div className="mt-4 flex justify-center py-8">
-          <Spinner size="md" />
-        </div>
-      ) : appointments.length === 0 ? (
-        <p className="mt-4 text-sm" style={{ color: "var(--text-muted)" }}>
-          {t("noAppointments")}
-        </p>
-      ) : (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr
-                className="border-b text-xs"
+      {/* Date Strip */}
+      <div className="mt-4 flex items-center gap-1">
+        <button
+          onClick={() => setWeekOffset((w) => w - 1)}
+          className="flex size-7 shrink-0 items-center justify-center rounded-full transition-colors"
+          style={{ color: "var(--text-muted)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--nav-hover-bg)")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          <ChevronLeft className="size-4" />
+        </button>
+
+        <div className="flex flex-1 justify-between gap-1">
+          {weekDays.map((day) => {
+            const isToday = isSameDay(day, today);
+            const isSelected = isSameDay(day, selectedDate);
+            const count = countAppointmentsForDay(allAppointments, day);
+            const weekday = day.toLocaleDateString(undefined, { weekday: "short" });
+            const dayNum = day.getDate();
+
+            return (
+              <button
+                key={day.toISOString()}
+                onClick={() => setSelectedDate(day)}
+                className="flex flex-1 flex-col items-center gap-1 rounded-xl py-2 transition-colors"
                 style={{
-                  borderColor: "var(--border)",
-                  color: "var(--text-muted)",
+                  backgroundColor: isSelected ? "var(--accent-muted)" : "transparent",
+                  ...(isSelected ? { borderColor: "var(--accent)" } : {}),
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSelected) e.currentTarget.style.backgroundColor = "var(--nav-hover-bg)";
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSelected) e.currentTarget.style.backgroundColor = "transparent";
                 }}
               >
-                <th className="pb-2 pr-4 font-medium">{t("service")}</th>
-                <th className="pb-2 pr-4 font-medium">{t("patient")}</th>
-                <th className="pb-2 pr-4 font-medium">{t("dateTime")}</th>
-                <th className="pb-2 font-medium">{t("status")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {appointments.map((apt) => (
-                <tr
-                  key={apt.id}
-                  className="border-b last:border-b-0"
-                  style={{ borderColor: "var(--border)" }}
+                <span
+                  className="text-[10px] font-medium uppercase"
+                  style={{ color: isSelected ? "var(--accent)" : "var(--text-muted)" }}
                 >
-                  <td
-                    className="py-2.5 pr-4"
+                  {weekday}
+                </span>
+                <span
+                  className="flex size-8 items-center justify-center rounded-full text-sm font-semibold"
+                  style={{
+                    backgroundColor: isToday ? "var(--accent)" : "transparent",
+                    color: isToday ? "#fff" : isSelected ? "var(--accent)" : "var(--text-primary)",
+                  }}
+                >
+                  {dayNum}
+                </span>
+                {/* Appointment dots */}
+                <div className="flex items-center gap-0.5">
+                  {count > 0 ? (
+                    Array.from({ length: Math.min(count, 3) }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="size-1.5 rounded-full"
+                        style={{ backgroundColor: "var(--accent)" }}
+                      />
+                    ))
+                  ) : (
+                    <div className="size-1.5" />
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={() => setWeekOffset((w) => w + 1)}
+          className="flex size-7 shrink-0 items-center justify-center rounded-full transition-colors"
+          style={{ color: "var(--text-muted)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--nav-hover-bg)")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          <ChevronRight className="size-4" />
+        </button>
+      </div>
+
+      {/* Appointment List */}
+      <div className="mt-4">
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <Spinner size="md" />
+          </div>
+        ) : dayAppointments.length === 0 ? (
+          <p className="py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+            {t("noAppointmentsForDate")}
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {dayAppointments.map((apt) => (
+              <div
+                key={apt.id}
+                className="flex items-center gap-4 rounded-lg px-3 py-2.5 transition-colors"
+                style={{ backgroundColor: "var(--background)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--nav-hover-bg)")}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--background)")}
+              >
+                {/* Time */}
+                <div className="w-14 shrink-0 text-right">
+                  <span
+                    className="font-mono text-sm font-semibold"
                     style={{ color: "var(--text-primary)" }}
                   >
-                    {apt.services?.name ?? "\u2014"}
-                  </td>
-                  <td
-                    className="py-2.5 pr-4"
+                    {formatTime(apt.starts_at)}
+                  </span>
+                </div>
+
+                {/* Accent bar */}
+                <div
+                  className="h-10 w-1 shrink-0 rounded-full"
+                  style={{ backgroundColor: "var(--accent)" }}
+                />
+
+                {/* Content */}
+                <div className="min-w-0 flex-1">
+                  <p
+                    className="truncate text-sm font-medium"
                     style={{ color: "var(--text-primary)" }}
                   >
                     {apt.patients?.name ?? "\u2014"}
-                  </td>
-                  <td
-                    className="py-2.5 pr-4 font-mono text-xs"
-                    style={{ color: "var(--text-secondary)" }}
+                  </p>
+                  <p
+                    className="truncate text-xs"
+                    style={{ color: "var(--text-muted)" }}
                   >
-                    {formatTimeRange(apt.starts_at, apt.ends_at)}
-                  </td>
-                  <td className="py-2.5">
-                    <Badge variant={STATUS_BADGE_VARIANT[apt.status] ?? "neutral"}>
-                      {tCal(`statuses.${apt.status}`)}
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+                    {apt.services?.name ?? "\u2014"}
+                    {apt.professionals?.name ? ` \u00B7 ${apt.professionals.name}` : ""}
+                  </p>
+                </div>
+
+                {/* Status */}
+                <Badge variant={STATUS_BADGE_VARIANT[apt.status] ?? "neutral"}>
+                  {tCal(`statuses.${apt.status}`)}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
