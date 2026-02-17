@@ -295,7 +295,7 @@ export function PatientImportDialog({
             onClick={handleDropZoneClick}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
-            className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-10 transition-colors hover:bg-[rgba(255,255,255,0.02)]"
+            className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-10 transition-colors hover:bg-[var(--nav-hover-bg)]"
             style={{ borderColor: "var(--border)" }}
           >
             <Upload

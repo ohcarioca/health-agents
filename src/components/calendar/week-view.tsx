@@ -108,7 +108,7 @@ export function WeekView({
                 {HOURS.map((h) => (
                   <div
                     key={h}
-                    className="h-16 border-b transition-colors hover:bg-[rgba(255,255,255,0.02)] cursor-pointer"
+                    className="h-16 border-b transition-colors hover:bg-[var(--nav-hover-bg)] cursor-pointer"
                     style={{ borderColor: "var(--border)" }}
                     onClick={() => handleSlotClick(day, h)}
                   />

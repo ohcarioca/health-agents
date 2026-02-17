@@ -32,7 +32,7 @@ export function AppointmentCard({
   return (
     <button
       onClick={onClick}
-      className="absolute inset-x-0.5 overflow-hidden rounded-md px-1.5 py-0.5 text-left text-xs transition-opacity hover:opacity-90"
+      className="absolute inset-x-0.5 overflow-hidden rounded-lg px-1.5 py-0.5 text-left text-xs transition-opacity hover:opacity-90"
       style={{
         backgroundColor: `${color}20`,
         borderLeft: `3px solid ${color}`,

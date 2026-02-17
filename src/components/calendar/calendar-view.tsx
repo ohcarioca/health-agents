@@ -168,15 +168,15 @@ export function CalendarView({ professionals }: CalendarViewProps) {
           </select>
 
           {/* View toggle */}
-          <div className="flex rounded-lg border" style={{ borderColor: "var(--border)" }}>
+          <div className="rounded-lg p-1" style={{ backgroundColor: "var(--background)" }}>
             {(["day", "week", "month"] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                   view === v
                     ? "bg-[var(--accent)] text-white"
-                    : "hover:bg-[rgba(255,255,255,0.04)]"
+                    : "hover:text-[var(--text-primary)]"
                 }`}
                 style={{
                   color: view === v ? undefined : "var(--text-secondary)",
@@ -201,6 +201,7 @@ export function CalendarView({ professionals }: CalendarViewProps) {
         style={{
           borderColor: "var(--border)",
           backgroundColor: "var(--surface)",
+          boxShadow: "var(--shadow-sm)",
         }}
       >
         {loading && (

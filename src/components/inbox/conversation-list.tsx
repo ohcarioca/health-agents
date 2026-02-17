@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface ConversationItem {
@@ -82,49 +81,47 @@ export function ConversationList({
               <div
                 key={conversation.id}
                 onClick={() => onSelect(conversation.id)}
+                className={`rounded-lg border p-3 cursor-pointer transition-colors hover:bg-[var(--nav-hover-bg)] ${
+                  isSelected ? "border-l-2 border-l-[var(--accent)]" : ""
+                }`}
+                style={{
+                  backgroundColor: "var(--surface)",
+                  borderColor: isSelected ? undefined : "var(--border)",
+                }}
               >
-                <Card
-                  interactive
-                  className={
-                    isSelected
-                      ? "ring-2 ring-[var(--accent-ring)]"
-                      : ""
-                  }
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="truncate text-sm font-medium"
+                      style={{ color: "var(--text-primary)" }}
+                    >
+                      {conversation.patient?.name ?? t("unknownPatient")}
+                    </p>
+                    {conversation.last_message && (
                       <p
-                        className="truncate text-sm font-medium"
-                        style={{ color: "var(--text-primary)" }}
+                        className="mt-1 text-xs"
+                        style={{ color: "var(--text-muted)" }}
                       >
-                        {conversation.patient?.name ?? t("unknownPatient")}
+                        {truncate(conversation.last_message.content, 60)}
                       </p>
-                      {conversation.last_message && (
-                        <p
-                          className="mt-1 text-xs"
-                          style={{ color: "var(--text-muted)" }}
-                        >
-                          {truncate(conversation.last_message.content, 60)}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex shrink-0 flex-col items-end gap-1">
-                      <Badge
-                        variant={STATUS_BADGE_VARIANT[conversation.status]}
-                      >
-                        {t(`status.${conversation.status}`)}
-                      </Badge>
-                      {conversation.current_module && (
-                        <span
-                          className="text-[10px]"
-                          style={{ color: "var(--text-muted)" }}
-                        >
-                          {conversation.current_module}
-                        </span>
-                      )}
-                    </div>
+                    )}
                   </div>
-                </Card>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <Badge
+                      variant={STATUS_BADGE_VARIANT[conversation.status]}
+                    >
+                      {t(`status.${conversation.status}`)}
+                    </Badge>
+                    {conversation.current_module && (
+                      <span
+                        className="text-[10px]"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        {conversation.current_module}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             );
           })

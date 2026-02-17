@@ -148,50 +148,6 @@ export function PatientsView({
 
   return (
     <div className="space-y-4">
-      {/* Top bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {/* Search */}
-        <div className="relative w-full max-w-sm">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
-            style={{ color: "var(--text-muted)" }}
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("searchPlaceholder")}
-            className="w-full rounded-lg border py-2 pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-ring)]"
-            style={{
-              backgroundColor: "var(--surface)",
-              borderColor: "var(--border)",
-              color: "var(--text-primary)",
-            }}
-          />
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setImportOpen(true)}
-          >
-            <Upload className="size-4" />
-            {t("import")}
-          </Button>
-          <Button size="sm" onClick={handleAdd}>
-            <Plus className="size-4" />
-            {t("add")}
-          </Button>
-        </div>
-      </div>
-
-      {/* Count */}
-      <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-        {t("count", { count })}
-      </p>
-
       {/* Table or Empty state */}
       {count === 0 && search.trim().length < 2 ? (
         <div className="flex flex-col items-center justify-center gap-4 py-16">
@@ -225,153 +181,208 @@ export function PatientsView({
           </div>
         </div>
       ) : (
-        <div className={`relative ${loading ? "opacity-50" : ""}`}>
-          <div className="overflow-x-auto rounded-lg border" style={{ borderColor: "var(--border)" }}>
-            <table className="w-full text-sm">
-              <thead>
-                <tr
-                  className="border-b"
-                  style={{ borderColor: "var(--border)" }}
-                >
-                  <th
-                    className="px-4 py-3 text-left text-xs font-medium"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {t("name")}
-                  </th>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-medium"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {t("phone")}
-                  </th>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-medium"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {t("email")}
-                  </th>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-medium"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {t("cpf")}
-                  </th>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-medium"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {t("lastVisit")}
-                  </th>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-medium"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {t("actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {patients.map((patient) => (
-                  <tr
-                    key={patient.id}
-                    className="border-b transition-colors hover:bg-[rgba(255,255,255,0.02)]"
-                    style={{ borderColor: "var(--border)" }}
-                  >
-                    <td
-                      className="px-4 py-3 font-medium"
-                      style={{ color: "var(--text-primary)" }}
-                    >
-                      {patient.name}
-                    </td>
-                    <td
-                      className="px-4 py-3"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      {formatPhone(patient.phone)}
-                    </td>
-                    <td
-                      className="px-4 py-3"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      {patient.email || "\u2014"}
-                    </td>
-                    <td
-                      className="px-4 py-3"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      {patient.cpf ? maskCpf(patient.cpf) : "\u2014"}
-                    </td>
-                    <td
-                      className="px-4 py-3"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      {patient.last_visit_at
-                        ? new Date(patient.last_visit_at).toLocaleDateString(locale)
-                        : "\u2014"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(patient)}
-                          className="rounded-lg p-1.5 transition-colors hover:bg-[rgba(255,255,255,0.06)]"
-                          style={{ color: "var(--text-muted)" }}
-                          title={t("edit")}
-                        >
-                          <Pencil className="size-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(patient)}
-                          className="rounded-lg p-1.5 transition-colors hover:bg-[rgba(255,255,255,0.06)]"
-                          style={{ color: "var(--text-muted)" }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.color = "var(--danger)")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.color = "var(--text-muted)")
-                          }
-                          title={t("deleteConfirm")}
-                        >
-                          <Trash2 className="size-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div
+          className="rounded-xl border"
+          style={{
+            backgroundColor: "var(--surface)",
+            borderColor: "var(--border)",
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          {/* Card header: search + actions */}
+          <div
+            className="flex flex-col gap-3 border-b px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+            style={{ borderColor: "var(--border)" }}
+          >
+            {/* Search */}
+            <div className="relative w-full max-w-sm">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
+                style={{ color: "var(--text-muted)" }}
+              />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t("searchPlaceholder")}
+                className="w-full rounded-lg border py-2 pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-ring)]"
+                style={{
+                  backgroundColor: "var(--surface)",
+                  borderColor: "var(--border)",
+                  color: "var(--text-primary)",
+                }}
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                {t("count", { count })}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setImportOpen(true)}
+              >
+                <Upload className="size-4" />
+                {t("import")}
+              </Button>
+              <Button size="sm" onClick={handleAdd}>
+                <Plus className="size-4" />
+                {t("add")}
+              </Button>
+            </div>
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                {t("page", { page, total: totalPages })}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  <ChevronLeft className="size-4" />
-                  {t("previous")}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  {t("nextPage")}
-                  <ChevronRight className="size-4" />
-                </Button>
-              </div>
+          {/* Table */}
+          <div className={`relative ${loading ? "opacity-50" : ""}`}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr
+                    className="border-b"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {t("name")}
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {t("phone")}
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {t("email")}
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {t("cpf")}
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {t("lastVisit")}
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {t("actions")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {patients.map((patient) => (
+                    <tr
+                      key={patient.id}
+                      className="border-b transition-colors hover:bg-[var(--nav-hover-bg)]"
+                      style={{ borderColor: "var(--border)" }}
+                    >
+                      <td
+                        className="px-4 py-3 font-medium"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        {patient.name}
+                      </td>
+                      <td
+                        className="px-4 py-3"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        {formatPhone(patient.phone)}
+                      </td>
+                      <td
+                        className="px-4 py-3"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        {patient.email || "\u2014"}
+                      </td>
+                      <td
+                        className="px-4 py-3"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        {patient.cpf ? maskCpf(patient.cpf) : "\u2014"}
+                      </td>
+                      <td
+                        className="px-4 py-3"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        {patient.last_visit_at
+                          ? new Date(patient.last_visit_at).toLocaleDateString(locale)
+                          : "\u2014"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(patient)}
+                            className="rounded-lg p-1.5 transition-colors hover:bg-[var(--nav-hover-bg)]"
+                            style={{ color: "var(--text-muted)" }}
+                            title={t("edit")}
+                          >
+                            <Pencil className="size-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(patient)}
+                            className="rounded-lg p-1.5 transition-colors hover:bg-[var(--nav-hover-bg)]"
+                            style={{ color: "var(--text-muted)" }}
+                            onMouseEnter={(e) =>
+                              (e.currentTarget.style.color = "var(--danger)")
+                            }
+                            onMouseLeave={(e) =>
+                              (e.currentTarget.style.color = "var(--text-muted)")
+                            }
+                            title={t("deleteConfirm")}
+                          >
+                            <Trash2 className="size-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t px-5 py-4" style={{ borderColor: "var(--border)" }}>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                  {t("page", { page, total: totalPages })}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => p - 1)}
+                  >
+                    <ChevronLeft className="size-4" />
+                    {t("previous")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    {t("nextPage")}
+                    <ChevronRight className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
