@@ -437,40 +437,97 @@
   },
   "onboarding": {
     "step1": {
-      "title": "Datos de la Clínica",
+      "title": "Clínica y Horarios",
+      "description": "Configure los datos de la clínica y el horario de atención.",
       "clinicName": "Nombre de la Clínica",
       "phone": "Teléfono",
-      "address": "Dirección"
+      "address": "Dirección",
+      "timezone": "Zona Horaria",
+      "operatingHours": "Horario de Atención",
+      "operatingHoursHint": "Haga clic y arrastre para definir los horarios."
     },
     "step2": {
-      "title": "Profesionales",
-      "description": "Agrega el primer profesional de la clínica.",
+      "title": "Profesional y Servicio",
+      "description": "Agregue el primer profesional, configure su agenda y cree un servicio.",
+      "profSection": "Profesional",
       "name": "Nombre",
-      "specialty": "Especialidad"
+      "specialty": "Especialidad",
+      "duration": "Duración de la consulta (min)",
+      "schedule": "Agenda del Profesional",
+      "scheduleHint": "Haga clic y arrastre para definir los horarios de atención.",
+      "serviceSection": "Servicio",
+      "serviceName": "Nombre del Servicio",
+      "serviceDuration": "Duración (min)",
+      "servicePrice": "Precio",
+      "servicePriceHint": "En su moneda. Ej: 150,00"
     },
     "step3": {
-      "title": "Pacientes",
-      "description": "Agregue sus pacientes para comenzar a usar la plataforma.",
+      "title": "WhatsApp",
+      "description": "Conecte WhatsApp Business para que sus agentes reciban mensajes.",
+      "phoneNumberId": "Phone Number ID",
+      "wabaId": "WABA ID",
+      "accessToken": "Access Token",
+      "testConnection": "Probar Conexión",
+      "testSuccess": "¡Conexión válida!",
+      "testFailed": "Credenciales inválidas. Verifique los datos.",
+      "testLoading": "Probando...",
+      "helpText": "Encuentre estos valores en Meta Business Manager."
+    },
+    "step4": {
+      "title": "Google Calendar",
+      "description": "Conecte Google Calendar del profesional para sincronizar citas.",
+      "connectFor": "Conectar para {name}",
+      "connected": "Conectado",
+      "notConnected": "No conectado",
+      "connect": "Conectar Google Calendar",
+      "waitingCallback": "Esperando autorización..."
+    },
+    "step5": {
+      "title": "Pacientes y Revisión",
+      "description": "Agregue pacientes (opcional) y revise los requisitos.",
+      "patientsSection": "Pacientes",
+      "patientsOptional": "Opcional — puede agregar después.",
       "importCard": "Importar archivo",
       "importCardHint": "CSV o XLSX",
       "addCard": "Agregar manualmente",
       "addCardHint": "Uno a la vez",
       "addedCount": "{count} pacientes agregados",
-      "skipHint": "Puede omitir y agregar después."
-    },
-    "step4": {
-      "title": "WhatsApp",
-      "description": "Conecta WhatsApp Business para activar los agentes.",
-      "comingSoon": "La integración se configurará en Configuraciones."
-    },
-    "step5": {
-      "title": "Módulos",
-      "description": "Todos los módulos están activados por defecto.",
-      "allEnabled": "Puedes desactivar módulos específicos en cualquier momento."
+      "checklistSection": "Requisitos para Activación",
+      "requirement": {
+        "operating_hours": "Horario de atención",
+        "professional_schedule": "Profesional con agenda",
+        "service_with_price": "Servicio con precio",
+        "whatsapp": "WhatsApp configurado",
+        "google_calendar": "Google Calendar conectado"
+      },
+      "allMet": "¡Todos los requisitos cumplidos!",
+      "pending": "requisitos pendientes"
     },
     "back": "Volver",
     "next": "Siguiente",
     "finish": "Finalizar",
     "finishing": "Finalizando..."
+  },
+  "activation": {
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "confirmDeactivate": "Sus agentes dejarán de responder. ¿Está seguro?",
+    "confirmDeactivateTitle": "Desactivar Clínica",
+    "cancel": "Cancelar",
+    "confirm": "Desactivar",
+    "activationFailed": "No se puede activar. Requisitos pendientes:",
+    "requirement": {
+      "operating_hours": "Horario de atención de la clínica",
+      "professional_schedule": "Profesional con agenda configurada",
+      "service_with_price": "Servicio vinculado con precio",
+      "whatsapp": "WhatsApp Business configurado",
+      "google_calendar": "Google Calendar conectado"
+    },
+    "tooltip": {
+      "active": "Agentes respondiendo",
+      "inactive": "Agentes pausados"
+    }
   }
 }

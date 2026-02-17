@@ -437,40 +437,97 @@
   },
   "onboarding": {
     "step1": {
-      "title": "Clinic Details",
+      "title": "Clinic & Hours",
+      "description": "Set up your clinic details and operating hours.",
       "clinicName": "Clinic Name",
       "phone": "Phone",
-      "address": "Address"
+      "address": "Address",
+      "timezone": "Timezone",
+      "operatingHours": "Operating Hours",
+      "operatingHoursHint": "Click and drag to set hours."
     },
     "step2": {
-      "title": "Professionals",
-      "description": "Add the first professional at your clinic.",
+      "title": "Professional & Service",
+      "description": "Add your first professional, set their schedule, and create a service.",
+      "profSection": "Professional",
       "name": "Name",
-      "specialty": "Specialty"
+      "specialty": "Specialty",
+      "duration": "Appointment duration (min)",
+      "schedule": "Professional Schedule",
+      "scheduleHint": "Click and drag to set availability.",
+      "serviceSection": "Service",
+      "serviceName": "Service Name",
+      "serviceDuration": "Duration (min)",
+      "servicePrice": "Price",
+      "servicePriceHint": "In your currency. E.g.: 150.00"
     },
     "step3": {
-      "title": "Patients",
-      "description": "Add your patients to start using the platform.",
+      "title": "WhatsApp",
+      "description": "Connect WhatsApp Business so your agents can receive messages.",
+      "phoneNumberId": "Phone Number ID",
+      "wabaId": "WABA ID",
+      "accessToken": "Access Token",
+      "testConnection": "Test Connection",
+      "testSuccess": "Connection valid!",
+      "testFailed": "Invalid credentials. Check your details.",
+      "testLoading": "Testing...",
+      "helpText": "Find these values in Meta Business Manager."
+    },
+    "step4": {
+      "title": "Google Calendar",
+      "description": "Connect Google Calendar for the professional to sync appointments.",
+      "connectFor": "Connect for {name}",
+      "connected": "Connected",
+      "notConnected": "Not connected",
+      "connect": "Connect Google Calendar",
+      "waitingCallback": "Waiting for authorization..."
+    },
+    "step5": {
+      "title": "Patients & Review",
+      "description": "Add patients (optional) and review requirements.",
+      "patientsSection": "Patients",
+      "patientsOptional": "Optional — you can add later.",
       "importCard": "Import file",
       "importCardHint": "CSV or XLSX",
       "addCard": "Add manually",
       "addCardHint": "One at a time",
       "addedCount": "{count} patients added",
-      "skipHint": "You can skip and add later."
-    },
-    "step4": {
-      "title": "WhatsApp",
-      "description": "Connect WhatsApp Business to activate agents.",
-      "comingSoon": "Integration will be configured in Settings."
-    },
-    "step5": {
-      "title": "Modules",
-      "description": "All modules are enabled by default.",
-      "allEnabled": "You can disable specific modules at any time."
+      "checklistSection": "Activation Requirements",
+      "requirement": {
+        "operating_hours": "Operating hours",
+        "professional_schedule": "Professional with schedule",
+        "service_with_price": "Service with price",
+        "whatsapp": "WhatsApp configured",
+        "google_calendar": "Google Calendar connected"
+      },
+      "allMet": "All requirements met!",
+      "pending": "requirements pending"
     },
     "back": "Back",
     "next": "Next",
     "finish": "Finish",
     "finishing": "Finishing..."
+  },
+  "activation": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "confirmDeactivate": "Your agents will stop responding. Are you sure?",
+    "confirmDeactivateTitle": "Deactivate Clinic",
+    "cancel": "Cancel",
+    "confirm": "Deactivate",
+    "activationFailed": "Cannot activate. Pending requirements:",
+    "requirement": {
+      "operating_hours": "Clinic operating hours",
+      "professional_schedule": "Professional with schedule configured",
+      "service_with_price": "Service linked with price",
+      "whatsapp": "WhatsApp Business configured",
+      "google_calendar": "Google Calendar connected"
+    },
+    "tooltip": {
+      "active": "Agents responding",
+      "inactive": "Agents paused"
+    }
   }
 }
