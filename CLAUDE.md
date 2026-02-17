@@ -147,6 +147,7 @@ return NextResponse.json({ status: "ok" });
 - `professional_services` junction table: links professionals to services with per-professional `price_cents`. Cascade deletes on both FKs. Unique constraint on `(professional_id, service_id)`.
 - `clinics.operating_hours` (JSONB): same `ScheduleGrid` format as `professionals.schedule_grid`.
 - `appointments.insurance_plan_id` (nullable FK to `insurance_plans`) — optional insurance plan per appointment.
+- `clinics.is_active` (boolean, default false): controls whether agents respond to WhatsApp messages and crons process the clinic. Requires 5 minimum requirements to activate via `PUT /api/onboarding/activate`.
 
 ---
 
@@ -494,6 +495,14 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 | `/api/calendar/appointments/[id]` | PUT | Update appointment (+ Google Calendar sync) |
 | `/api/calendar/appointments/[id]` | DELETE | Delete appointment (+ Google Calendar delete) |
 | `/api/calendar/patients/search` | GET | Search patients by name or phone (autocomplete, limit 10) |
+
+### Onboarding API Routes
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/onboarding/status` | GET | Check clinic activation requirements status (5 checks) |
+| `/api/onboarding/activate` | PUT | Activate/deactivate clinic (validates 5 requirements for activation) |
+| `/api/integrations/whatsapp/test` | POST | Test WhatsApp credentials against Meta Graph API |
 
 ### Patient API Routes
 
