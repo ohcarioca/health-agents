@@ -90,13 +90,20 @@ export async function POST(request: Request) {
 
         const { data: clinic } = await supabase
           .from("clinics")
-          .select("id")
+          .select("id, is_active")
           .eq("phone", displayPhone)
           .maybeSingle();
 
         if (!clinic) {
           console.error(
             `[webhook/whatsapp] no clinic found for display_phone=${displayPhone}`
+          );
+          return;
+        }
+
+        if (!clinic.is_active) {
+          console.log(
+            `[webhook/whatsapp] ignoring message: clinic ${clinic.id} is not active`
           );
           return;
         }
