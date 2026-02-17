@@ -10,7 +10,7 @@ vi.mock("@/services/asaas", () => ({
 
 const mockUpdate = vi.fn().mockReturnThis();
 const mockEq = vi.fn().mockResolvedValue({ data: null, error: null });
-const mockFrom = vi.fn(() => ({
+const mockFrom = vi.fn((_table: string) => ({
   update: mockUpdate,
   eq: mockEq,
 }));
