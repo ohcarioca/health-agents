@@ -868,6 +868,28 @@ async function handleCancelAppointment(
       };
     }
 
+    // Cancel linked invoice if auto-billing created one
+    const { data: linkedInvoice } = await context.supabase
+      .from("invoices")
+      .select("id, status")
+      .eq("appointment_id", appointmentId)
+      .in("status", ["pending", "overdue"])
+      .single();
+
+    if (linkedInvoice) {
+      await context.supabase
+        .from("invoices")
+        .update({ status: "cancelled" })
+        .eq("id", linkedInvoice.id);
+
+      // Also expire any active payment links
+      await context.supabase
+        .from("payment_links")
+        .update({ status: "expired" })
+        .eq("invoice_id", linkedInvoice.id)
+        .eq("status", "active");
+    }
+
     // Delete Google Calendar event if exists
     if (existing.google_event_id && existing.professional_id) {
       try {
