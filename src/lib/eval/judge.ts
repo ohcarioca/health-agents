@@ -51,25 +51,34 @@ export async function judgeConversation(input: JudgeInput): Promise<JudgeVerdict
   const client = new Anthropic({ apiKey });
   const userPrompt = buildJudgePrompt(input);
 
-  try {
-    const response = await client.messages.create({
-      model,
-      max_tokens: 500,
-      temperature: 0,
-      system: JUDGE_SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userPrompt }],
-    });
+  const MAX_RETRIES = 2;
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const response = await client.messages.create({
+        model,
+        max_tokens: 500,
+        temperature: 0,
+        system: JUDGE_SYSTEM_PROMPT,
+        messages: [{ role: "user", content: userPrompt }],
+      });
 
-    const text = response.content
-      .filter((b): b is Anthropic.TextBlock => b.type === "text")
-      .map((b) => b.text)
-      .join("");
+      const text = response.content
+        .filter((b): b is Anthropic.TextBlock => b.type === "text")
+        .map((b) => b.text)
+        .join("");
 
-    return parseJudgeResponse(text);
-  } catch (error) {
-    console.warn("[eval-judge] Claude call failed:", error);
-    return DEFAULT_VERDICT;
+      return parseJudgeResponse(text);
+    } catch (error) {
+      console.warn(`[eval-judge] Claude call failed (attempt ${attempt + 1}/${MAX_RETRIES}):`, error);
+      if (attempt < MAX_RETRIES - 1) {
+        await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
+        continue;
+      }
+      return DEFAULT_VERDICT;
+    }
   }
+
+  return DEFAULT_VERDICT;
 }
 
 function buildJudgePrompt(input: JudgeInput): string {

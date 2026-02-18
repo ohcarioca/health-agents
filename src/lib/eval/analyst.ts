@@ -63,29 +63,38 @@ export async function analyzeResults(
 
   const userPrompt = `Here are the evaluation results with issues:\n\n${JSON.stringify(summaries, null, 2)}`;
 
-  try {
-    const response = await client.messages.create({
-      model,
-      max_tokens: 4096,
-      temperature: 0,
-      system: ANALYST_SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userPrompt }],
-    });
+  const MAX_RETRIES = 2;
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const response = await client.messages.create({
+        model,
+        max_tokens: 4096,
+        temperature: 0,
+        system: ANALYST_SYSTEM_PROMPT,
+        messages: [{ role: "user", content: userPrompt }],
+      });
 
-    const text = response.content
-      .filter((b): b is Anthropic.TextBlock => b.type === "text")
-      .map((b) => b.text)
-      .join("");
+      const text = response.content
+        .filter((b): b is Anthropic.TextBlock => b.type === "text")
+        .map((b) => b.text)
+        .join("");
 
-    const cleaned = text
-      .replace(/```json\s*/g, "")
-      .replace(/```\s*/g, "")
-      .trim();
+      const cleaned = text
+        .replace(/```json\s*/g, "")
+        .replace(/```\s*/g, "")
+        .trim();
 
-    const parsed = JSON.parse(cleaned);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    console.warn("[eval-analyst] Failed to analyze results:", error);
-    return [];
+      const parsed = JSON.parse(cleaned);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.warn(`[eval-analyst] Failed to analyze results (attempt ${attempt + 1}/${MAX_RETRIES}):`, error);
+      if (attempt < MAX_RETRIES - 1) {
+        await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
+        continue;
+      }
+      return [];
+    }
   }
+
+  return [];
 }

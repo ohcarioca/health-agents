@@ -6,7 +6,7 @@ description: "Patient books appointment with auto-billing enabled, provides CPF/
 persona:
   name: Ana Costa
   phone: "11987650020"
-  cpf: "12345678901"
+  cpf: "77337197047"
   email: "ana.costa@email.com"
   personality: "cooperative, provides info quickly when asked"
   goal: "Book a cardiology appointment with Dr. Joao Silva for next week"

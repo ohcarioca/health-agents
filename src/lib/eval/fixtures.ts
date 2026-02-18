@@ -186,6 +186,22 @@ export async function seedFixtures(
     }
   }
 
+  if (scenario.fixtures?.nps_responses) {
+    for (const nps of scenario.fixtures.nps_responses) {
+      const npsId = resolveId(idMap, nps.id);
+      const apptId = resolveId(idMap, nps.appointment_id);
+
+      await insertRow(supabase, "nps_responses", {
+        id: npsId,
+        clinic_id: clinicId,
+        patient_id: patientId,
+        appointment_id: apptId,
+        score: nps.score ?? null,
+        comment: nps.comment ?? null,
+      });
+    }
+  }
+
   return { clinicId, patientId, agentId, idMap };
 }
 

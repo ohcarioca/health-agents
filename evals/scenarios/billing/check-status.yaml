@@ -6,7 +6,7 @@ description: "Patient checks if their payment was processed"
 persona:
   name: Ana Beatriz Costa
   phone: "11987650011"
-  cpf: "98765432100"
+  cpf: "07746842089"
   personality: "anxious about payment confirmation"
   goal: "Check if my payment was received and processed"
 

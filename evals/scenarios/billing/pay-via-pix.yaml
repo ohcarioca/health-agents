@@ -6,7 +6,7 @@ description: "Patient requests payment link for pending invoice"
 persona:
   name: Carlos Mendes
   phone: "11987650010"
-  cpf: "12345678901"
+  cpf: "77337197047"
   personality: "practical, wants to pay quickly"
   goal: "Pay my pending consultation invoice via Pix"
 

@@ -6,7 +6,7 @@ description: "Patient disputes a charge and agent escalates to human"
 persona:
   name: Roberto Lima
   phone: "11987650012"
-  cpf: "45678912300"
+  cpf: "47609017019"
   personality: "frustrated, insistent, demands to talk to someone"
   goal: "Dispute an incorrect charge and speak with a human representative"
 

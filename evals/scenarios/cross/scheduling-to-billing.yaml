@@ -6,7 +6,7 @@ description: "Patient books appointment then asks about payment"
 persona:
   name: Camila Rodrigues
   phone: "11987650026"
-  cpf: "11122233344"
+  cpf: "07746842089"
   personality: "organized, wants to handle everything at once"
   goal: "Book an appointment with Dr. Joao and then ask how to pay for it"
 

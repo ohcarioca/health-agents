@@ -13,6 +13,7 @@ import type {
 } from "../types";
 import { getAvailableSlots } from "@/lib/scheduling/availability";
 import { enqueueConfirmations } from "@/lib/scheduling/enqueue-confirmations";
+import { isValidCpf } from "@/lib/validations/patients";
 import { isAutoBillingEnabled } from "@/lib/billing/auto-billing";
 import {
   createEvent,
@@ -43,9 +44,15 @@ Fluxo para AGENDAR:
 6. Se o paciente escolheu um horario em uma mensagem anterior mas voce nao tem mais os timestamps exatos, faca TUDO NO MESMO TURNO: chame check_availability para a mesma data, encontre o slot que corresponde ao horario escolhido pelo paciente, e chame book_appointment logo em seguida. NAO apresente as opcoes novamente — o paciente ja escolheu.
 7. Se o paciente pedir "o primeiro horario disponivel", chame check_availability e em seguida chame book_appointment com o PRIMEIRO slot retornado, tudo no MESMO turno. Nao apresente opcoes — o paciente ja decidiu.
 
+Fluxo para REMARCAR:
+1. Quando o paciente quiser remarcar uma consulta existente, use list_patient_appointments para encontrar a consulta.
+2. Chame check_availability para encontrar novos horarios disponiveis.
+3. Quando o paciente escolher o novo horario, chame reschedule_appointment com o appointment_id da consulta existente e os novos starts_at/ends_at. NAO use cancel_appointment + book_appointment — use reschedule_appointment.
+
 IMPORTANTE:
 - NUNCA invente horarios. Sempre use check_availability.
-- Quando o paciente confirma um horario, sua proxima acao DEVE ser chamar book_appointment. Nao faca mais perguntas.
+- Quando o paciente confirma um horario, sua proxima acao DEVE ser chamar book_appointment (nova consulta) ou reschedule_appointment (consulta existente). Nao faca mais perguntas.
+- Para REMARCAR, SEMPRE use reschedule_appointment. NUNCA cancele e agende novamente.
 - O campo service_id e opcional. Nao insista em saber o tipo de consulta para agendar.
 - Se o paciente ja informou profissional, data E horario, chame check_availability e book_appointment no mesmo turno sem perguntar nada.
 - Seja PROATIVO: se o paciente quer agendar e voce ja sabe com qual profissional, chame check_availability sem pedir a data.
@@ -69,9 +76,15 @@ Flow to BOOK:
 6. If the patient chose a time in a previous message but you no longer have the exact timestamps, do EVERYTHING IN THE SAME TURN: call check_availability for the same date, find the slot matching the patient's choice, and call book_appointment right after. Do NOT present options again — the patient already chose.
 7. If the patient asks for "the first available slot", call check_availability then call book_appointment with the FIRST slot returned, all in the SAME turn. Do not present options — the patient already decided.
 
+Flow to RESCHEDULE:
+1. When the patient wants to reschedule an existing appointment, use list_patient_appointments to find it.
+2. Call check_availability to find new available slots.
+3. When the patient picks the new time, call reschedule_appointment with the existing appointment_id and the new starts_at/ends_at. Do NOT use cancel_appointment + book_appointment — use reschedule_appointment.
+
 IMPORTANT:
 - NEVER fabricate times. Always use check_availability.
-- When the patient confirms a time, your next action MUST be calling book_appointment. Do not ask more questions.
+- When the patient confirms a time, your next action MUST be calling book_appointment (new appointment) or reschedule_appointment (existing appointment). Do not ask more questions.
+- To RESCHEDULE, ALWAYS use reschedule_appointment. NEVER cancel and re-book.
 - The service_id field is optional. Do not insist on knowing the service type to book.
 - If the patient already provided professional, date AND time, call check_availability and book_appointment in the same turn without asking anything.
 - Be PROACTIVE: if the patient wants to book and you already know which professional, call check_availability without asking for the date.
@@ -95,9 +108,15 @@ Flujo para AGENDAR:
 6. Si el paciente eligio un horario en un mensaje anterior pero ya no tienes los timestamps exactos, haz TODO EN EL MISMO TURNO: llama check_availability para la misma fecha, encuentra el slot que corresponde al horario elegido, y llama book_appointment enseguida. NO presentes opciones de nuevo — el paciente ya eligio.
 7. Si el paciente pide "el primer horario disponible", llama check_availability y luego book_appointment con el PRIMER slot retornado, todo en el MISMO turno. No presentes opciones — el paciente ya decidio.
 
+Flujo para REPROGRAMAR:
+1. Cuando el paciente quiera reprogramar una cita existente, usa list_patient_appointments para encontrarla.
+2. Llama check_availability para encontrar nuevos horarios disponibles.
+3. Cuando el paciente elija el nuevo horario, llama reschedule_appointment con el appointment_id de la cita existente y los nuevos starts_at/ends_at. NO uses cancel_appointment + book_appointment — usa reschedule_appointment.
+
 IMPORTANTE:
 - NUNCA inventes horarios. Siempre usa check_availability.
-- Cuando el paciente confirma un horario, tu siguiente accion DEBE ser llamar book_appointment. No hagas mas preguntas.
+- Cuando el paciente confirma un horario, tu siguiente accion DEBE ser llamar book_appointment (cita nueva) o reschedule_appointment (cita existente). No hagas mas preguntas.
+- Para REPROGRAMAR, SIEMPRE usa reschedule_appointment. NUNCA canceles y reagendes.
 - El campo service_id es opcional. No insistas en saber el tipo de servicio para agendar.
 - Si el paciente ya proporciono profesional, fecha Y hora, llama check_availability y book_appointment en el mismo turno sin preguntar nada.
 - Se PROACTIVO: si el paciente quiere agendar y ya sabes con que profesional, llama check_availability sin preguntar la fecha.
@@ -207,7 +226,7 @@ const rescheduleAppointmentTool = tool(
   {
     name: "reschedule_appointment",
     description:
-      "Reschedules an existing appointment to a new time. Only call after confirming with the patient.",
+      "Reschedules an existing appointment to a new time. ALWAYS use this instead of cancel+book when the patient wants to change their appointment time. Call after the patient picks a new slot from check_availability.",
     schema: z.object({
       appointment_id: z
         .string()
@@ -1073,8 +1092,8 @@ async function handleSavePatientBillingInfo(
   const cpf = typeof args.cpf === "string" ? args.cpf.replace(/\D/g, "") : undefined;
   const email = typeof args.email === "string" ? args.email.trim() : undefined;
 
-  if (cpf && cpf.length !== 11) {
-    return { result: "Invalid CPF. Must be exactly 11 digits." };
+  if (cpf && !isValidCpf(cpf)) {
+    return { result: "Invalid CPF — the check digits do not match. Please ask the patient for the correct CPF and try again." };
   }
 
   if (!cpf && !email) {

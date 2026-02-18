@@ -6,8 +6,8 @@ description: "Satisfied patient gives high NPS score and gets redirected to Goog
 persona:
   name: Fernanda Almeida
   phone: "11987650007"
-  personality: "enthusiastic, loved the experience"
-  goal: "Rate the clinic experience with a 10 and leave a positive comment about the doctor"
+  personality: "enthusiastic, loved the experience, gives score first when asked"
+  goal: "Give a score of 10 when asked for a rating, then leave a positive comment about the doctor when asked"
 
 fixtures:
   professionals:
@@ -20,6 +20,9 @@ fixtures:
       starts_at: "2026-02-13T10:00:00.000Z"
       ends_at: "2026-02-13T10:30:00.000Z"
       status: completed
+  nps_responses:
+    - id: eval-nps-1
+      appointment_id: eval-appt-4
 
 expectations:
   tools_called: [collect_nps_score, collect_nps_comment]

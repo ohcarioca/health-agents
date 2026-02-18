@@ -60,6 +60,13 @@ const insurancePlanFixtureSchema = z.object({
   name: z.string(),
 });
 
+const npsResponseFixtureSchema = z.object({
+  id: z.string(),
+  appointment_id: z.string(),
+  score: z.number().int().min(0).max(10).optional(),
+  comment: z.string().optional(),
+});
+
 const fixturesSchema = z.object({
   module_configs: z.array(moduleConfigFixtureSchema).optional(),
   professionals: z.array(professionalFixtureSchema).optional(),
@@ -68,6 +75,7 @@ const fixturesSchema = z.object({
   appointments: z.array(appointmentFixtureSchema).optional(),
   insurance_plans: z.array(insurancePlanFixtureSchema).optional(),
   invoices: z.array(invoiceFixtureSchema).optional(),
+  nps_responses: z.array(npsResponseFixtureSchema).optional(),
 }).optional();
 
 // ── Persona Schema ──
