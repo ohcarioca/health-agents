@@ -1,25 +1,5 @@
-import { ChatOpenAI } from "@langchain/openai";
-import type { MessageContent } from "@langchain/core/messages";
+import OpenAI from "openai";
 import type { ScenarioPersona } from "./types";
-
-function extractText(content: MessageContent): string {
-  if (typeof content === "string") return content;
-  if (Array.isArray(content)) {
-    return content
-      .filter(
-        (b): b is { type: "text"; text: string } =>
-          typeof b === "object" &&
-          b !== null &&
-          "type" in b &&
-          b.type === "text" &&
-          "text" in b &&
-          typeof b.text === "string"
-      )
-      .map((b) => b.text)
-      .join("");
-  }
-  return String(content ?? "");
-}
 
 function buildPatientSystemPrompt(persona: ScenarioPersona, locale: string): string {
   const infoLines: string[] = [];
@@ -81,17 +61,13 @@ export async function generatePatientMessage(
   const { persona, locale, history } = options;
   const modelName = process.env.OPENAI_MODEL ?? "gpt-5-mini";
 
-  const llm = new ChatOpenAI({
-    model: modelName,
-    temperature: 0.7,
-    maxTokens: 150,
-    maxRetries: 1,
-  });
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const systemPrompt = buildPatientSystemPrompt(persona, locale);
 
-  const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
-    { role: "system", content: systemPrompt },
+  // Use "developer" role (required by reasoning models like gpt-5-mini, o3-mini)
+  const messages: OpenAI.ChatCompletionMessageParam[] = [
+    { role: "developer", content: systemPrompt },
   ];
 
   // Map conversation history — patient = assistant (from patient LLM's perspective), agent = user
@@ -110,8 +86,13 @@ export async function generatePatientMessage(
     });
   }
 
-  const response = await llm.invoke(messages);
-  const text = extractText(response.content).trim();
+  const response = await client.chat.completions.create({
+    model: modelName,
+    messages,
+    max_completion_tokens: 2048,
+  });
+
+  const text = (response.choices[0]?.message?.content ?? "").trim();
 
   // Parse termination signals
   let signal: PatientMessage["signal"] = "continue";

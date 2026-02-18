@@ -673,7 +673,7 @@ fixtures:
   services:
     - id: eval-svc-1
       name: Consulta Cardiologica
-      base_price_cents: 25000
+      price_cents: 25000
   professional_services:
     - professional_id: eval-prof-1
       service_id: eval-svc-1

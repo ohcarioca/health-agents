@@ -21,7 +21,7 @@ const serviceFixtureSchema = z.object({
   id: z.string(),
   name: z.string(),
   duration_minutes: z.number().int().positive().optional(),
-  base_price_cents: z.number().int().positive().optional(),
+  price_cents: z.number().int().positive().optional(),
 });
 
 const professionalServiceFixtureSchema = z.object({

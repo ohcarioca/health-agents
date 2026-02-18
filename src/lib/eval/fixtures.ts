@@ -117,7 +117,7 @@ export async function seedFixtures(
         clinic_id: clinicId,
         name: svc.name,
         duration_minutes: svc.duration_minutes ?? 30,
-        base_price_cents: svc.base_price_cents ?? null,
+        price_cents: svc.price_cents ?? null,
       });
     }
   }

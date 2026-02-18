@@ -48,7 +48,7 @@ describe("evalScenarioSchema", () => {
           },
         ],
         services: [
-          { id: "svc-1", name: "Consulta", duration_minutes: 30, base_price_cents: 25000 },
+          { id: "svc-1", name: "Consulta", duration_minutes: 30, price_cents: 25000 },
         ],
         professional_services: [
           { professional_id: "prof-1", service_id: "svc-1", price_cents: 25000 },
