@@ -14,7 +14,7 @@ Follow strictly when generating, modifying, or reviewing code.
 | Styling | Tailwind CSS v4 (CSS-first config — no `tailwind.config.*`) |
 | AI | LangChain + OpenAI |
 | Database | Supabase (PostgreSQL + Auth + RLS) |
-| Payments | Asaas (Pix + boleto + credit/debit card) |
+| Payments | Asaas (Pix + boleto + credit/debit card + universal link) |
 | Email | Gmail API + Google Pub/Sub |
 | WhatsApp | Meta WhatsApp Business API |
 | Calendar | Google Calendar API |
@@ -152,6 +152,7 @@ return NextResponse.json({ status: "ok" });
 - `clinics.accent_color` (text, default `#0EA5E9`): hex color for public page branding.
 - `clinics.social_links` (JSONB, default `[]`): array of `{ type, url, label }` for Linktree-style links.
 - `clinics.show_prices` (boolean, default true): toggles service price display on public page.
+- `payment_links.method`: `'pix'`, `'boleto'`, `'credit_card'`, or `'link'` (universal). Default `'link'` uses Asaas `UNDEFINED` billingType — patient chooses method on checkout page.
 
 ---
 
@@ -452,7 +453,7 @@ Before shipping a new agent type, verify:
 | `scheduling` | `agents/scheduling.ts` | `check_availability`, `book_appointment`, `reschedule_appointment`, `cancel_appointment`, `list_patient_appointments`, `escalate_to_human` | whatsapp |
 | `confirmation` | `agents/confirmation.ts` | `confirm_attendance`, `reschedule_from_confirmation`, `mark_no_show` | whatsapp |
 | `nps` | `agents/nps.ts` | `collect_nps_score`, `collect_nps_comment`, `redirect_to_google_reviews`, `alert_detractor` | whatsapp |
-| `billing` | `agents/billing.ts` | `list_patient_invoices`, `create_payment_link`, `check_payment_status`, `send_payment_reminder`, `escalate_billing` | whatsapp |
+| `billing` | `agents/billing.ts` | `list_patient_invoices`, `create_payment_link` (default: universal link), `check_payment_status`, `send_payment_reminder`, `escalate_billing` | whatsapp |
 | `recall` | `agents/recall.ts` | `send_reactivation_message`, `route_to_scheduling`, `mark_patient_inactive` | whatsapp |
 
 ### Outbound Messaging (`src/lib/agents/outbound.ts`)
@@ -524,6 +525,16 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 | `/api/patients/[id]` | PUT | Update patient |
 | `/api/patients/[id]` | DELETE | Delete patient (if no appointments) |
 | `/api/patients/batch` | POST | Bulk create (max 500, skip duplicates) |
+
+### Payments API Routes
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/invoices` | GET | List invoices (paginated, filterable by status/period/search) |
+| `/api/invoices` | POST | Create invoice |
+| `/api/invoices/[id]` | GET | Invoice detail with payment links |
+| `/api/invoices/[id]` | PUT | Update invoice (status, amount, notes) |
+| `/api/invoices/[id]/payment-link` | POST | Generate Asaas payment link (Pix/boleto/card) |
 
 ### Dashboard & Reports API Routes
 
