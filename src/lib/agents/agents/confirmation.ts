@@ -357,6 +357,27 @@ async function handleRescheduleFromConfirmation(
       }
     }
 
+    // Cancel linked invoice (new one will be created on rebooking if auto_billing enabled)
+    const { data: linkedInvoice } = await context.supabase
+      .from("invoices")
+      .select("id, status")
+      .eq("appointment_id", appointmentId)
+      .in("status", ["pending", "overdue"])
+      .single();
+
+    if (linkedInvoice) {
+      await context.supabase
+        .from("invoices")
+        .update({ status: "cancelled" })
+        .eq("id", linkedInvoice.id);
+
+      await context.supabase
+        .from("payment_links")
+        .update({ status: "expired" })
+        .eq("invoice_id", linkedInvoice.id)
+        .eq("status", "active");
+    }
+
     return {
       result: `Appointment cancelled successfully. Tell the patient their appointment was cancelled and ask "Qual data e horario voce prefere para a nova consulta?" so they can reschedule right away.`,
       responseData: {
