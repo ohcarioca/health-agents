@@ -483,6 +483,14 @@
       "noServices": "Add at least one service.",
       "removeService": "Remove"
     },
+    "stepBilling": {
+      "title": "Billing",
+      "subtitle": "Configure automatic billing for scheduled appointments",
+      "toggleLabel": "Automatic billing",
+      "toggleDescription": "Automatically generates an invoice for each scheduled appointment based on the professional's service price.",
+      "enabledInfo": "When booking, the patient will receive a payment link. Reminders will be sent with confirmations.",
+      "disabledInfo": "Invoices can be created manually from the payments dashboard."
+    },
     "step3": {
       "title": "WhatsApp",
       "description": "Connect WhatsApp Business so your agents can receive messages.",

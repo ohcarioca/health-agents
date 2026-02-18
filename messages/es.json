@@ -483,6 +483,14 @@
       "noServices": "Agregue al menos un servicio.",
       "removeService": "Eliminar"
     },
+    "stepBilling": {
+      "title": "Facturación",
+      "subtitle": "Configure la facturación automática para citas programadas",
+      "toggleLabel": "Facturación automática",
+      "toggleDescription": "Genera automáticamente un cobro para cada cita programada, basado en el precio del servicio del profesional.",
+      "enabledInfo": "Al agendar, el paciente recibirá un enlace de pago. Se enviarán recordatorios con las confirmaciones.",
+      "disabledInfo": "Los cobros pueden crearse manualmente desde el panel de pagos."
+    },
     "step3": {
       "title": "WhatsApp",
       "description": "Conecte WhatsApp Business para que sus agentes reciban mensajes.",

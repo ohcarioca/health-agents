@@ -483,6 +483,14 @@
       "noServices": "Adicione pelo menos um serviço.",
       "removeService": "Remover"
     },
+    "stepBilling": {
+      "title": "Cobrança",
+      "subtitle": "Configure a cobrança automática para consultas agendadas",
+      "toggleLabel": "Cobrança automática",
+      "toggleDescription": "Gera uma cobrança automaticamente para cada consulta agendada, com base no preço do serviço do profissional.",
+      "enabledInfo": "Ao agendar, o paciente receberá um link de pagamento. Lembretes serão enviados nas confirmações.",
+      "disabledInfo": "Cobranças podem ser criadas manualmente pelo painel de pagamentos."
+    },
     "step3": {
       "title": "WhatsApp",
       "description": "Conecte o WhatsApp Business para seus agentes receberem mensagens.",
