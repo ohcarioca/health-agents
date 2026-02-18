@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Dialog } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { createServiceSchema } from "@/lib/validations/settings";
 
@@ -30,6 +31,8 @@ export function ServicesList() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ServiceRow | undefined>();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deletingSvc, setDeletingSvc] = useState<ServiceRow | null>(null);
 
   // Form state
   const [name, setName] = useState("");
@@ -122,15 +125,20 @@ export function ServicesList() {
     }
   }
 
-  async function handleDelete(svc: ServiceRow) {
-    if (!window.confirm(t("deleteConfirm"))) return;
+  function handleDelete(svc: ServiceRow) {
+    setDeletingSvc(svc);
+    setConfirmOpen(true);
+  }
 
-    const res = await fetch(`/api/settings/services/${svc.id}`, {
+  async function executeDelete() {
+    if (!deletingSvc) return;
+
+    const res = await fetch(`/api/settings/services/${deletingSvc.id}`, {
       method: "DELETE",
     });
 
     if (res.ok) {
-      setServices((prev) => prev.filter((s) => s.id !== svc.id));
+      setServices((prev) => prev.filter((s) => s.id !== deletingSvc.id));
     }
   }
 
@@ -242,6 +250,17 @@ export function ServicesList() {
           </div>
         </form>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Excluir"
+        description={t("deleteConfirm")}
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={executeDelete}
+      />
     </>
   );
 }

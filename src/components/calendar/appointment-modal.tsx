@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { PatientSearch } from "./patient-search";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { CalendarAppointment, ProfessionalOption } from "./types";
 
 interface ServiceOption {
@@ -61,6 +62,7 @@ export function AppointmentModal({
   const [insurancePlans, setInsurancePlans] = useState<InsurancePlanOption[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -190,8 +192,13 @@ export function AppointmentModal({
     }
   }
 
-  async function handleDelete() {
-    if (!appointment || !confirm(t("deleteConfirm"))) return;
+  function handleDelete() {
+    if (!appointment) return;
+    setDeleteConfirmOpen(true);
+  }
+
+  const executeDelete = useCallback(async () => {
+    if (!appointment) return;
 
     setSaving(true);
     try {
@@ -208,7 +215,7 @@ export function AppointmentModal({
     } finally {
       setSaving(false);
     }
-  }
+  }, [appointment, t, onSave, onOpenChange]);
 
   return (
     <Dialog
@@ -385,6 +392,17 @@ export function AppointmentModal({
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title={tc("delete")}
+        description={t("deleteConfirm")}
+        confirmLabel={tc("delete")}
+        cancelLabel={tc("cancel")}
+        variant="danger"
+        onConfirm={executeDelete}
+      />
     </Dialog>
   );
 }

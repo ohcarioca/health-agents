@@ -23,6 +23,7 @@ import { InvoiceStatusBadge } from "@/components/payments/invoice-status-badge";
 import { PaymentMethodIcon } from "@/components/payments/payment-method-icon";
 import { CreateInvoiceDialog } from "@/components/payments/create-invoice-dialog";
 import { InvoiceDetailPanel } from "@/components/payments/invoice-detail-panel";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { InvoiceRow } from "@/components/payments/invoice-detail-panel";
 import {
   formatCents,
@@ -67,6 +68,11 @@ export function PaymentsView({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{
+    invoice: InvoiceRow;
+    type: "markPaid" | "cancel";
+  } | null>(null);
 
   const totalPages = Math.ceil(count / PER_PAGE);
   const metrics = calculateRevenueMetrics(kpiInvoices);
@@ -150,32 +156,29 @@ export function PaymentsView({
     }
   }
 
-  async function handleQuickMarkPaid(inv: InvoiceRow) {
-    if (!window.confirm(t("markPaidConfirm"))) return;
-    try {
-      const res = await fetch(`/api/invoices/${inv.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "paid" }),
-      });
-      if (res.ok) {
-        fetchInvoices(page, search, statusFilter, periodFilter);
-        fetchKpis();
-      }
-    } catch {
-      alert(t("errors.updateError"));
-    }
+  function handleQuickMarkPaid(inv: InvoiceRow) {
+    setConfirmAction({ invoice: inv, type: "markPaid" });
+    setConfirmOpen(true);
     setOpenMenuId(null);
     setMenuPos(null);
   }
 
-  async function handleQuickCancel(inv: InvoiceRow) {
-    if (!window.confirm(t("cancelConfirm"))) return;
+  function handleQuickCancel(inv: InvoiceRow) {
+    setConfirmAction({ invoice: inv, type: "cancel" });
+    setConfirmOpen(true);
+    setOpenMenuId(null);
+    setMenuPos(null);
+  }
+
+  async function executeConfirmAction() {
+    if (!confirmAction) return;
+    const { invoice: inv, type } = confirmAction;
+    const newStatus = type === "markPaid" ? "paid" : "cancelled";
     try {
       const res = await fetch(`/api/invoices/${inv.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "cancelled" }),
+        body: JSON.stringify({ status: newStatus }),
       });
       if (res.ok) {
         fetchInvoices(page, search, statusFilter, periodFilter);
@@ -184,8 +187,6 @@ export function PaymentsView({
     } catch {
       alert(t("errors.updateError"));
     }
-    setOpenMenuId(null);
-    setMenuPos(null);
   }
 
   const overdueCents = kpiInvoices
@@ -531,6 +532,17 @@ export function PaymentsView({
         invoice={selectedInvoice}
         onClose={() => setSelectedInvoice(null)}
         onUpdate={handleDetailUpdate}
+      />
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={confirmAction?.type === "markPaid" ? t("markPaid") : t("cancelInvoice")}
+        description={confirmAction?.type === "markPaid" ? t("markPaidConfirm") : t("cancelConfirm")}
+        confirmLabel={confirmAction?.type === "markPaid" ? t("markPaid") : t("cancelInvoice")}
+        cancelLabel="Cancelar"
+        variant={confirmAction?.type === "markPaid" ? "primary" : "danger"}
+        onConfirm={executeConfirmAction}
       />
     </div>
   );

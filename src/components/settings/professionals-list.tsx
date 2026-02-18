@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Dialog } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProfessionalForm } from "./professional-form";
 
 interface ProfessionalRow {
@@ -27,6 +28,8 @@ export function ProfessionalsList() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ProfessionalRow | undefined>();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deletingProf, setDeletingProf] = useState<ProfessionalRow | null>(null);
 
   async function fetchList() {
     try {
@@ -68,15 +71,20 @@ export function ProfessionalsList() {
     }
   }
 
-  async function handleDelete(prof: ProfessionalRow) {
-    if (!window.confirm(t("deleteConfirm"))) return;
+  function handleDelete(prof: ProfessionalRow) {
+    setDeletingProf(prof);
+    setConfirmOpen(true);
+  }
 
-    const res = await fetch(`/api/settings/professionals/${prof.id}`, {
+  async function executeDelete() {
+    if (!deletingProf) return;
+
+    const res = await fetch(`/api/settings/professionals/${deletingProf.id}`, {
       method: "DELETE",
     });
 
     if (res.ok) {
-      setProfessionals((prev) => prev.filter((p) => p.id !== prof.id));
+      setProfessionals((prev) => prev.filter((p) => p.id !== deletingProf.id));
     }
   }
 
@@ -173,6 +181,17 @@ export function ProfessionalsList() {
           onCancel={() => setDialogOpen(false)}
         />
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Excluir"
+        description={t("deleteConfirm")}
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={executeDelete}
+      />
     </>
   );
 }

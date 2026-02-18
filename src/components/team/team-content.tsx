@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { InviteDialog } from "./invite-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { TeamMember, ClinicRole } from "@/types";
 
 export function TeamContent() {
@@ -19,6 +20,8 @@ export function TeamContent() {
   const [currentRole, setCurrentRole] = useState<ClinicRole>("reception");
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [removingMember, setRemovingMember] = useState<TeamMember | null>(null);
 
   const isOwner = currentRole === "owner";
 
@@ -65,15 +68,20 @@ export function TeamContent() {
     }
   }
 
-  async function handleRemove(member: TeamMember) {
-    if (!window.confirm(t("removeConfirm"))) return;
+  function handleRemove(member: TeamMember) {
+    setRemovingMember(member);
+    setConfirmOpen(true);
+  }
 
-    const res = await fetch(`/api/team/${member.id}`, {
+  async function executeRemove() {
+    if (!removingMember) return;
+
+    const res = await fetch(`/api/team/${removingMember.id}`, {
       method: "DELETE",
     });
 
     if (res.ok) {
-      setMembers((prev) => prev.filter((m) => m.id !== member.id));
+      setMembers((prev) => prev.filter((m) => m.id !== removingMember.id));
     }
   }
 
@@ -194,6 +202,17 @@ export function TeamContent() {
           onSuccess={handleInviteSuccess}
         />
       )}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t("remove")}
+        description={t("removeConfirm")}
+        confirmLabel={t("remove")}
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={executeRemove}
+      />
     </div>
   );
 }

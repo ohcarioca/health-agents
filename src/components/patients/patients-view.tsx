@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PatientFormDialog } from "@/components/patients/patient-form-dialog";
 import { PatientImportDialog } from "@/components/patients/patient-import-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface PatientRow {
   id: string;
@@ -64,6 +65,8 @@ export function PatientsView({
   const [formOpen, setFormOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [editing, setEditing] = useState<PatientRow | undefined>();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deletingPatient, setDeletingPatient] = useState<PatientRow | null>(null);
 
   const totalPages = Math.ceil(count / PER_PAGE);
 
@@ -111,11 +114,16 @@ export function PatientsView({
     setFormOpen(true);
   }
 
-  async function handleDelete(patient: PatientRow) {
-    if (!window.confirm(t("deleteConfirm"))) return;
+  function handleDelete(patient: PatientRow) {
+    setDeletingPatient(patient);
+    setConfirmOpen(true);
+  }
+
+  async function executeDelete() {
+    if (!deletingPatient) return;
 
     try {
-      const res = await fetch(`/api/patients/${patient.id}`, {
+      const res = await fetch(`/api/patients/${deletingPatient.id}`, {
         method: "DELETE",
       });
 
@@ -397,6 +405,17 @@ export function PatientsView({
         open={importOpen}
         onOpenChange={setImportOpen}
         onSuccess={handleImportSuccess}
+      />
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Excluir"
+        description={t("deleteConfirm")}
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={executeDelete}
       />
     </div>
   );

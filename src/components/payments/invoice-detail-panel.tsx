@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { InvoiceStatusBadge } from "./invoice-status-badge";
 import { PaymentMethodIcon } from "./payment-method-icon";
 import { formatCents } from "@/lib/analytics/kpis";
@@ -82,6 +83,8 @@ export function InvoiceDetailPanel({ invoice, onClose, onUpdate }: InvoiceDetail
   const locale = useLocale();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [generatingMethod, setGeneratingMethod] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmType, setConfirmType] = useState<"markPaid" | "cancel" | null>(null);
 
   if (!invoice) return null;
 
@@ -117,28 +120,24 @@ export function InvoiceDetailPanel({ invoice, onClose, onUpdate }: InvoiceDetail
     }
   }
 
-  async function handleMarkPaid() {
-    if (!window.confirm(t("markPaidConfirm"))) return;
-    try {
-      const res = await fetch(`/api/invoices/${invoice!.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "paid" }),
-      });
-      if (res.ok) onUpdate();
-      else alert(t("errors.updateError"));
-    } catch {
-      alert(t("errors.updateError"));
-    }
+  function handleMarkPaid() {
+    setConfirmType("markPaid");
+    setConfirmOpen(true);
   }
 
-  async function handleCancel() {
-    if (!window.confirm(t("cancelConfirm"))) return;
+  function handleCancel() {
+    setConfirmType("cancel");
+    setConfirmOpen(true);
+  }
+
+  async function executeConfirmAction() {
+    if (!confirmType) return;
+    const newStatus = confirmType === "markPaid" ? "paid" : "cancelled";
     try {
       const res = await fetch(`/api/invoices/${invoice!.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "cancelled" }),
+        body: JSON.stringify({ status: newStatus }),
       });
       if (res.ok) onUpdate();
       else alert(t("errors.updateError"));
@@ -323,6 +322,17 @@ export function InvoiceDetailPanel({ invoice, onClose, onUpdate }: InvoiceDetail
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={confirmType === "markPaid" ? t("markPaid") : t("cancelInvoice")}
+        description={confirmType === "markPaid" ? t("markPaidConfirm") : t("cancelConfirm")}
+        confirmLabel={confirmType === "markPaid" ? t("markPaid") : t("cancelInvoice")}
+        cancelLabel="Cancelar"
+        variant={confirmType === "markPaid" ? "primary" : "danger"}
+        onConfirm={executeConfirmAction}
+      />
     </>
   );
 }

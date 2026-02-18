@@ -6,6 +6,7 @@ import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface InsurancePlanRow {
   id: string;
@@ -20,6 +21,8 @@ export function InsurancePlansList() {
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
   const [adding, setAdding] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deletingPlan, setDeletingPlan] = useState<InsurancePlanRow | null>(null);
 
   async function fetchList() {
     try {
@@ -59,15 +62,20 @@ export function InsurancePlansList() {
     }
   }
 
-  async function handleDelete(plan: InsurancePlanRow) {
-    if (!window.confirm(t("deleteConfirm"))) return;
+  function handleDelete(plan: InsurancePlanRow) {
+    setDeletingPlan(plan);
+    setConfirmOpen(true);
+  }
 
-    const res = await fetch(`/api/settings/insurance-plans/${plan.id}`, {
+  async function executeDelete() {
+    if (!deletingPlan) return;
+
+    const res = await fetch(`/api/settings/insurance-plans/${deletingPlan.id}`, {
       method: "DELETE",
     });
 
     if (res.ok) {
-      setPlans((prev) => prev.filter((p) => p.id !== plan.id));
+      setPlans((prev) => prev.filter((p) => p.id !== deletingPlan.id));
     }
   }
 
@@ -125,6 +133,17 @@ export function InsurancePlansList() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Excluir"
+        description={t("deleteConfirm")}
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={executeDelete}
+      />
     </div>
   );
 }
