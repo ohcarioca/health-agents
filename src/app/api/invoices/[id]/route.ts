@@ -36,19 +36,21 @@ export async function GET(
 
   const { data, error } = await admin
     .from("invoices")
-    .select("*, patients(name, phone), payment_links(*)")
+    .select(
+      "*, patients!inner(id, name, phone, cpf, email, asaas_customer_id), payment_links(*)",
+    )
     .eq("id", id)
     .eq("clinic_id", clinicId)
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 404 });
+  if (error || !data) {
+    return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
   return NextResponse.json({ data });
 }
 
-export async function PATCH(
+export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -75,9 +77,14 @@ export async function PATCH(
   const { id } = await params;
   const admin = createAdminClient();
 
+  const updateData = { ...parsed.data } as Record<string, unknown>;
+  if (parsed.data.status === "paid" && !parsed.data.paid_at) {
+    updateData.paid_at = new Date().toISOString();
+  }
+
   const { data, error } = await admin
     .from("invoices")
-    .update(parsed.data)
+    .update(updateData)
     .eq("id", id)
     .eq("clinic_id", clinicId)
     .select()

@@ -90,7 +90,7 @@ interface CreateCustomerResult {
 
 interface CreateChargeParams {
   customerId: string;
-  billingType: "PIX" | "BOLETO" | "CREDIT_CARD";
+  billingType: "PIX" | "BOLETO" | "CREDIT_CARD" | "UNDEFINED";
   valueCents: number;
   dueDate: string;
   description?: string;

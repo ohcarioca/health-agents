@@ -25,16 +25,15 @@ const BASE_PROMPTS: Record<string, string> = {
 Fluxo principal:
 1. Quando o paciente mencionar pagamento, cobranca ou fatura, chame list_patient_invoices IMEDIATAMENTE para buscar as faturas pendentes.
 2. Se houver apenas UMA fatura pendente, prossiga automaticamente sem pedir o ID.
-3. Pergunte apenas o metodo de pagamento (Pix, boleto ou cartao de credito/debito) se o paciente ainda nao informou.
-4. Chame create_payment_link com o invoice_id e o metodo escolhido.
-5. Para consultas de status, chame list_patient_invoices e depois check_payment_status com o invoice_id encontrado.
+3. Chame create_payment_link com o invoice_id para gerar o link de pagamento. NAO pergunte o metodo — o paciente escolhe na pagina de pagamento.
+4. Para consultas de status, chame list_patient_invoices e depois check_payment_status com o invoice_id encontrado.
 
 Regras:
 - Use o primeiro nome do paciente para tornar a conversa mais pessoal.
 - Responda sempre em portugues do Brasil.
 - Seja educado e nunca ameacador. Adapte o tom conforme necessario (gentil, direto ou urgente).
 - SEMPRE chame list_patient_invoices primeiro quando o paciente falar sobre pagamento. Nunca peca o ID da fatura ao paciente.
-- Use a ferramenta create_payment_link para gerar links de pagamento. Nunca fabrique URLs.
+- Use a ferramenta create_payment_link para gerar links de pagamento. Nunca fabrique URLs. NAO pergunte o metodo de pagamento — envie o link direto.
 - Use a ferramenta check_payment_status para verificar o status de pagamentos.
 - Use a ferramenta escalate_billing para disputas ou situacoes que precisem de atencao humana.
 - Nao insista mais de 2 vezes se o paciente nao responder.
@@ -47,16 +46,15 @@ Regras:
 Main flow:
 1. When the patient mentions payment, billing, or invoice, call list_patient_invoices IMMEDIATELY to find their pending invoices.
 2. If there is only ONE pending invoice, proceed automatically without asking for the ID.
-3. Only ask for the payment method (Pix, boleto, or credit/debit card) if the patient hasn't specified it yet.
-4. Call create_payment_link with the invoice_id and chosen method.
-5. For status checks, call list_patient_invoices then check_payment_status with the found invoice_id.
+3. Call create_payment_link with the invoice_id to generate the payment link. Do NOT ask for the payment method — the patient chooses on the payment page.
+4. For status checks, call list_patient_invoices then check_payment_status with the found invoice_id.
 
 Rules:
 - Use the patient's first name to make the conversation more personal.
 - Always respond in English.
 - Be polite and never threatening. Adapt tone as needed (gentle, direct, or urgent).
 - ALWAYS call list_patient_invoices first when the patient talks about payment. Never ask the patient for the invoice ID.
-- Use the create_payment_link tool to generate payment links. Never fabricate URLs.
+- Use the create_payment_link tool to generate payment links. Never fabricate URLs. Do NOT ask for the payment method — just send the link directly.
 - Use the check_payment_status tool to verify payment status.
 - Use the escalate_billing tool for disputes or situations that need human attention.
 - Do not insist more than 2 times if the patient does not respond.
@@ -69,16 +67,15 @@ Rules:
 Flujo principal:
 1. Cuando el paciente mencione pago, cobro o factura, llama list_patient_invoices INMEDIATAMENTE para buscar las facturas pendientes.
 2. Si hay solo UNA factura pendiente, procede automaticamente sin pedir el ID.
-3. Solo pregunta el metodo de pago (Pix, boleto o tarjeta de credito/debito) si el paciente aun no lo informo.
-4. Llama create_payment_link con el invoice_id y el metodo elegido.
-5. Para consultas de estado, llama list_patient_invoices y despues check_payment_status con el invoice_id encontrado.
+3. Llama create_payment_link con el invoice_id para generar el enlace de pago. NO preguntes el metodo — el paciente elige en la pagina de pago.
+4. Para consultas de estado, llama list_patient_invoices y despues check_payment_status con el invoice_id encontrado.
 
 Reglas:
 - Usa el primer nombre del paciente para hacer la conversacion mas personal.
 - Responde siempre en espanol.
 - Se educado y nunca amenazante. Adapta el tono segun sea necesario (gentil, directo o urgente).
 - SIEMPRE llama list_patient_invoices primero cuando el paciente hable de pago. Nunca pidas el ID de la factura al paciente.
-- Usa la herramienta create_payment_link para generar enlaces de pago. Nunca fabriques URLs.
+- Usa la herramienta create_payment_link para generar enlaces de pago. Nunca fabriques URLs. NO preguntes el metodo de pago — envia el enlace directamente.
 - Usa la herramienta check_payment_status para verificar el estado de pagos.
 - Usa la herramienta escalate_billing para disputas o situaciones que necesiten atencion humana.
 - No insistas mas de 2 veces si el paciente no responde.
@@ -91,9 +88,9 @@ Reglas:
 
 const INSTRUCTIONS: Record<string, string> = {
   "pt-BR":
-    "Gerencie cobrancas e pagamentos via Pix, boleto e cartao de credito/debito, envie lembretes com tom adaptado e processe confirmacoes de pagamento.",
-  en: "Manage billing and payments via Pix, boleto, and credit/debit card, send reminders with adapted tone, and process payment confirmations.",
-  es: "Gestiona cobros y pagos via Pix, boleto y tarjeta de credito/debito, envia recordatorios con tono adaptado y procesa confirmaciones de pago.",
+    "Gerencie cobrancas e pagamentos enviando link de pagamento universal (paciente escolhe Pix, boleto ou cartao na pagina), envie lembretes com tom adaptado e processe confirmacoes de pagamento.",
+  en: "Manage billing and payments by sending a universal payment link (patient chooses Pix, boleto, or card on the page), send reminders with adapted tone, and process payment confirmations.",
+  es: "Gestiona cobros y pagos enviando enlace de pago universal (paciente elige Pix, boleto o tarjeta en la pagina), envia recordatorios con tono adaptado y procesa confirmaciones de pago.",
 };
 
 // ── Tool Definitions (Stubs) ──
@@ -115,20 +112,22 @@ const createPaymentLinkTool = tool(
     return JSON.stringify({
       action: "create_payment_link",
       invoice_id: input.invoice_id,
-      method: input.method,
+      method: input.method ?? "link",
     });
   },
   {
     name: "create_payment_link",
     description:
-      "Generates a payment link for a specific invoice. Call this when the patient needs a link to pay via Pix, boleto, or credit/debit card.",
+      "Generates a universal payment link for a specific invoice. The patient chooses the payment method (Pix, boleto, or credit/debit card) on the payment page. Just provide the invoice_id — no need to ask the patient for the method.",
     schema: z.object({
       invoice_id: z
         .string()
         .describe("The ID of the invoice to generate a payment link for"),
       method: z
-        .enum(["pix", "boleto", "credit_card"])
-        .describe("The payment method: 'pix' for instant Pix payment, 'boleto' for bank slip, or 'credit_card' for credit/debit card"),
+        .enum(["link", "pix", "boleto", "credit_card"])
+        .optional()
+        .default("link")
+        .describe("Payment method. Default 'link' generates a universal link where the patient picks the method. Only use specific methods if the patient explicitly requests one."),
     }),
   }
 );
@@ -280,7 +279,7 @@ async function handleListPatientInvoices(
 
     const autoAction =
       invoices.length === 1
-        ? `\n\nThere is only ONE pending invoice. Use invoice_id "${invoices[0].id}" directly with create_payment_link or check_payment_status without asking the patient.`
+        ? `\n\nThere is only ONE pending invoice. Use invoice_id "${invoices[0].id}" directly with create_payment_link (no need to ask for payment method) or check_payment_status without asking the patient.`
         : `\n\nMultiple invoices found. Ask the patient which one they want to pay or check.`;
 
     return {
@@ -338,12 +337,13 @@ async function handleCreatePaymentLink(
     }
 
     // Create charge in Asaas
-    const BILLING_TYPE_MAP: Record<string, "PIX" | "BOLETO" | "CREDIT_CARD"> = {
+    const BILLING_TYPE_MAP: Record<string, "PIX" | "BOLETO" | "CREDIT_CARD" | "UNDEFINED"> = {
+      link: "UNDEFINED",
       pix: "PIX",
       boleto: "BOLETO",
       credit_card: "CREDIT_CARD",
     };
-    const billingType = BILLING_TYPE_MAP[method] ?? "PIX";
+    const billingType = BILLING_TYPE_MAP[method] ?? "UNDEFINED";
     const chargeResult = await createCharge({
       customerId,
       billingType,
@@ -384,8 +384,10 @@ async function handleCreatePaymentLink(
     const amountFormatted = formatBrl(invoice.amount_cents as number);
     const paymentUrl = chargeResult.invoiceUrl ?? "";
 
+    const methodLabel = method === "link" ? "universal payment link" : method.toUpperCase();
+
     return {
-      result: `Payment link created successfully for ${amountFormatted} via ${method.toUpperCase()}.`,
+      result: `Payment link created successfully for ${amountFormatted} (${methodLabel}). The patient can choose their preferred payment method (Pix, boleto, or credit/debit card) on the payment page.`,
       appendToResponse: `\n\nLink de pagamento: ${paymentUrl}${pixPayload ? `\n\nPix copia e cola:\n${pixPayload}` : ""}`,
     };
   } catch (error) {

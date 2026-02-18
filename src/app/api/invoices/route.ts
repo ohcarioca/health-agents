@@ -30,25 +30,59 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");
+  const search = searchParams.get("search");
+  const period = searchParams.get("period");
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+  const perPage = 25;
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
 
   const admin = createAdminClient();
+
   let query = admin
     .from("invoices")
-    .select("*, patients(name, phone)")
+    .select(
+      "*, patients!inner(id, name, phone, cpf, email, asaas_customer_id), payment_links(*)",
+      { count: "exact" },
+    )
     .eq("clinic_id", clinicId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
-  if (status) {
+  if (status && status !== "all") {
     query = query.eq("status", status);
   }
 
-  const { data, error } = await query;
+  if (search && search.trim().length >= 2) {
+    query = query.ilike("patients.name", `%${search.trim()}%`);
+  }
+
+  if (period) {
+    const now = new Date();
+    let startDate: string | undefined;
+    if (period === "this-month") {
+      startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+    } else if (period === "30d") {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 30);
+      startDate = d.toISOString().split("T")[0];
+    } else if (period === "90d") {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 90);
+      startDate = d.toISOString().split("T")[0];
+    }
+    if (startDate) {
+      query = query.gte("due_date", startDate);
+    }
+  }
+
+  const { data, error, count } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ data });
+  return NextResponse.json({ data, count });
 }
 
 export async function POST(request: Request) {

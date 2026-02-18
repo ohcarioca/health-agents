@@ -22,3 +22,7 @@ export const updateInvoiceSchema = z.object({
   notes: z.string().max(500).optional(),
   paid_at: z.string().datetime().optional(),
 });
+
+export const createPaymentLinkSchema = z.object({
+  method: z.enum(["pix", "boleto", "credit_card"]),
+});
