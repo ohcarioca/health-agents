@@ -1,4 +1,5 @@
 import { tool } from "@langchain/core/tools";
+import type { StructuredToolInterface } from "@langchain/core/tools";
 import { z } from "zod";
 import { registerAgentType } from "../registry";
 import type {
@@ -105,6 +106,25 @@ const INSTRUCTIONS: Record<string, string> = {
     "Ajude pacientes a agendar, remarcar ou cancelar consultas. Use check_availability antes de oferecer horarios. Quando o paciente escolher um horario, chame book_appointment imediatamente.",
   en: "Help patients book, reschedule, or cancel appointments. Use check_availability before offering times. When the patient picks a time, call book_appointment immediately.",
   es: "Ayuda a los pacientes a agendar, reprogramar o cancelar citas. Usa check_availability antes de ofrecer horarios. Cuando el paciente elija un horario, llama book_appointment inmediatamente.",
+};
+
+// ── Auto-Billing Prompt Addenda ──
+
+const AUTO_BILLING_PROMPTS: Record<string, string> = {
+  "pt-BR": `IMPORTANTE — Cobranca automatica:
+- Antes de agendar, verifique se o paciente tem CPF e email. Se faltar algum, peca educadamente usando a tool save_patient_billing_info.
+- Apos o agendamento, uma cobranca e link de pagamento serao gerados automaticamente. NAO fabrique URLs de pagamento.
+- Se o paciente ja tem CPF e email, prossiga direto para o agendamento.`,
+
+  en: `IMPORTANT — Automatic billing:
+- Before booking, verify the patient has CPF and email. If either is missing, ask politely and save using the save_patient_billing_info tool.
+- After booking, an invoice and payment link will be generated automatically. NEVER fabricate payment URLs.
+- If the patient already has CPF and email, proceed directly to booking.`,
+
+  es: `IMPORTANTE — Facturacion automatica:
+- Antes de agendar, verifique que el paciente tenga CPF y email. Si falta alguno, pida amablemente y guarde usando la tool save_patient_billing_info.
+- Despues de agendar, se generara automaticamente un cobro y enlace de pago. NUNCA fabrique URLs de pago.
+- Si el paciente ya tiene CPF y email, proceda directamente al agendamiento.`,
 };
 
 // ── Tool Definitions (Stubs) ──
@@ -1055,15 +1075,23 @@ const schedulingConfig: AgentTypeConfig = {
     // Only return the base prompt (step 1 of the 8-step assembly).
     // Steps 2-8 (name, description, instructions, tools, business/recipient context)
     // are handled by context-builder.ts — do NOT duplicate them here.
-    return BASE_PROMPTS[params.locale] ?? BASE_PROMPTS["en"];
+    let prompt = BASE_PROMPTS[params.locale] ?? BASE_PROMPTS["en"];
+
+    // Conditional billing instructions when auto_billing is enabled
+    if (params.agentDbConfig?.auto_billing) {
+      const billingInstructions = AUTO_BILLING_PROMPTS[params.locale] ?? AUTO_BILLING_PROMPTS["en"];
+      prompt += `\n\n${billingInstructions}`;
+    }
+
+    return prompt;
   },
 
   getInstructions(_tone: string, locale: string): string {
     return INSTRUCTIONS[locale] ?? INSTRUCTIONS["en"];
   },
 
-  getTools(_options: AgentToolOptions) {
-    return [
+  getTools(options: AgentToolOptions): StructuredToolInterface[] {
+    const tools: StructuredToolInterface[] = [
       checkAvailabilityTool,
       bookAppointmentTool,
       rescheduleAppointmentTool,
@@ -1071,6 +1099,12 @@ const schedulingConfig: AgentTypeConfig = {
       listPatientAppointmentsTool,
       escalateToHumanTool,
     ];
+
+    if (options.agentConfig?.auto_billing) {
+      tools.push(savePatientBillingInfoTool);
+    }
+
+    return tools;
   },
 
   async handleToolCall(

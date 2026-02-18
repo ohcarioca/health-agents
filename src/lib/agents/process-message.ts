@@ -232,6 +232,19 @@ export async function processMessage(
   const agentName = agentRow?.name ?? moduleType;
   const agentConfig_ = (agentRow?.config ?? {}) as Record<string, unknown>;
 
+  // Check auto_billing from module_configs
+  const { data: billingModuleConfig } = await supabase
+    .from("module_configs")
+    .select("settings")
+    .eq("clinic_id", clinicId)
+    .eq("module_type", "billing")
+    .single();
+
+  const autoBilling = (billingModuleConfig?.settings as Record<string, unknown> | null)?.auto_billing === true;
+  if (autoBilling) {
+    agentConfig_.auto_billing = true;
+  }
+
   // 9. Build system prompt
   const firstName = patient.name.split(" ")[0];
   const recipient: RecipientContext = {
@@ -296,6 +309,7 @@ export async function processMessage(
     businessContext,
     tone: (agentConfig_.tone as "professional" | "friendly" | "casual") ?? "professional",
     locale: (agentConfig_.locale as "pt-BR" | "en" | "es") ?? "pt-BR",
+    agentDbConfig: agentConfig_,
   };
 
   const systemPrompt = buildSystemPrompt(agentConfig, promptParams, recipient);
@@ -307,6 +321,7 @@ export async function processMessage(
     clinicId,
     conversationId,
     locale: promptParams.locale,
+    agentConfig: agentConfig_,
   });
 
   const engineResult = await chatWithToolLoop({

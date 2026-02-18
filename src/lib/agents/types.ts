@@ -70,6 +70,7 @@ export interface SystemPromptParams {
   businessContext?: BusinessContext;
   tone: "professional" | "friendly" | "casual";
   locale: "pt-BR" | "en" | "es";
+  agentDbConfig?: Record<string, unknown>;
 }
 
 // ── Agent Type Config ──
@@ -94,6 +95,7 @@ export interface AgentToolOptions {
   clinicId: string;
   conversationId: string;
   locale: string;
+  agentConfig?: Record<string, unknown>;
 }
 
 // ── Engine Result ──
