@@ -1,0 +1,16 @@
+id: recall-reactivation
+agent: recall
+locale: pt-BR
+description: "Inactive patient responds to reactivation message and wants to book"
+
+persona:
+  name: Mariana Souza
+  phone: "11987650024"
+  personality: "interested, has been meaning to schedule"
+  goal: "Respond positively to the reactivation message and ask to schedule a new appointment"
+
+expectations:
+  tools_called: [route_to_scheduling]
+  goal_achieved: true
+
+max_turns: 8

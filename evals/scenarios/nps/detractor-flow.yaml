@@ -1,11 +1,13 @@
 id: nps-detractor-flow
 agent: nps
 locale: pt-BR
-description: "Unsatisfied patient gives low NPS score, detractor alert triggered"
+description: "Unsatisfied patient gives low NPS score, triggering detractor alert"
 
 persona:
   name: Roberto Gomes
   phone: "11987650008"
+  personality: "frustrated, waited too long, wants to complain"
+  goal: "Rate the experience with a 3 and explain that the wait was too long and staff was rude"
 
 fixtures:
   professionals:
@@ -19,11 +21,10 @@ fixtures:
       ends_at: "2026-02-13T14:30:00.000Z"
       status: completed
 
-turns:
-  - user: "3. Esperei mais de uma hora para ser atendido"
-    expect:
-      tools_called: [collect_nps_score]
+expectations:
+  tools_called: [collect_nps_score, collect_nps_comment, alert_detractor]
+  goal_achieved: true
+  assertions:
+    nps_score_recorded: true
 
-  - user: "A recepcionista foi grosseira e o medico tinha pressa"
-    expect:
-      tools_called: [collect_nps_comment]
+max_turns: 10

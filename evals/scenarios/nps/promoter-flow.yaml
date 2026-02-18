@@ -1,11 +1,13 @@
 id: nps-promoter-flow
 agent: nps
 locale: pt-BR
-description: "Satisfied patient gives high NPS score and is redirected to Google Reviews"
+description: "Satisfied patient gives high NPS score and gets redirected to Google Reviews"
 
 persona:
   name: Fernanda Almeida
   phone: "11987650007"
+  personality: "enthusiastic, loved the experience"
+  goal: "Rate the clinic experience with a 10 and leave a positive comment about the doctor"
 
 fixtures:
   professionals:
@@ -19,11 +21,10 @@ fixtures:
       ends_at: "2026-02-13T10:30:00.000Z"
       status: completed
 
-turns:
-  - user: "10! Adorei o atendimento"
-    expect:
-      tools_called: [collect_nps_score]
+expectations:
+  tools_called: [collect_nps_score, collect_nps_comment]
+  goal_achieved: true
+  assertions:
+    nps_score_recorded: true
 
-  - user: "O doutor foi muito atencioso e explicou tudo direitinho"
-    expect:
-      tools_called: [collect_nps_comment]
+max_turns: 10
