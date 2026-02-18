@@ -5,20 +5,42 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { CheckCircle2, XCircle, PartyPopper } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  Circle,
+  ExternalLink,
+  PartyPopper,
+  Sparkles,
+} from "lucide-react";
 
 interface RequirementsData {
   is_active: boolean;
   requirements: Record<string, boolean>;
 }
 
-const REQUIREMENT_KEYS = [
+type RequirementKey =
+  | "operating_hours"
+  | "professional_schedule"
+  | "service_with_price"
+  | "whatsapp"
+  | "google_calendar";
+
+const REQUIREMENT_KEYS: RequirementKey[] = [
   "operating_hours",
   "professional_schedule",
   "service_with_price",
   "whatsapp",
   "google_calendar",
-] as const;
+];
+
+const SETTINGS_TAB_MAP: Record<RequirementKey, string> = {
+  operating_hours: "/settings?tab=clinic",
+  professional_schedule: "/settings?tab=professionals",
+  service_with_price: "/settings?tab=services",
+  whatsapp: "/settings?tab=whatsapp",
+  google_calendar: "/settings?tab=integrations",
+};
 
 export function StepCompletion() {
   const t = useTranslations("onboarding.completion");
@@ -30,6 +52,7 @@ export function StepCompletion() {
   const [activating, setActivating] = useState(false);
   const [activated, setActivated] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchStatus() {
@@ -49,9 +72,12 @@ export function StepCompletion() {
     fetchStatus();
   }, []);
 
-  const allMet = requirements
-    ? Object.values(requirements.requirements).every(Boolean)
-    : false;
+  const reqs = requirements?.requirements ?? {};
+  const completedKeys = REQUIREMENT_KEYS.filter((k) => reqs[k]);
+  const pendingKeys = REQUIREMENT_KEYS.filter((k) => !reqs[k]);
+  const allMet = pendingKeys.length === 0 && requirements !== null;
+  const completedCount = completedKeys.length;
+  const totalCount = REQUIREMENT_KEYS.length;
 
   async function handleActivate() {
     setActivating(true);
@@ -80,59 +106,157 @@ export function StepCompletion() {
     router.refresh();
   }
 
+  function handleGoToSettings(key: RequirementKey) {
+    document.cookie = "onboarding_active=; path=/; max-age=0";
+    router.push(SETTINGS_TAB_MAP[key]);
+    router.refresh();
+  }
+
   return (
     <div className="space-y-5 text-center">
       {/* Success icon */}
       <div className="flex justify-center">
         <div
           className="flex size-16 items-center justify-center rounded-full"
-          style={{ backgroundColor: "var(--accent-subtle)" }}
+          style={{ backgroundColor: allMet && !loadingReqs ? "var(--success-subtle, #ecfdf5)" : "var(--accent-subtle)" }}
         >
-          <PartyPopper className="size-8" style={{ color: "var(--accent)" }} />
+          {allMet && !loadingReqs ? (
+            <Sparkles className="size-8" style={{ color: "var(--success)" }} />
+          ) : (
+            <PartyPopper className="size-8" style={{ color: "var(--accent)" }} />
+          )}
         </div>
       </div>
 
-      {/* Title */}
+      {/* Title + subtitle */}
       <div>
         <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
-          {t("title")}
+          {allMet && !loadingReqs ? t("titleAllMet") : t("title")}
         </h2>
         <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
-          {t("subtitle")}
+          {allMet && !loadingReqs ? t("subtitleAllMet") : t("subtitle")}
         </p>
       </div>
 
-      {/* Requirements checklist */}
-      <div className="text-left">
-        <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-          {t("requirementsTitle")}
-        </h3>
+      {/* Progress bar */}
+      {!loadingReqs && (
+        <div className="mx-auto w-full max-w-xs">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+              {t("progress")}
+            </span>
+            <span className="text-xs font-semibold" style={{ color: allMet ? "var(--success)" : "var(--text-primary)" }}>
+              {completedCount}/{totalCount}
+            </span>
+          </div>
+          <div
+            className="h-2 w-full overflow-hidden rounded-full"
+            style={{ backgroundColor: "var(--border)" }}
+          >
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${(completedCount / totalCount) * 100}%`,
+                backgroundColor: allMet ? "var(--success)" : "var(--accent)",
+              }}
+            />
+          </div>
+        </div>
+      )}
 
+      {/* Requirements list */}
+      <div className="text-left">
         {loadingReqs ? (
           <div className="flex justify-center py-4">
             <Spinner size="sm" />
           </div>
         ) : (
-          <div className="space-y-2">
-            {REQUIREMENT_KEYS.map((key) => {
-              const met = requirements?.requirements[key] ?? false;
+          <div className="space-y-1.5">
+            {/* Completed items */}
+            {completedKeys.map((key) => (
+              <div
+                key={key}
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5"
+                style={{ backgroundColor: "var(--success-subtle, #f0fdf4)" }}
+              >
+                <CheckCircle2 className="size-5 shrink-0" style={{ color: "var(--success)" }} />
+                <span
+                  className="flex-1 text-sm font-medium"
+                  style={{ color: "var(--success)" }}
+                >
+                  {tReq(key)}
+                </span>
+              </div>
+            ))}
+
+            {/* Divider between completed and pending */}
+            {completedKeys.length > 0 && pendingKeys.length > 0 && (
+              <div className="flex items-center gap-2 px-1 py-1.5">
+                <div className="h-px flex-1" style={{ backgroundColor: "var(--border)" }} />
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  {t("pendingLabel")}
+                </span>
+                <div className="h-px flex-1" style={{ backgroundColor: "var(--border)" }} />
+              </div>
+            )}
+
+            {/* Pending items with accordion */}
+            {pendingKeys.map((key) => {
+              const isExpanded = expandedKey === key;
               return (
                 <div
                   key={key}
-                  className="flex items-center gap-3 rounded-lg border px-3 py-2"
-                  style={{
-                    borderColor: met ? "var(--success)" : "var(--border)",
-                    backgroundColor: met ? "var(--success-subtle, transparent)" : "transparent",
-                  }}
+                  className="overflow-hidden rounded-lg border"
+                  style={{ borderColor: "var(--border)" }}
                 >
-                  {met ? (
-                    <CheckCircle2 className="size-4 shrink-0" style={{ color: "var(--success)" }} />
-                  ) : (
-                    <XCircle className="size-4 shrink-0" style={{ color: "var(--text-muted)" }} />
-                  )}
-                  <span className="text-sm" style={{ color: "var(--text-primary)" }}>
-                    {tReq(key)}
-                  </span>
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:opacity-80"
+                    style={{ backgroundColor: "transparent" }}
+                    onClick={() => setExpandedKey(isExpanded ? null : key)}
+                  >
+                    <Circle className="size-5 shrink-0" style={{ color: "var(--text-muted)" }} />
+                    <span
+                      className="flex-1 text-sm font-medium"
+                      style={{ color: "var(--text-primary)" }}
+                    >
+                      {tReq(key)}
+                    </span>
+                    <ChevronDown
+                      className="size-4 shrink-0 transition-transform duration-200"
+                      style={{
+                        color: "var(--text-muted)",
+                        transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                      }}
+                    />
+                  </button>
+
+                  {/* Accordion content */}
+                  <div
+                    className="overflow-hidden transition-all duration-200"
+                    style={{
+                      maxHeight: isExpanded ? "120px" : "0px",
+                      opacity: isExpanded ? 1 : 0,
+                    }}
+                  >
+                    <div
+                      className="border-t px-3 pb-3 pt-2.5"
+                      style={{ borderColor: "var(--border)" }}
+                    >
+                      <p className="mb-2.5 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                        {t(`hint_${key}`)}
+                      </p>
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80"
+                        style={{ color: "var(--accent)" }}
+                        onClick={() => handleGoToSettings(key)}
+                      >
+                        {t("goToSettings")}
+                        <ExternalLink className="size-3" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               );
             })}
@@ -140,13 +264,7 @@ export function StepCompletion() {
         )}
       </div>
 
-      {/* Status message */}
-      {!loadingReqs && !activated && (
-        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          {allMet ? t("allMet") : t("someMissing")}
-        </p>
-      )}
-
+      {/* Activated success */}
       {activated && (
         <p className="text-sm font-medium" style={{ color: "var(--success)" }}>
           {t("activated")}
