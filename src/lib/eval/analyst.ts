@@ -1,29 +1,19 @@
-import { ChatOpenAI } from "@langchain/openai";
-import type { MessageContent } from "@langchain/core/messages";
+import Anthropic from "@anthropic-ai/sdk";
 import type { ScenarioResult, ImprovementProposal } from "./types";
 
-/** Extract text from LLM response content (string | ContentBlock[]) */
-function extractText(content: MessageContent): string {
-  if (typeof content === "string") return content;
-  if (Array.isArray(content)) {
-    return content
-      .filter((b) => typeof b === "string" || (typeof b === "object" && b.type === "text"))
-      .map((b) => (typeof b === "string" ? b : "text" in b ? b.text : ""))
-      .join("");
-  }
-  return String(content ?? "");
-}
-
 const ANALYST_SYSTEM_PROMPT = `You are a senior AI engineer reviewing evaluation results for healthcare clinic chatbot agents.
-Analyze the failures and warnings, then propose specific, actionable improvements.
+
+Analyze the failures and warnings from conversation transcripts, then propose specific, actionable improvements.
 
 For each issue, return a JSON object with:
-- agent: which agent type
+- agent: which agent type (e.g., "scheduling", "billing")
 - scenarioId: which scenario failed
-- priority: "critical" (blocks patients), "high" (degrades experience), or "low" (minor)
+- priority: "critical" (blocks patients from completing goal), "high" (degrades experience), or "low" (minor quality issue)
+- category: "prompt" (system prompt issue), "tool" (tool behavior), "routing" (module routing), "guardrail" (safety), or "fixture" (test data issue)
 - issue: what went wrong (1 sentence)
-- rootCause: why it happened — prompt issue? missing tool? wrong tool behavior? (1 sentence)
+- rootCause: why it happened (1 sentence)
 - fix: exact text to add/change in the system prompt or tool description (be specific)
+- file: which source file to change (optional, e.g., "src/lib/agents/agents/scheduling.ts")
 
 Return ONLY a JSON array of proposals (no markdown, no code fences).
 If there are no issues, return an empty array: []`;
@@ -37,45 +27,55 @@ export async function analyzeResults(
     return [];
   }
 
-  const modelName = process.env.OPENAI_MODEL ?? "gpt-5-mini";
-  const llm = new ChatOpenAI({
-    model: modelName,
-    maxRetries: 1,
-  });
+  const apiKey = process.env.CLAUDE_API_KEY;
+  const model = process.env.CLAUDE_MODEL ?? "claude-sonnet-4-20250514";
+
+  if (!apiKey) {
+    console.warn("[eval-analyst] Missing CLAUDE_API_KEY, skipping analysis");
+    return [];
+  }
+
+  const client = new Anthropic({ apiKey });
 
   const summaries = problemScenarios.map((r) => {
-    const turnIssues = r.turnResults
-      .filter((t) => !t.checkResult.passed || t.judgeResult.overall < 7)
-      .map((t) => ({
-        turn: t.turnIndex + 1,
-        user: t.userMessage,
-        agent: t.agentResponse.slice(0, 200),
-        tools: t.toolCallNames,
-        checkFailures: t.checkResult.failures,
-        judgeScore: t.judgeResult.overall,
-        judgeIssues: t.judgeResult.issues,
-      }));
+    const transcript = r.turns.map((t) => ({
+      role: t.role,
+      content: t.content.slice(0, 200),
+      tools: t.toolsCalled ?? [],
+      guardrailViolations: t.guardrailViolations ?? [],
+    }));
 
     return {
-      scenarioId: r.scenarioId,
-      agent: r.agent,
-      description: r.description,
-      overallScore: r.overallScore,
+      scenarioId: r.scenario.id,
+      agent: r.scenario.agent,
+      description: r.scenario.description,
+      goal: r.scenario.persona.goal,
+      score: r.score,
       status: r.status,
-      assertionFailures: r.assertionResult.failures,
-      turnIssues,
+      terminationReason: r.terminationReason,
+      goalAchieved: r.judge.goal_achieved,
+      guardrailViolations: r.guardrailViolations,
+      assertionFailures: r.assertionResults.failures,
+      judgeIssues: r.judge.issues,
+      transcript,
     };
   });
 
   const userPrompt = `Here are the evaluation results with issues:\n\n${JSON.stringify(summaries, null, 2)}`;
 
   try {
-    const response = await llm.invoke([
-      { role: "system", content: ANALYST_SYSTEM_PROMPT },
-      { role: "user", content: userPrompt },
-    ]);
+    const response = await client.messages.create({
+      model,
+      max_tokens: 2000,
+      temperature: 0,
+      system: ANALYST_SYSTEM_PROMPT,
+      messages: [{ role: "user", content: userPrompt }],
+    });
 
-    const text = extractText(response.content);
+    const text = response.content
+      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("");
 
     const cleaned = text
       .replace(/```json\s*/g, "")
