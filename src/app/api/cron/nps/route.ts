@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isAuthorizedCron, findOrCreateConversation } from "@/lib/cron";
 import {
   sendOutboundMessage,
   isWithinBusinessHours,
@@ -14,26 +14,6 @@ export const dynamic = "force-dynamic";
 
 const HOURS_SINCE_COMPLETION = 24;
 
-// ── Auth ──
-
-function isAuthorized(request: Request): boolean {
-  const header = request.headers.get("authorization");
-  if (!header) return false;
-
-  const token = header.replace("Bearer ", "");
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-
-  try {
-    return crypto.timingSafeEqual(
-      Buffer.from(token),
-      Buffer.from(secret)
-    );
-  } catch {
-    return false;
-  }
-}
-
 // ── Helpers ──
 
 function getFirstName(fullName: string): string {
@@ -43,7 +23,7 @@ function getFirstName(fullName: string): string {
 // ── GET handler ──
 
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isAuthorizedCron(request)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -193,7 +173,8 @@ export async function GET(request: Request) {
       const conversationId = await findOrCreateConversation(
         supabase,
         appointment.clinic_id,
-        patient.id
+        patient.id,
+        "cron/nps"
       );
 
       // 9. Set conversation current_module to "nps"
@@ -240,48 +221,3 @@ export async function GET(request: Request) {
   });
 }
 
-// ── Helpers ──
-
-async function findOrCreateConversation(
-  supabase: ReturnType<typeof createAdminClient>,
-  clinicId: string,
-  patientId: string
-): Promise<string> {
-  // Try to find an existing active WhatsApp conversation
-  const { data: existing } = await supabase
-    .from("conversations")
-    .select("id")
-    .eq("clinic_id", clinicId)
-    .eq("patient_id", patientId)
-    .eq("channel", "whatsapp")
-    .eq("status", "active")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (existing) {
-    return existing.id;
-  }
-
-  // Create a new conversation
-  const { data: newConv, error: createError } = await supabase
-    .from("conversations")
-    .insert({
-      clinic_id: clinicId,
-      patient_id: patientId,
-      channel: "whatsapp",
-      status: "active",
-    })
-    .select("id")
-    .single();
-
-  if (createError || !newConv) {
-    console.error(
-      "[cron/nps] failed to create conversation:",
-      createError?.message
-    );
-    throw new Error("failed to create conversation");
-  }
-
-  return newConv.id;
-}

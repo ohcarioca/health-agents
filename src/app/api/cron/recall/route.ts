@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isAuthorizedCron } from "@/lib/cron";
 
 export const dynamic = "force-dynamic";
 
@@ -9,30 +9,10 @@ export const dynamic = "force-dynamic";
 
 const INACTIVE_DAYS = 90;
 
-// ── Auth ──
-
-function isAuthorized(request: Request): boolean {
-  const header = request.headers.get("authorization");
-  if (!header) return false;
-
-  const token = header.replace("Bearer ", "");
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-
-  try {
-    return crypto.timingSafeEqual(
-      Buffer.from(token),
-      Buffer.from(secret)
-    );
-  } catch {
-    return false;
-  }
-}
-
 // ── GET handler ──
 
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isAuthorizedCron(request)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

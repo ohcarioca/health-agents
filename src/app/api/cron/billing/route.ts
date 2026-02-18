@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isAuthorizedCron } from "@/lib/cron";
 import {
   sendOutboundMessage,
   isWithinBusinessHours,
@@ -9,23 +9,6 @@ import {
 import type { WhatsAppCredentials } from "@/services/whatsapp";
 
 export const dynamic = "force-dynamic";
-
-// ── Auth ──
-
-function isAuthorized(request: Request): boolean {
-  const header = request.headers.get("authorization");
-  if (!header) return false;
-
-  const token = header.replace("Bearer ", "");
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-
-  try {
-    return crypto.timingSafeEqual(Buffer.from(token), Buffer.from(secret));
-  } catch {
-    return false;
-  }
-}
 
 // ── Drip Tone Logic ──
 
@@ -50,7 +33,7 @@ function formatBrl(cents: number): string {
 // ── GET Handler ──
 
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isAuthorizedCron(request)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
