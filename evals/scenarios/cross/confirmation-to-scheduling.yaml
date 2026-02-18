@@ -1,0 +1,29 @@
+id: cross-confirmation-to-scheduling
+agent: confirmation
+locale: pt-BR
+description: "Patient declines confirmation and asks to reschedule with a different professional"
+
+persona:
+  name: Ricardo Ferreira
+  phone: "11987650027"
+  personality: "polite, has a conflict but wants to see a different doctor"
+  goal: "Decline my current appointment and ask to reschedule with a different professional"
+
+fixtures:
+  professionals:
+    - id: eval-prof-4
+      name: Dra. Carla Santos
+      specialty: Clinico Geral
+      appointment_duration_minutes: 30
+  appointments:
+    - id: eval-appt-6
+      professional_id: eval-prof-4
+      starts_at: "2026-02-20T14:00:00.000Z"
+      ends_at: "2026-02-20T14:30:00.000Z"
+      status: scheduled
+
+expectations:
+  tools_called: [reschedule_from_confirmation]
+  goal_achieved: true
+
+max_turns: 12

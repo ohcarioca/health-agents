@@ -1,0 +1,36 @@
+id: cross-scheduling-to-billing
+agent: scheduling
+locale: pt-BR
+description: "Patient books appointment then asks about payment"
+
+persona:
+  name: Camila Rodrigues
+  phone: "11987650026"
+  cpf: "11122233344"
+  personality: "organized, wants to handle everything at once"
+  goal: "Book an appointment with Dr. Joao and then ask how to pay for it"
+
+fixtures:
+  professionals:
+    - id: eval-prof-1
+      name: Dr. Joao Silva
+      specialty: Cardiologia
+      appointment_duration_minutes: 30
+      schedule_grid:
+        monday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
+        tuesday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
+        wednesday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
+        thursday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
+        friday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
+  services:
+    - id: eval-svc-1
+      name: Consulta Cardiologica
+      duration_minutes: 30
+
+expectations:
+  tools_called: [check_availability, book_appointment]
+  goal_achieved: true
+  assertions:
+    appointment_created: true
+
+max_turns: 15
