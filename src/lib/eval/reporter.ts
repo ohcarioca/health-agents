@@ -4,7 +4,12 @@ import type { EvalReport, ScenarioResult, ImprovementProposal } from "./types";
 
 const REPORTS_DIR = path.resolve(process.cwd(), "evals", "reports");
 
-// ── CLI Output ──
+const TERM_ICONS: Record<string, string> = {
+  done: "DONE",
+  stuck: "STUCK",
+  max_turns: "MAX",
+  escalated: "ESC",
+};
 
 export function printResults(results: ScenarioResult[], proposals: ImprovementProposal[]): void {
   const totalScenarios = results.length;
@@ -12,34 +17,34 @@ export function printResults(results: ScenarioResult[], proposals: ImprovementPr
   const warnings = results.filter((r) => r.status === "warn").length;
   const failed = results.filter((r) => r.status === "fail").length;
   const avgScore = totalScenarios > 0
-    ? results.reduce((sum, r) => sum + r.overallScore, 0) / totalScenarios
+    ? results.reduce((sum, r) => sum + r.score, 0) / totalScenarios
     : 0;
-  const totalTurns = results.reduce((sum, r) => sum + r.turnResults.length, 0);
-  // Each turn = 1 agent call + 1 judge call. Plus 1 analyst call if proposals exist.
-  const totalLlmCalls = totalTurns * 2 + (proposals.length > 0 ? 1 : 0);
+  const totalLlmCalls = results.reduce((sum, r) => sum + r.llmCalls, 0)
+    + (proposals.length > 0 ? 1 : 0);
 
   console.log("");
-  console.log(`Orbita Eval Suite -- ${totalScenarios} scenarios`);
+  console.log("=".repeat(56));
+  console.log(`  EVAL RESULTS -- ${new Date().toISOString().slice(0, 19)}`);
+  console.log("=".repeat(56));
   console.log("");
 
   // Group by agent
   const byAgent = new Map<string, ScenarioResult[]>();
   for (const r of results) {
-    const list = byAgent.get(r.agent) ?? [];
+    const key = r.scenario.agent;
+    const list = byAgent.get(key) ?? [];
     list.push(r);
-    byAgent.set(r.agent, list);
+    byAgent.set(key, list);
   }
 
   for (const [agent, agentResults] of byAgent) {
     console.log(`  ${agent} (${agentResults.length} scenarios)`);
     for (const r of agentResults) {
       const icon = r.status === "pass" ? "pass" : r.status === "warn" ? "WARN" : "FAIL";
-      const totalTools = r.turnResults.reduce((sum, t) => sum + t.toolCallCount, 0);
-      const suffix = r.status !== "pass"
-        ? `  ${getFirstFailure(r)}`
-        : `  (${r.turnResults.length} turns, ${totalTools} tools)`;
+      const term = TERM_ICONS[r.terminationReason] ?? r.terminationReason;
+      const info = `(${r.turnCount} turns, ${r.totalToolCalls} tools)`;
       console.log(
-        `    ${icon.padEnd(5)} ${r.scenarioId.padEnd(35)} ${r.overallScore.toFixed(1)}/10${suffix}`
+        `    ${icon.padEnd(5)} ${r.scenario.id.padEnd(40)} [${term}] ${r.score.toFixed(1)}  ${info}`
       );
     }
     console.log("");
@@ -47,37 +52,47 @@ export function printResults(results: ScenarioResult[], proposals: ImprovementPr
 
   // Proposals
   if (proposals.length > 0) {
-    console.log("--- Improvement Proposals ---");
+    console.log("  PROPOSALS");
     console.log("");
     for (const p of proposals) {
-      console.log(`  [${p.priority.toUpperCase()}] ${p.agent} -- ${p.scenarioId}`);
-      console.log(`    Issue: ${p.issue}`);
-      console.log(`    Root cause: ${p.rootCause}`);
-      console.log(`    Fix: ${p.fix}`);
+      const cat = p.category ? ` [${p.category}]` : "";
+      console.log(`    ${p.priority.toUpperCase().padEnd(9)} ${p.agent}/${p.scenarioId}${cat}`);
+      console.log(`             ${p.issue}`);
+      console.log(`             Fix: ${p.fix}`);
       console.log("");
     }
   }
 
   // Summary
-  console.log("=".repeat(50));
-  console.log(`Results: ${passed} passed, ${warnings} warnings, ${failed} failed`);
-  console.log(`Average score: ${avgScore.toFixed(1)}/10`);
-  console.log(`LLM calls: ~${totalLlmCalls}`);
+  console.log("-".repeat(56));
+  console.log(`  Pass: ${passed} | Warn: ${warnings} | Fail: ${failed}`);
+  console.log(`  Avg score: ${avgScore.toFixed(1)}/10 | LLM calls: ~${totalLlmCalls}`);
+  console.log(`  Patient: OpenAI | Judge: Claude`);
+  console.log("=".repeat(56));
 }
 
-function getFirstFailure(r: ScenarioResult): string {
-  for (const t of r.turnResults) {
-    if (t.checkResult.failures.length > 0) {
-      return t.checkResult.failures[0];
+export function printVerboseTranscript(result: ScenarioResult): void {
+  console.log(`\n  -- ${result.scenario.id} --`);
+  for (const turn of result.turns) {
+    const prefix = turn.role === "patient" ? "PATIENT" : "AGENT  ";
+    const content = turn.content.length > 200
+      ? turn.content.slice(0, 200) + "..."
+      : turn.content;
+    console.log(`  [${turn.index + 1}] ${prefix}: ${content}`);
+    if (turn.toolsCalled?.length) {
+      console.log(`               tools: [${turn.toolsCalled.join(", ")}]`);
+    }
+    if (turn.guardrailViolations?.length) {
+      console.log(`               GUARDRAIL: ${turn.guardrailViolations.join("; ")}`);
     }
   }
-  if (r.assertionResult.failures.length > 0) {
-    return r.assertionResult.failures[0];
+  const j = result.judge;
+  console.log(`  JUDGE: goal=${j.goal_achieved} score=${result.score}`);
+  console.log(`         correctness=${j.scores.correctness} helpfulness=${j.scores.helpfulness} tone=${j.scores.tone} safety=${j.scores.safety} conciseness=${j.scores.conciseness} flow=${j.scores.flow}`);
+  if (j.issues.length > 0) {
+    console.log(`         issues: ${j.issues.join("; ")}`);
   }
-  return `score ${r.overallScore}/10`;
 }
-
-// ── JSON Report ──
 
 export function saveReport(
   results: ScenarioResult[],
@@ -91,7 +106,6 @@ export function saveReport(
   const filePath = path.join(REPORTS_DIR, `${timestamp}.json`);
 
   const totalScenarios = results.length;
-  const totalTurns = results.reduce((sum, r) => sum + r.turnResults.length, 0);
 
   const report: EvalReport = {
     timestamp: new Date().toISOString(),
@@ -100,15 +114,15 @@ export function saveReport(
     warnings: results.filter((r) => r.status === "warn").length,
     failed: results.filter((r) => r.status === "fail").length,
     averageScore: totalScenarios > 0
-      ? Math.round((results.reduce((sum, r) => sum + r.overallScore, 0) / totalScenarios) * 10) / 10
+      ? Math.round((results.reduce((sum, r) => sum + r.score, 0) / totalScenarios) * 10) / 10
       : 0,
-    totalLlmCalls: totalTurns * 2 + (proposals.length > 0 ? 1 : 0),
+    totalLlmCalls: results.reduce((sum, r) => sum + r.llmCalls, 0) + (proposals.length > 0 ? 1 : 0),
     scenarios: results,
     proposals,
   };
 
   fs.writeFileSync(filePath, JSON.stringify(report, null, 2), "utf-8");
 
-  console.log(`Report: ${filePath}`);
+  console.log(`\nReport saved: ${filePath}`);
   return filePath;
 }
