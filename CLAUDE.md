@@ -9,7 +9,7 @@ Follow strictly when generating, modifying, or reviewing code.
 
 | Layer | Technology |
 |-------|-----------|
-| Runtime | Next.js 16 (App Router) — `proxy.ts` replaces middleware |
+| Runtime | Next.js 16 (App Router) — `proxy.ts` replaces middleware * |
 | UI | React 19 + TypeScript (strict) |
 | Styling | Tailwind CSS v4 (CSS-first config — no `tailwind.config.*`) |
 | AI | LangChain + OpenAI |
