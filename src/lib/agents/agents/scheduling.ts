@@ -762,6 +762,27 @@ async function handleRescheduleAppointment(
       };
     }
 
+    // Cancel linked invoice (new one will be auto-created if auto_billing enabled)
+    const { data: reschLinkedInvoice } = await context.supabase
+      .from("invoices")
+      .select("id, status")
+      .eq("appointment_id", appointmentId)
+      .in("status", ["pending", "overdue"])
+      .single();
+
+    if (reschLinkedInvoice) {
+      await context.supabase
+        .from("invoices")
+        .update({ status: "cancelled" })
+        .eq("id", reschLinkedInvoice.id);
+
+      await context.supabase
+        .from("payment_links")
+        .update({ status: "expired" })
+        .eq("invoice_id", reschLinkedInvoice.id)
+        .eq("status", "active");
+    }
+
     // Load clinic timezone for formatting and calendar sync
     const { data: reschClinic } = await context.supabase
       .from("clinics")
