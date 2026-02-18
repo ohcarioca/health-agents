@@ -8,13 +8,15 @@ describe("evalScenarioSchema", () => {
       agent: "support",
       locale: "pt-BR",
       description: "Test scenario",
-      persona: { name: "Maria", phone: "11999998888" },
-      turns: [
-        {
-          user: "Oi",
-          expect: {},
-        },
-      ],
+      persona: {
+        name: "Maria",
+        phone: "11999998888",
+        personality: "Polite and straightforward",
+        goal: "Get clinic info",
+      },
+      expectations: {
+        goal_achieved: true,
+      },
     };
     const result = evalScenarioSchema.safeParse(scenario);
     expect(result.success).toBe(true);
@@ -26,10 +28,12 @@ describe("evalScenarioSchema", () => {
       agent: "scheduling",
       locale: "pt-BR",
       description: "Patient books appointment",
+      max_turns: 12,
       persona: {
         name: "Maria Silva",
         phone: "11987654321",
-        notes: "Prefere manha",
+        personality: "Polite, no medical knowledge",
+        goal: "Book cardiology appointment with Dr. Joao",
       },
       fixtures: {
         professionals: [
@@ -44,24 +48,28 @@ describe("evalScenarioSchema", () => {
           },
         ],
         services: [
-          { id: "svc-1", name: "Consulta", duration_minutes: 30 },
+          { id: "svc-1", name: "Consulta", duration_minutes: 30, base_price_cents: 25000 },
+        ],
+        professional_services: [
+          { professional_id: "prof-1", service_id: "svc-1", price_cents: 25000 },
+        ],
+        module_configs: [
+          { module_type: "billing", enabled: true, settings: { auto_billing: false } },
         ],
       },
-      turns: [
-        {
-          user: "Quero marcar consulta",
-          expect: {
-            tools_called: ["check_availability"],
-            no_tools: ["book_appointment"],
-            response_contains: ["disponivel"],
-            response_not_contains: ["https://"],
-          },
+      guardrails: {
+        never_tools: ["cancel_appointment"],
+        never_contains: ["cancelar"],
+      },
+      expectations: {
+        tools_called: ["check_availability", "book_appointment"],
+        tools_not_called: ["cancel_appointment"],
+        response_contains: ["disponivel"],
+        goal_achieved: true,
+        assertions: {
+          appointment_created: true,
+          confirmation_queue_entries: 3,
         },
-      ],
-      assertions: {
-        appointment_created: true,
-        confirmation_queue_entries: 3,
-        conversation_status: "active",
       },
     };
     const result = evalScenarioSchema.safeParse(scenario);
@@ -83,6 +91,8 @@ describe("evalScenarioSchema", () => {
         name: "Carlos Mendes",
         phone: "11987650010",
         cpf: "12345678901",
+        personality: "Direct and impatient",
+        goal: "Pay pending invoice via Pix",
       },
       fixtures: {
         invoices: [
@@ -94,26 +104,23 @@ describe("evalScenarioSchema", () => {
           },
         ],
       },
-      turns: [
-        {
-          user: "Quero pagar minha consulta",
-          expect: { tools_called: ["create_payment_link"] },
+      expectations: {
+        tools_called: ["create_payment_link"],
+        goal_achieved: true,
+        assertions: {
+          invoice_status: "paid",
+          payment_link_created: true,
         },
-      ],
-      assertions: {
-        invoice_status: "paid",
-        payment_link_created: true,
       },
     };
     const result = evalScenarioSchema.safeParse(scenario);
     expect(result.success).toBe(true);
     if (result.success) {
-      // Verify billing-specific fields are preserved (not stripped by Zod)
       expect(result.data.persona.cpf).toBe("12345678901");
       expect(result.data.fixtures?.invoices).toHaveLength(1);
       expect(result.data.fixtures?.invoices?.[0].amount_cents).toBe(15000);
-      expect(result.data.assertions?.invoice_status).toBe("paid");
-      expect(result.data.assertions?.payment_link_created).toBe(true);
+      expect(result.data.expectations.assertions?.invoice_status).toBe("paid");
+      expect(result.data.expectations.assertions?.payment_link_created).toBe(true);
     }
   });
 
@@ -123,10 +130,52 @@ describe("evalScenarioSchema", () => {
       agent: "invalid_agent",
       locale: "pt-BR",
       description: "Test",
-      persona: { name: "Maria", phone: "11999998888" },
-      turns: [{ user: "Oi", expect: {} }],
+      persona: {
+        name: "Maria",
+        phone: "11999998888",
+        personality: "Normal",
+        goal: "Test goal",
+      },
+      expectations: { goal_achieved: true },
     };
     const result = evalScenarioSchema.safeParse(scenario);
     expect(result.success).toBe(false);
+  });
+
+  it("rejects persona without personality or goal", () => {
+    const scenario = {
+      id: "test",
+      agent: "support",
+      locale: "pt-BR",
+      description: "Test",
+      persona: {
+        name: "Maria",
+        phone: "11999998888",
+      },
+      expectations: { goal_achieved: true },
+    };
+    const result = evalScenarioSchema.safeParse(scenario);
+    expect(result.success).toBe(false);
+  });
+
+  it("defaults max_turns to 20", () => {
+    const scenario = {
+      id: "test",
+      agent: "support",
+      locale: "pt-BR",
+      description: "Test",
+      persona: {
+        name: "Maria",
+        phone: "11999998888",
+        personality: "Normal",
+        goal: "Test goal",
+      },
+      expectations: { goal_achieved: true },
+    };
+    const result = evalScenarioSchema.safeParse(scenario);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.max_turns).toBe(20);
+    }
   });
 });

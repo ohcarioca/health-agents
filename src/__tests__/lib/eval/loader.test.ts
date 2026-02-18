@@ -13,9 +13,10 @@ description: "Test scenario"
 persona:
   name: Maria
   phone: "11999998888"
-turns:
-  - user: "Oi"
-    expect: {}
+  personality: "Polite and straightforward"
+  goal: "Get clinic info"
+expectations:
+  goal_achieved: true
 `;
 
 const INVALID_YAML = `
@@ -34,7 +35,8 @@ describe("scenario loader", () => {
       const result = loadScenarioFile("/fake/path.yaml");
       expect(result.id).toBe("test-scenario");
       expect(result.agent).toBe("support");
-      expect(result.turns).toHaveLength(1);
+      expect(result.persona.personality).toBe("Polite and straightforward");
+      expect(result.persona.goal).toBe("Get clinic info");
     });
 
     it("throws on invalid scenario schema", () => {

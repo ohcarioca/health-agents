@@ -1,11 +1,16 @@
 export { evalScenarioSchema } from "./types";
 export type {
   EvalScenario,
-  TurnExpect,
-  JudgeResult,
+  ScenarioPersona,
+  ScenarioFixtures,
+  ScenarioGuardrails,
+  ScenarioExpectations,
+  Assertions,
+  ConversationTurn,
   JudgeScores,
+  JudgeVerdict,
   CheckResult,
-  TurnResult,
+  TerminationReason,
   ScenarioResult,
   ImprovementProposal,
   EvalReport,
@@ -13,9 +18,10 @@ export type {
 } from "./types";
 
 export { loadScenarios, loadScenarioFile } from "./loader";
-export { checkTurn, checkAssertions } from "./checker";
-export { judgeResponse } from "./judge";
+export { checkGuardrails, checkToolExpectations, checkAssertions } from "./checker";
+export { judgeConversation } from "./judge";
+export { generatePatientMessage } from "./patient-simulator";
 export { seedFixtures, cleanupFixtures } from "./fixtures";
 export { runScenario } from "./runner";
 export { analyzeResults } from "./analyst";
-export { printResults, saveReport } from "./reporter";
+export { printResults, printVerboseTranscript, saveReport } from "./reporter";
