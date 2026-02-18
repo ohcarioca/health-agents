@@ -24,5 +24,5 @@ export const updateInvoiceSchema = z.object({
 });
 
 export const createPaymentLinkSchema = z.object({
-  method: z.enum(["pix", "boleto", "credit_card"]),
+  method: z.enum(["pix", "boleto", "credit_card", "link"]),
 });

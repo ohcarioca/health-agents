@@ -113,6 +113,7 @@ export async function POST(
     pix: "PIX" as const,
     boleto: "BOLETO" as const,
     credit_card: "CREDIT_CARD" as const,
+    link: "UNDEFINED" as const,
   };
 
   const chargeResult = await createCharge({

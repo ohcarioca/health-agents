@@ -93,14 +93,10 @@ export function PaymentsView({
 
   const fetchKpis = useCallback(async () => {
     try {
-      const res = await fetch("/api/invoices?page=1");
+      const res = await fetch("/api/invoices?kpi=true");
       if (res.ok) {
         const json = await res.json();
-        const all = (json.data ?? []).map((inv: { amount_cents: number; status: string }) => ({
-          amount_cents: inv.amount_cents,
-          status: inv.status,
-        }));
-        setKpiInvoices(all);
+        setKpiInvoices(json.data ?? []);
       }
     } catch {
       // ignore
@@ -207,7 +203,7 @@ export function PaymentsView({
           icon={AlertTriangle}
           label={t("kpiOverdue")}
           value={formatCents(overdueCents)}
-          subtitle={`${metrics.overdueCount} ${metrics.overdueCount === 1 ? "fatura" : "faturas"}`}
+          subtitle={t("kpiOverdueCount", { count: metrics.overdueCount })}
           iconBg="rgba(239,68,68,0.1)"
           iconColor="var(--danger)"
         />

@@ -581,6 +581,10 @@
     "kpiPaid": "Cobrado",
     "kpiConversion": "Tasa de conversión",
     "kpiThisMonth": "este mes",
+    "kpiOverdueCount": "{count, plural, one {# factura} other {# facturas}}",
+    "methodPix": "Pix",
+    "methodBoleto": "Boleto",
+    "methodCard": "Tarjeta",
     "detail": {
       "title": "Detalles de la Factura",
       "patient": "Paciente",

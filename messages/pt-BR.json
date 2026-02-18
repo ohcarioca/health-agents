@@ -581,6 +581,10 @@
     "kpiPaid": "Recebido",
     "kpiConversion": "Taxa de conversão",
     "kpiThisMonth": "este mês",
+    "kpiOverdueCount": "{count, plural, one {# fatura} other {# faturas}}",
+    "methodPix": "Pix",
+    "methodBoleto": "Boleto",
+    "methodCard": "Cartão",
     "detail": {
       "title": "Detalhes da Fatura",
       "patient": "Paciente",

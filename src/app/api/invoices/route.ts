@@ -29,6 +29,21 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
+
+  // KPI mode: return only amount_cents + status without pagination
+  if (searchParams.get("kpi") === "true") {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("invoices")
+      .select("amount_cents, status")
+      .eq("clinic_id", clinicId);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ data });
+  }
+
   const status = searchParams.get("status");
   const search = searchParams.get("search");
   const period = searchParams.get("period");

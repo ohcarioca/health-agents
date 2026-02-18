@@ -581,6 +581,10 @@
     "kpiPaid": "Collected",
     "kpiConversion": "Conversion rate",
     "kpiThisMonth": "this month",
+    "kpiOverdueCount": "{count, plural, one {# invoice} other {# invoices}}",
+    "methodPix": "Pix",
+    "methodBoleto": "Boleto",
+    "methodCard": "Card",
     "detail": {
       "title": "Invoice Details",
       "patient": "Patient",

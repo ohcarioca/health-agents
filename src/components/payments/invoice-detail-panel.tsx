@@ -63,6 +63,13 @@ function formatPhone(digits: string): string {
   return digits;
 }
 
+const METHOD_LABEL_KEY: Record<string, string> = {
+  pix: "methodPix",
+  boleto: "methodBoleto",
+  credit_card: "methodCard",
+  link: "methodPix",
+};
+
 const LINK_STATUS_VARIANT: Record<string, "success" | "warning" | "neutral"> = {
   active: "warning",
   paid: "success",
@@ -217,7 +224,7 @@ export function InvoiceDetailPanel({ invoice, onClose, onUpdate }: InvoiceDetail
             ) : (
               <div className="space-y-2">
                 {invoice.payment_links.map((link) => {
-                  const methodLabel = link.method === "credit_card" ? "Cartão" : link.method.charAt(0).toUpperCase() + link.method.slice(1);
+                  const methodLabel = t(METHOD_LABEL_KEY[link.method] ?? "methodPix");
                   const statusKey = `link${link.status.charAt(0).toUpperCase() + link.status.slice(1)}` as "linkActive" | "linkPaid" | "linkExpired";
                   return (
                     <div
@@ -296,7 +303,7 @@ export function InvoiceDetailPanel({ invoice, onClose, onUpdate }: InvoiceDetail
                 </div>
               )}
               {invoice.payment_links.map((link) => {
-                const label = link.method === "credit_card" ? "Cartão" : link.method.charAt(0).toUpperCase() + link.method.slice(1);
+                const label = t(METHOD_LABEL_KEY[link.method] ?? "methodPix");
                 return (
                   <div key={link.id} className="flex items-center gap-2 text-sm">
                     <div className="size-2 rounded-full" style={{ backgroundColor: "var(--accent)" }} />
