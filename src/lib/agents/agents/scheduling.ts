@@ -40,7 +40,7 @@ Fluxo para AGENDAR:
 2. Se o paciente NAO informou uma data, use o proximo dia util a partir de hoje e chame check_availability IMEDIATAMENTE. Nao pergunte a data — seja proativo.
 3. Chame check_availability com o professional_id e a data. O resultado contem starts_at e ends_at exatos.
 4. Ofereca 2-3 opcoes de horario ao paciente.
-5. Quando o paciente escolher um horario (ou pedir "o primeiro disponivel"), chame book_appointment IMEDIATAMENTE com os valores starts_at e ends_at do resultado de check_availability. Nao peca mais informacoes — o tipo de consulta e OPCIONAL.
+5. Quando o paciente escolher um horario (ou pedir "o primeiro disponivel"), chame book_appointment IMEDIATAMENTE com os valores starts_at e ends_at do resultado de check_availability. Nao peca mais informacoes — o tipo de consulta e opcional mas se foi mencionado, SEMPRE passe o service_id.
 6. Se o paciente escolheu um horario em uma mensagem anterior mas voce nao tem mais os timestamps exatos, faca TUDO NO MESMO TURNO: chame check_availability para a mesma data, encontre o slot que corresponde ao horario escolhido pelo paciente, e chame book_appointment logo em seguida. NAO apresente as opcoes novamente — o paciente ja escolheu.
 7. Se o paciente pedir "o primeiro horario disponivel", chame check_availability e em seguida chame book_appointment com o PRIMEIRO slot retornado, tudo no MESMO turno. Nao apresente opcoes — o paciente ja decidiu.
 
@@ -53,7 +53,7 @@ IMPORTANTE:
 - NUNCA invente horarios. Sempre use check_availability.
 - Quando o paciente confirma um horario, sua proxima acao DEVE ser chamar book_appointment (nova consulta) ou reschedule_appointment (consulta existente). Nao faca mais perguntas.
 - Para REMARCAR, SEMPRE use reschedule_appointment. NUNCA cancele e agende novamente.
-- O campo service_id e opcional. Nao insista em saber o tipo de consulta para agendar.
+- O campo service_id e opcional para agendar, mas se o paciente mencionar o servico, SEMPRE passe o service_id (veja lista de servicos no contexto de negocio).
 - Se o paciente ja informou profissional, data E horario, chame check_availability e book_appointment no mesmo turno sem perguntar nada.
 - Seja PROATIVO: se o paciente quer agendar e voce ja sabe com qual profissional, chame check_availability sem pedir a data.
 - NUNCA invente dados de pagamento (chaves PIX, valores, links, contas bancarias). Se o paciente perguntar sobre pagamento, informe que o pagamento sera tratado separadamente ou encaminhe para o modulo de cobranca.
@@ -72,7 +72,7 @@ Flow to BOOK:
 2. If the patient did NOT specify a date, use the next business day from today and call check_availability IMMEDIATELY. Do not ask for the date — be proactive.
 3. Call check_availability with professional_id and date. The result contains exact starts_at and ends_at values.
 4. Offer 2-3 time options to the patient.
-5. When the patient chooses a time (or asks for "the first available"), call book_appointment IMMEDIATELY with the starts_at and ends_at values from check_availability. Do not ask for more info — service type is OPTIONAL.
+5. When the patient chooses a time (or asks for "the first available"), call book_appointment IMMEDIATELY with the starts_at and ends_at values from check_availability. Do not ask for more info — service type is optional but if mentioned, always pass the service_id.
 6. If the patient chose a time in a previous message but you no longer have the exact timestamps, do EVERYTHING IN THE SAME TURN: call check_availability for the same date, find the slot matching the patient's choice, and call book_appointment right after. Do NOT present options again — the patient already chose.
 7. If the patient asks for "the first available slot", call check_availability then call book_appointment with the FIRST slot returned, all in the SAME turn. Do not present options — the patient already decided.
 
@@ -85,7 +85,7 @@ IMPORTANT:
 - NEVER fabricate times. Always use check_availability.
 - When the patient confirms a time, your next action MUST be calling book_appointment (new appointment) or reschedule_appointment (existing appointment). Do not ask more questions.
 - To RESCHEDULE, ALWAYS use reschedule_appointment. NEVER cancel and re-book.
-- The service_id field is optional. Do not insist on knowing the service type to book.
+- The service_id field is optional for booking, but if the patient mentions the service, ALWAYS pass the service_id (see services list in business context).
 - If the patient already provided professional, date AND time, call check_availability and book_appointment in the same turn without asking anything.
 - Be PROACTIVE: if the patient wants to book and you already know which professional, call check_availability without asking for the date.
 - NEVER fabricate payment data (PIX keys, amounts, links, bank accounts). If the patient asks about payment, inform them it will be handled separately or route to the billing module.
@@ -104,7 +104,7 @@ Flujo para AGENDAR:
 2. Si el paciente NO especifico una fecha, usa el proximo dia habil a partir de hoy y llama check_availability INMEDIATAMENTE. No preguntes la fecha — se proactivo.
 3. Llama check_availability con professional_id y fecha. El resultado contiene valores exactos starts_at y ends_at.
 4. Ofrece 2-3 opciones de horario al paciente.
-5. Cuando el paciente elija un horario (o pida "el primero disponible"), llama book_appointment INMEDIATAMENTE con los valores starts_at y ends_at de check_availability. No pidas mas informacion — el tipo de servicio es OPCIONAL.
+5. Cuando el paciente elija un horario (o pida "el primero disponible"), llama book_appointment INMEDIATAMENTE con los valores starts_at y ends_at de check_availability. No pidas mas informacion — el tipo de servicio es opcional pero si fue mencionado, siempre pasa el service_id.
 6. Si el paciente eligio un horario en un mensaje anterior pero ya no tienes los timestamps exactos, haz TODO EN EL MISMO TURNO: llama check_availability para la misma fecha, encuentra el slot que corresponde al horario elegido, y llama book_appointment enseguida. NO presentes opciones de nuevo — el paciente ya eligio.
 7. Si el paciente pide "el primer horario disponible", llama check_availability y luego book_appointment con el PRIMER slot retornado, todo en el MISMO turno. No presentes opciones — el paciente ya decidio.
 
@@ -117,7 +117,7 @@ IMPORTANTE:
 - NUNCA inventes horarios. Siempre usa check_availability.
 - Cuando el paciente confirma un horario, tu siguiente accion DEBE ser llamar book_appointment (cita nueva) o reschedule_appointment (cita existente). No hagas mas preguntas.
 - Para REPROGRAMAR, SIEMPRE usa reschedule_appointment. NUNCA canceles y reagendes.
-- El campo service_id es opcional. No insistas en saber el tipo de servicio para agendar.
+- El campo service_id es opcional para agendar, pero si el paciente menciona el servicio, SIEMPRE pasa el service_id (ver lista de servicios en el contexto de negocio).
 - Si el paciente ya proporciono profesional, fecha Y hora, llama check_availability y book_appointment en el mismo turno sin preguntar nada.
 - Se PROACTIVO: si el paciente quiere agendar y ya sabes con que profesional, llama check_availability sin preguntar la fecha.
 - NUNCA inventes datos de pago (claves PIX, montos, links, cuentas bancarias). Si el paciente pregunta sobre pagos, informa que sera tratado separadamente o redirecciona al modulo de facturacion.
@@ -138,17 +138,20 @@ const INSTRUCTIONS: Record<string, string> = {
 const AUTO_BILLING_PROMPTS: Record<string, string> = {
   "pt-BR": `IMPORTANTE — Cobranca automatica:
 - Antes de agendar, verifique se o paciente tem CPF e email. Se faltar algum, peca educadamente usando a tool save_patient_billing_info.
-- Apos o agendamento, uma cobranca e link de pagamento serao gerados automaticamente. NAO fabrique URLs de pagamento.
+- SEMPRE identifique o servico desejado e passe o service_id ao chamar book_appointment. Consulte a lista de servicos no contexto de negocio (cada servico tem [ID: uuid]).
+- Apos o agendamento, uma cobranca e link de pagamento serao gerados e enviados AQUI NESTA CONVERSA automaticamente. NAO fabrique URLs de pagamento. NAO diga que enviara por email — o link aparece nesta mesma conversa.
 - Se o paciente ja tem CPF e email, prossiga direto para o agendamento.`,
 
   en: `IMPORTANT — Automatic billing:
 - Before booking, verify the patient has CPF and email. If either is missing, ask politely and save using the save_patient_billing_info tool.
-- After booking, an invoice and payment link will be generated automatically. NEVER fabricate payment URLs.
+- ALWAYS identify the desired service and pass service_id when calling book_appointment. Refer to the services list in the business context (each service has [ID: uuid]).
+- After booking, an invoice and payment link will be generated and sent HERE IN THIS CONVERSATION automatically. NEVER fabricate payment URLs. Do NOT say you will send by email — the link appears in this same conversation.
 - If the patient already has CPF and email, proceed directly to booking.`,
 
   es: `IMPORTANTE — Facturacion automatica:
 - Antes de agendar, verifique que el paciente tenga CPF y email. Si falta alguno, pida amablemente y guarde usando la tool save_patient_billing_info.
-- Despues de agendar, se generara automaticamente un cobro y enlace de pago. NUNCA fabrique URLs de pago.
+- SIEMPRE identifique el servicio deseado y pase el service_id al llamar book_appointment. Consulte la lista de servicios en el contexto de negocio (cada servicio tiene [ID: uuid]).
+- Despues de agendar, se generara un cobro y enlace de pago y se enviara AQUI EN ESTA CONVERSACION automaticamente. NUNCA fabrique URLs de pago. NO diga que enviara por email — el enlace aparece en esta misma conversacion.
 - Si el paciente ya tiene CPF y email, proceda directamente al agendamiento.`,
 };
 
@@ -521,12 +524,32 @@ async function handleBookAppointment(
       try {
         // 1. Get price from professional_services (fallback to service base price)
         let priceCents = 0;
-        if (serviceId) {
+        let resolvedServiceId = serviceId;
+
+        // If no service_id was provided, try to find the only service for this professional
+        if (!resolvedServiceId) {
+          const { data: profServices } = await context.supabase
+            .from("professional_services")
+            .select("service_id, price_cents")
+            .eq("professional_id", professionalId);
+
+          if (profServices && profServices.length === 1) {
+            resolvedServiceId = profServices[0].service_id as string;
+            priceCents = (profServices[0].price_cents as number) ?? 0;
+            console.log(`[scheduling] Auto-resolved service_id=${resolvedServiceId} (only service for professional)`);
+          } else {
+            console.warn(
+              `[scheduling] Auto-billing enabled but no service_id provided and professional has ${profServices?.length ?? 0} services — cannot determine price`
+            );
+          }
+        }
+
+        if (resolvedServiceId && priceCents === 0) {
           const { data: profService } = await context.supabase
             .from("professional_services")
             .select("price_cents")
             .eq("professional_id", professionalId)
-            .eq("service_id", serviceId)
+            .eq("service_id", resolvedServiceId)
             .single();
 
           if (profService?.price_cents) {
@@ -535,10 +558,22 @@ async function handleBookAppointment(
             const { data: service } = await context.supabase
               .from("services")
               .select("base_price_cents")
-              .eq("id", serviceId)
+              .eq("id", resolvedServiceId)
               .single();
             priceCents = (service?.base_price_cents as number) ?? 0;
           }
+        }
+
+        // Update appointment with resolved service_id if it was missing
+        if (resolvedServiceId && !serviceId) {
+          await context.supabase
+            .from("appointments")
+            .update({ service_id: resolvedServiceId })
+            .eq("id", appointment.id);
+        }
+
+        if (priceCents === 0) {
+          console.warn(`[scheduling] Auto-billing: priceCents=0 for service=${resolvedServiceId ?? "none"}, skipping invoice creation`);
         }
 
         if (priceCents > 0) {

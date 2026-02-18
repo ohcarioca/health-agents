@@ -41,6 +41,7 @@ export function buildSystemPrompt(
     clinicId: "",
     conversationId: "",
     locale: params.locale,
+    agentConfig: params.agentDbConfig,
   });
   if (tools.length > 0) {
     const toolDescriptions = tools

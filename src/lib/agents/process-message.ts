@@ -273,7 +273,7 @@ export async function processMessage(
 
   const { data: services } = await supabase
     .from("services")
-    .select("name")
+    .select("id, name")
     .eq("clinic_id", clinicId);
 
   const { data: professionals } = await supabase
@@ -289,7 +289,9 @@ export async function processMessage(
         address: clinic.address ?? undefined,
         timezone: clinic.timezone,
         insurancePlans: (insurancePlans ?? []).map((p) => p.name),
-        services: (services ?? []).map((s) => s.name),
+        services: (services ?? []).map(
+          (s) => `${s.name} [ID: ${s.id}]`
+        ),
         professionals: (professionals ?? []).map((p) => ({
           id: p.id as string,
           name: p.name as string,
