@@ -16,7 +16,7 @@ import { StepCalendar } from "@/components/onboarding/step-calendar";
 import { StepCompletion } from "@/components/onboarding/step-completion";
 import type { ScheduleGrid } from "@/lib/validations/settings";
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 const EMPTY_SCHEDULE: ScheduleGrid = {
   monday: [],
@@ -56,14 +56,17 @@ export function SetupWizard() {
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [createdProfId, setCreatedProfId] = useState<string | null>(null);
 
-  // Step 4 state — WhatsApp
+  // Step 4 state — Billing
+  const [autoBilling, setAutoBilling] = useState(false);
+
+  // Step 5 state — WhatsApp
   const [whatsappPhoneNumberId, setWhatsappPhoneNumberId] = useState("");
   const [whatsappWabaId, setWhatsappWabaId] = useState("");
   const [whatsappAccessToken, setWhatsappAccessToken] = useState("");
   const [whatsappTestResult, setWhatsappTestResult] = useState<"success" | "failed" | null>(null);
   const [whatsappTesting, setWhatsappTesting] = useState(false);
 
-  // Step 5 state — Google Calendar
+  // Step 6 state — Google Calendar
   const [calendarConnected, setCalendarConnected] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
 
@@ -80,10 +83,11 @@ export function SetupWizard() {
   useEffect(() => {
     async function loadExistingData() {
       try {
-        const [clinicRes, profRes, serviceRes] = await Promise.all([
+        const [clinicRes, profRes, serviceRes, billingRes] = await Promise.all([
           fetch("/api/settings/clinic"),
           fetch("/api/settings/professionals"),
           fetch("/api/settings/services"),
+          fetch("/api/settings/modules/billing"),
         ]);
 
         let autoStep = 1;
@@ -148,9 +152,20 @@ export function SetupWizard() {
               }))
             );
             if (autoStep >= 3 && hasProfessional && svcList.length > 0) autoStep = 4;
-            if (autoStep >= 4 && hasWhatsApp) autoStep = 5;
           }
         }
+
+        // Billing auto-step detection
+        let hasBilling = false;
+        if (billingRes.ok) {
+          const { data: billingData } = await billingRes.json();
+          if (billingData?.auto_billing) {
+            setAutoBilling(true);
+            hasBilling = true;
+          }
+        }
+        if (autoStep >= 4 && hasBilling) autoStep = 5;
+        if (autoStep >= 5 && hasWhatsApp) autoStep = 6;
 
         // Use auto-detected step when no explicit step param is set
         if (!searchParams.get("step") && autoStep > 1) {
@@ -186,13 +201,15 @@ export function SetupWizard() {
           services.length > 0 &&
           services.every((s) => parseFloat(s.price || "0") > 0)
         );
-      case 4:
+      case 4: // Billing — always valid (toggle has a default)
+        return true;
+      case 5: // WhatsApp
         return (
           whatsappPhoneNumberId.trim().length > 0 &&
           whatsappWabaId.trim().length > 0 &&
           whatsappAccessToken.trim().length > 0
         );
-      case 5:
+      case 6: // Google Calendar
         return true;
       default:
         return false;
@@ -287,7 +304,16 @@ export function SetupWizard() {
     return true;
   }
 
-  async function saveStep4(): Promise<boolean> {
+  async function saveStepBilling(): Promise<boolean> {
+    const res = await fetch("/api/settings/modules/billing", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ auto_billing: autoBilling }),
+    });
+    return res.ok;
+  }
+
+  async function saveStep5(): Promise<boolean> {
     const res = await fetch("/api/settings/clinic", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -368,7 +394,10 @@ export function SetupWizard() {
           saved = await saveStep3();
           break;
         case 4:
-          saved = await saveStep4();
+          saved = await saveStepBilling();
+          break;
+        case 5:
+          saved = await saveStep5();
           break;
       }
 
@@ -393,11 +422,12 @@ export function SetupWizard() {
   // --- Labels for stepper ---
 
   const stepLabels = [
-    t("step1.title"),
-    t("stepHours.title"),
-    t("step2.title"),
-    t("step3.title"),
-    t("step4.title"),
+    t("step1.title"),         // 1: Clinic
+    t("stepHours.title"),     // 2: Hours
+    t("step2.title"),         // 3: Team & Services
+    t("stepBilling.title"),   // 4: Billing
+    t("step3.title"),         // 5: WhatsApp
+    t("step4.title"),         // 6: Google Calendar
   ];
 
   // --- Render ---
@@ -454,6 +484,14 @@ export function SetupWizard() {
         );
       case 4:
         return (
+          <StepBilling
+            autoBilling={autoBilling}
+            setAutoBilling={setAutoBilling}
+            t={t}
+          />
+        );
+      case 5:
+        return (
           <StepWhatsapp
             phoneNumberId={whatsappPhoneNumberId}
             onPhoneNumberIdChange={setWhatsappPhoneNumberId}
@@ -466,7 +504,7 @@ export function SetupWizard() {
             onTest={testWhatsapp}
           />
         );
-      case 5:
+      case 6:
         return (
           <StepCalendar
             profName={profName}
@@ -511,5 +549,53 @@ export function SetupWizard() {
         </div>
       </div>
     </>
+  );
+}
+
+// --- Billing Step Component ---
+
+function StepBilling({
+  autoBilling,
+  setAutoBilling,
+  t,
+}: {
+  autoBilling: boolean;
+  setAutoBilling: (v: boolean) => void;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold">{t("stepBilling.subtitle")}</h3>
+      </div>
+      <div className="flex items-center justify-between rounded-lg border p-4">
+        <div className="space-y-1">
+          <p className="font-medium">{t("stepBilling.toggleLabel")}</p>
+          <p className="text-sm text-muted-foreground">
+            {t("stepBilling.toggleDescription")}
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={autoBilling}
+          onClick={() => setAutoBilling(!autoBilling)}
+          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+            autoBilling ? "bg-primary" : "bg-muted"
+          }`}
+        >
+          <span
+            className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg transition-transform ${
+              autoBilling ? "translate-x-5" : "translate-x-0"
+            }`}
+          />
+        </button>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        {autoBilling
+          ? t("stepBilling.enabledInfo")
+          : t("stepBilling.disabledInfo")}
+      </p>
+    </div>
   );
 }
