@@ -582,9 +582,12 @@ function StepBilling({
           role="switch"
           aria-checked={autoBilling}
           onClick={() => setAutoBilling(!autoBilling)}
-          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-            autoBilling ? "bg-primary" : "bg-muted"
-          }`}
+          className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors"
+          style={{
+            backgroundColor: autoBilling
+              ? "var(--text-muted)"
+              : "var(--surface-elevated)",
+          }}
         >
           <span
             className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg transition-transform ${
