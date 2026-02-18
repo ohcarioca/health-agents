@@ -12,6 +12,7 @@ import { ServicesList } from "@/components/settings/services-list";
 import { InsurancePlansList } from "@/components/settings/insurance-plans-list";
 import { IntegrationsTab } from "@/components/settings/integrations-tab";
 import { WhatsAppConfig } from "@/components/settings/whatsapp-placeholder";
+import { TeamContent } from "@/components/team/team-content";
 import type { Clinic } from "@/types";
 
 const TAB_KEYS = [
@@ -21,6 +22,7 @@ const TAB_KEYS = [
   "tabs.insurancePlans",
   "tabs.integrations",
   "tabs.whatsapp",
+  "tabs.team",
 ] as const;
 
 const TAB_PARAM_MAP: Record<string, number> = {
@@ -30,6 +32,7 @@ const TAB_PARAM_MAP: Record<string, number> = {
   "insurance-plans": 3,
   integrations: 4,
   whatsapp: 5,
+  team: 6,
 };
 
 export default function SettingsPage() {
@@ -103,6 +106,7 @@ export default function SettingsPage() {
             {activeTab === 5 && <WhatsAppConfig />}
           </>
         )}
+        {activeTab === 6 && <TeamContent />}
       </div>
     </PageContainer>
   );

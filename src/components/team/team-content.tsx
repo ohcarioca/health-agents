@@ -1,36 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { UserPlus, Trash2 } from "lucide-react";
-import { PageContainer } from "@/components/layout/page-container";
-import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { InviteDialog } from "./invite-dialog";
 import type { TeamMember, ClinicRole } from "@/types";
 
-interface TeamContentProps {
-  initialMembers: TeamMember[];
-  currentUserId: string;
-  currentRole: ClinicRole;
-}
-
-export function TeamContent({
-  initialMembers,
-  currentUserId,
-  currentRole,
-}: TeamContentProps) {
+export function TeamContent() {
   const t = useTranslations("team");
-  const isOwner = currentRole === "owner";
 
-  const [members, setMembers] = useState(initialMembers);
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [currentUserId, setCurrentUserId] = useState("");
+  const [currentRole, setCurrentRole] = useState<ClinicRole>("reception");
+  const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
 
+  const isOwner = currentRole === "owner";
+
+  useEffect(() => {
+    async function fetchTeam() {
+      try {
+        const res = await fetch("/api/team");
+        if (!res.ok) {
+          console.error("[team] failed to fetch:", res.status);
+          return;
+        }
+        const json = await res.json();
+        if (json.data) {
+          setMembers(json.data.members);
+          setCurrentUserId(json.data.currentUserId);
+          setCurrentRole(json.data.currentRole);
+        }
+      } catch (err) {
+        console.error("[team] fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchTeam();
+  }, []);
+
   async function handleRoleChange(member: TeamMember, newRole: ClinicRole) {
-    // Optimistic update
     setMembers((prev) =>
       prev.map((m) => (m.id === member.id ? { ...m, role: newRole } : m)),
     );
@@ -42,7 +57,6 @@ export function TeamContent({
     });
 
     if (!res.ok) {
-      // Revert
       setMembers((prev) =>
         prev.map((m) =>
           m.id === member.id ? { ...m, role: member.role } : m,
@@ -63,26 +77,36 @@ export function TeamContent({
     }
   }
 
-  function handleInviteSuccess() {
-    // Reload page to get fresh server data with enriched user info
-    window.location.reload();
+  async function handleInviteSuccess() {
+    const res = await fetch("/api/team");
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data) {
+        setMembers(json.data.members);
+      }
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Spinner />
+      </div>
+    );
   }
 
   return (
-    <PageContainer>
-      <PageHeader
-        title={t("title")}
-        actions={
-          isOwner ? (
-            <Button onClick={() => setInviteOpen(true)} size="sm">
-              <UserPlus className="size-4" strokeWidth={1.75} />
-              {t("invite")}
-            </Button>
-          ) : undefined
-        }
-      />
+    <div className="space-y-4">
+      {isOwner && (
+        <div className="flex justify-end">
+          <Button onClick={() => setInviteOpen(true)} size="sm">
+            <UserPlus className="size-4" strokeWidth={1.75} />
+            {t("invite")}
+          </Button>
+        </div>
+      )}
 
-      <div className="mt-6 space-y-3">
+      <div className="space-y-3">
         {members.length === 0 ? (
           <p
             className="py-8 text-center text-sm"
@@ -170,6 +194,6 @@ export function TeamContent({
           onSuccess={handleInviteSuccess}
         />
       )}
-    </PageContainer>
+    </div>
   );
 }

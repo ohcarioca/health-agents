@@ -28,7 +28,6 @@
     "modules": "Modules",
     "reports": "Reports",
     "publicPage": "My Page",
-    "team": "Team",
     "settings": "Settings"
   },
   "topBar": {
@@ -290,7 +289,8 @@
       "services": "Services",
       "insurancePlans": "Insurance Plans",
       "integrations": "Integrations",
-      "whatsapp": "WhatsApp"
+      "whatsapp": "WhatsApp",
+      "team": "Team"
     },
     "clinic": {
       "name": "Clinic name",
@@ -301,6 +301,7 @@
       "state": "State",
       "zipCode": "ZIP code",
       "timezone": "Timezone",
+      "googleReviewsUrl": "Google Reviews link",
       "operatingHours": "Operating hours",
       "save": "Save changes",
       "saving": "Saving...",

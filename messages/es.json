@@ -28,7 +28,6 @@
     "modules": "Módulos",
     "reports": "Informes",
     "publicPage": "Mi Página",
-    "team": "Equipo",
     "settings": "Configuración"
   },
   "topBar": {
@@ -290,7 +289,8 @@
       "services": "Servicios",
       "insurancePlans": "Convenios",
       "integrations": "Integraciones",
-      "whatsapp": "WhatsApp"
+      "whatsapp": "WhatsApp",
+      "team": "Equipo"
     },
     "clinic": {
       "name": "Nombre de la clínica",
@@ -301,6 +301,7 @@
       "state": "Estado",
       "zipCode": "Código postal",
       "timezone": "Zona horaria",
+      "googleReviewsUrl": "Enlace de Google Reviews",
       "operatingHours": "Horario de funcionamiento",
       "save": "Guardar cambios",
       "saving": "Guardando...",

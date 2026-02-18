@@ -12,7 +12,6 @@ import {
   Blocks,
   BarChart3,
   Globe,
-  Users,
   Settings,
 } from "lucide-react";
 import * as Tooltip from "@radix-ui/react-tooltip";
@@ -26,7 +25,6 @@ const NAV_ITEMS = [
   { href: "/modules", icon: Blocks, labelKey: "nav.modules" },
   { href: "/reports", icon: BarChart3, labelKey: "nav.reports" },
   { href: "/public-page", icon: Globe, labelKey: "nav.publicPage" },
-  { href: "/team", icon: Users, labelKey: "nav.team" },
   { href: "/settings", icon: Settings, labelKey: "nav.settings" },
 ] as const;
 
