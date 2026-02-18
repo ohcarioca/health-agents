@@ -557,9 +557,6 @@ export default function PublicPageEditor() {
         {/* Right: Live Preview */}
         <div className="hidden lg:block">
           <div className="sticky top-6">
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
-              {t("preview")}
-            </h3>
             <div
               className="mx-auto overflow-hidden rounded-[2rem] border-4 shadow-xl"
               style={{
