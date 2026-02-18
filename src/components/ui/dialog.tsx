@@ -1,12 +1,14 @@
 "use client";
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { X } from "lucide-react";
 
 interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
+  description?: string;
   children: React.ReactNode;
   size?: "md" | "lg" | "xl";
 }
@@ -17,7 +19,7 @@ const sizeClasses = {
   xl: "max-w-2xl",
 };
 
-export function Dialog({ open, onOpenChange, title, children, size = "md" }: DialogProps) {
+export function Dialog({ open, onOpenChange, title, description, children, size = "md" }: DialogProps) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
@@ -44,6 +46,18 @@ export function Dialog({ open, onOpenChange, title, children, size = "md" }: Dia
               <X className="size-5" strokeWidth={1.75} />
             </DialogPrimitive.Close>
           </div>
+          {description ? (
+            <DialogPrimitive.Description
+              className="mb-4 text-sm"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {description}
+            </DialogPrimitive.Description>
+          ) : (
+            <VisuallyHidden asChild>
+              <DialogPrimitive.Description>{title}</DialogPrimitive.Description>
+            </VisuallyHidden>
+          )}
           {children}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

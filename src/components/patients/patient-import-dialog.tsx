@@ -142,7 +142,7 @@ export function PatientImportDialog({
 
         const rawData = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1 });
         if (rawData.length < 2) {
-          setFileError(t("importMaxSize"));
+          setFileError(t("importEmptyFile"));
           return;
         }
 
