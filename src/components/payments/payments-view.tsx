@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import {
   Search,
@@ -65,6 +65,8 @@ export function PaymentsView({
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRow | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
 
   const totalPages = Math.ceil(count / PER_PAGE);
   const metrics = calculateRevenueMetrics(kpiInvoices);
@@ -164,6 +166,7 @@ export function PaymentsView({
       alert(t("errors.updateError"));
     }
     setOpenMenuId(null);
+    setMenuPos(null);
   }
 
   async function handleQuickCancel(inv: InvoiceRow) {
@@ -182,6 +185,7 @@ export function PaymentsView({
       alert(t("errors.updateError"));
     }
     setOpenMenuId(null);
+    setMenuPos(null);
   }
 
   const overdueCents = kpiInvoices
@@ -391,72 +395,25 @@ export function PaymentsView({
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="relative">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenMenuId(openMenuId === inv.id ? null : inv.id);
-                              }}
-                              className="rounded-lg p-1.5 transition-colors hover:bg-[var(--nav-hover-bg)]"
-                              style={{ color: "var(--text-muted)" }}
-                            >
-                              <MoreHorizontal className="size-4" />
-                            </button>
-
-                            {openMenuId === inv.id && (
-                              <div
-                                className="absolute right-0 top-full z-20 mt-1 w-48 rounded-lg border py-1"
-                                style={{
-                                  backgroundColor: "var(--surface)",
-                                  borderColor: "var(--border)",
-                                  boxShadow: "var(--shadow-lg)",
-                                }}
-                              >
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedInvoice(inv);
-                                    setOpenMenuId(null);
-                                  }}
-                                  className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-[var(--nav-hover-bg)]"
-                                  style={{ color: "var(--text-primary)" }}
-                                >
-                                  <Eye className="size-4" />
-                                  {t("view")}
-                                </button>
-                                {(inv.status === "pending" || inv.status === "overdue") && (
-                                  <>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleQuickMarkPaid(inv);
-                                      }}
-                                      className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-[var(--nav-hover-bg)]"
-                                      style={{ color: "var(--success)" }}
-                                    >
-                                      <CircleCheck className="size-4" />
-                                      {t("markPaid")}
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleQuickCancel(inv);
-                                      }}
-                                      className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-[var(--nav-hover-bg)]"
-                                      style={{ color: "var(--danger)" }}
-                                    >
-                                      <Ban className="size-4" />
-                                      {t("cancelInvoice")}
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            )}
-                          </div>
+                          <button
+                            type="button"
+                            ref={openMenuId === inv.id ? menuBtnRef : undefined}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (openMenuId === inv.id) {
+                                setOpenMenuId(null);
+                                setMenuPos(null);
+                              } else {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setMenuPos({ top: rect.bottom + 4, left: rect.right - 192 });
+                                setOpenMenuId(inv.id);
+                              }
+                            }}
+                            className="rounded-lg p-1.5 transition-colors hover:bg-[var(--nav-hover-bg)]"
+                            style={{ color: "var(--text-muted)" }}
+                          >
+                            <MoreHorizontal className="size-4" />
+                          </button>
                         </td>
                       </tr>
                     );
@@ -509,10 +466,58 @@ export function PaymentsView({
         </div>
       )}
 
-      {/* Close dropdown on outside click */}
-      {openMenuId && (
-        <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
-      )}
+      {/* Actions dropdown — rendered at root with fixed positioning to escape overflow */}
+      {openMenuId && menuPos && (() => {
+        const inv = invoices.find((i) => i.id === openMenuId);
+        if (!inv) return null;
+        return (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => { setOpenMenuId(null); setMenuPos(null); }} />
+            <div
+              className="fixed z-50 w-48 rounded-lg border py-1"
+              style={{
+                top: menuPos.top,
+                left: menuPos.left,
+                backgroundColor: "var(--surface)",
+                borderColor: "var(--border)",
+                boxShadow: "var(--shadow-lg)",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => { setSelectedInvoice(inv); setOpenMenuId(null); setMenuPos(null); }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-[var(--nav-hover-bg)]"
+                style={{ color: "var(--text-primary)" }}
+              >
+                <Eye className="size-4" />
+                {t("view")}
+              </button>
+              {(inv.status === "pending" || inv.status === "overdue") && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickMarkPaid(inv)}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-[var(--nav-hover-bg)]"
+                    style={{ color: "var(--success)" }}
+                  >
+                    <CircleCheck className="size-4" />
+                    {t("markPaid")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickCancel(inv)}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-[var(--nav-hover-bg)]"
+                    style={{ color: "var(--danger)" }}
+                  >
+                    <Ban className="size-4" />
+                    {t("cancelInvoice")}
+                  </button>
+                </>
+              )}
+            </div>
+          </>
+        );
+      })()}
 
       {/* Create dialog */}
       <CreateInvoiceDialog
