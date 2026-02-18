@@ -505,7 +505,9 @@ export type Database = {
           error: string | null
           id: string
           max_attempts: number
+          patient_id: string | null
           sent_at: string | null
+          source: string | null
           status: string
           template_name: string | null
           template_params: Json | null
@@ -521,7 +523,9 @@ export type Database = {
           error?: string | null
           id?: string
           max_attempts?: number
+          patient_id?: string | null
           sent_at?: string | null
+          source?: string | null
           status?: string
           template_name?: string | null
           template_params?: Json | null
@@ -537,7 +541,9 @@ export type Database = {
           error?: string | null
           id?: string
           max_attempts?: number
+          patient_id?: string | null
           sent_at?: string | null
+          source?: string | null
           status?: string
           template_name?: string | null
           template_params?: Json | null
@@ -556,6 +562,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_queue_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
             referencedColumns: ["id"]
           },
         ]
