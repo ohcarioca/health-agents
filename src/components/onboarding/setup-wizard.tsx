@@ -9,14 +9,13 @@ import { WizardStepper } from "@/components/onboarding/wizard-stepper";
 import { StepSlider } from "@/components/onboarding/step-slider";
 import { StepClinic } from "@/components/onboarding/step-clinic";
 import { StepHours } from "@/components/onboarding/step-hours";
-import { StepProfessional } from "@/components/onboarding/step-professional";
-import type { ServiceItem } from "@/components/onboarding/step-professional";
+import { StepServices } from "@/components/onboarding/step-services";
+import type { ServiceItem } from "@/components/onboarding/step-services";
 import { StepWhatsapp } from "@/components/onboarding/step-whatsapp";
-import { StepCalendar } from "@/components/onboarding/step-calendar";
 import { StepCompletion } from "@/components/onboarding/step-completion";
 import type { ScheduleGrid } from "@/lib/validations/settings";
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 5;
 
 const EMPTY_SCHEDULE: ScheduleGrid = {
   monday: [],
@@ -49,12 +48,8 @@ export function SetupWizard() {
   // Step 2 state — Hours
   const [operatingHours, setOperatingHours] = useState<ScheduleGrid>(EMPTY_SCHEDULE);
 
-  // Step 3 state — Professional + Services
-  const [profName, setProfName] = useState("");
-  const [specialty, setSpecialty] = useState("");
-  const [duration, setDuration] = useState(30);
+  // Step 3 state — Services
   const [services, setServices] = useState<ServiceItem[]>([]);
-  const [createdProfId, setCreatedProfId] = useState<string | null>(null);
 
   // Step 4 state — Billing
   const [autoBilling, setAutoBilling] = useState(false);
@@ -65,10 +60,6 @@ export function SetupWizard() {
   const [whatsappAccessToken, setWhatsappAccessToken] = useState("");
   const [whatsappTestResult, setWhatsappTestResult] = useState<"success" | "failed" | null>(null);
   const [whatsappTesting, setWhatsappTesting] = useState(false);
-
-  // Step 6 state — Google Calendar
-  const [calendarConnected, setCalendarConnected] = useState(false);
-  const [calendarLoading, setCalendarLoading] = useState(false);
 
   // Completion state
   const [showCompletion, setShowCompletion] = useState(false);
@@ -83,9 +74,8 @@ export function SetupWizard() {
   useEffect(() => {
     async function loadExistingData() {
       try {
-        const [clinicRes, profRes, serviceRes, billingRes] = await Promise.all([
+        const [clinicRes, serviceRes, billingRes] = await Promise.all([
           fetch("/api/settings/clinic"),
-          fetch("/api/settings/professionals"),
           fetch("/api/settings/services"),
           fetch("/api/settings/modules/billing"),
         ]);
@@ -124,21 +114,6 @@ export function SetupWizard() {
           }
         }
 
-        let hasProfessional = false;
-
-        if (profRes.ok) {
-          const { data: professionals } = await profRes.json();
-          if (Array.isArray(professionals) && professionals.length > 0) {
-            const prof = professionals[0];
-            setCreatedProfId(prof.id);
-            if (prof.name) setProfName(prof.name);
-            if (prof.specialty) setSpecialty(prof.specialty);
-            if (prof.appointment_duration_minutes) setDuration(prof.appointment_duration_minutes);
-            if (prof.google_calendar_id) setCalendarConnected(true);
-            hasProfessional = prof.name?.trim().length >= 2;
-          }
-        }
-
         if (serviceRes.ok) {
           const { data: svcList } = await serviceRes.json();
           if (Array.isArray(svcList) && svcList.length > 0) {
@@ -151,7 +126,7 @@ export function SetupWizard() {
                   : "",
               }))
             );
-            if (autoStep >= 3 && hasProfessional && svcList.length > 0) autoStep = 4;
+            if (autoStep >= 3 && svcList.length > 0 && svcList.some((s: { price_cents: number | null }) => s.price_cents != null && s.price_cents > 0)) autoStep = 4;
           }
         }
 
@@ -165,7 +140,6 @@ export function SetupWizard() {
           }
         }
         if (autoStep >= 4 && hasBilling) autoStep = 5;
-        if (autoStep >= 5 && hasWhatsApp) autoStep = 6;
 
         // Use auto-detected step when no explicit step param is set
         if (!searchParams.get("step") && autoStep > 1) {
@@ -181,12 +155,6 @@ export function SetupWizard() {
     loadExistingData();
   }, [searchParams]);
 
-  useEffect(() => {
-    if (searchParams.get("success") === "calendar_connected") {
-      setCalendarConnected(true);
-    }
-  }, [searchParams]);
-
   // --- Validation ---
 
   const canAdvance = useCallback(() => {
@@ -195,13 +163,12 @@ export function SetupWizard() {
         return clinicName.trim().length >= 2 && phone.trim().length > 0;
       case 2:
         return true;
-      case 3:
+      case 3: // Services
         return (
-          profName.trim().length >= 2 &&
           services.length > 0 &&
           services.every((s) => parseFloat(s.price || "0") > 0)
         );
-      case 4: // Billing — always valid (toggle has a default)
+      case 4: // Billing
         return true;
       case 5: // WhatsApp
         return (
@@ -209,12 +176,10 @@ export function SetupWizard() {
           whatsappWabaId.trim().length > 0 &&
           whatsappAccessToken.trim().length > 0
         );
-      case 6: // Google Calendar
-        return true;
       default:
         return false;
     }
-  }, [step, clinicName, phone, profName, services, whatsappPhoneNumberId, whatsappWabaId, whatsappAccessToken]);
+  }, [step, clinicName, phone, services, whatsappPhoneNumberId, whatsappWabaId, whatsappAccessToken]);
 
   // --- Save functions ---
 
@@ -247,38 +212,9 @@ export function SetupWizard() {
   }
 
   async function saveStep3(): Promise<boolean> {
-    const profPayload = {
-      name: profName.trim(),
-      specialty: specialty.trim() || "",
-      appointment_duration_minutes: duration,
-    };
-
-    let profId = createdProfId;
-
-    if (profId) {
-      const res = await fetch(`/api/settings/professionals/${profId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profPayload),
-      });
-      if (!res.ok) return false;
-    } else {
-      const res = await fetch("/api/settings/professionals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profPayload),
-      });
-      if (!res.ok) return false;
-      const { data } = await res.json();
-      profId = data.id;
-      setCreatedProfId(profId);
-    }
-
-    const createdServiceIds: Array<{ service_id: string; price_cents: number }> = [];
-
     for (const svc of services) {
       const priceCents = Math.round(parseFloat(svc.price || "0") * 100);
-      const svcRes = await fetch("/api/settings/services", {
+      const res = await fetch("/api/settings/services", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -287,20 +223,8 @@ export function SetupWizard() {
           price_cents: priceCents,
         }),
       });
-      if (!svcRes.ok) continue;
-      const { data: svcData } = await svcRes.json();
-      createdServiceIds.push({ service_id: svcData.id, price_cents: priceCents });
+      if (!res.ok) continue;
     }
-
-    if (profId && createdServiceIds.length > 0) {
-      const linkRes = await fetch(`/api/settings/professionals/${profId}/services`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ services: createdServiceIds }),
-      });
-      if (!linkRes.ok) return false;
-    }
-
     return true;
   }
 
@@ -346,32 +270,6 @@ export function SetupWizard() {
       setWhatsappTestResult("failed");
     } finally {
       setWhatsappTesting(false);
-    }
-  }
-
-  async function connectGoogleCalendar() {
-    if (!createdProfId) return;
-    setCalendarLoading(true);
-    try {
-      const res = await fetch("/api/integrations/google-calendar/connect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          professional_id: createdProfId,
-          return_to: "/",
-        }),
-      });
-      if (res.ok) {
-        const { data } = await res.json();
-        if (data?.url) {
-          window.location.href = data.url;
-          return;
-        }
-      }
-    } catch (err) {
-      console.error("[setup] google calendar connect error:", err);
-    } finally {
-      setCalendarLoading(false);
     }
   }
 
@@ -422,12 +320,11 @@ export function SetupWizard() {
   // --- Labels for stepper ---
 
   const stepLabels = [
-    t("step1.title"),         // 1: Clinic
-    t("stepHours.title"),     // 2: Hours
-    t("step2.title"),         // 3: Team & Services
-    t("stepBilling.title"),   // 4: Billing
-    t("step3.title"),         // 5: WhatsApp
-    t("step4.title"),         // 6: Google Calendar
+    t("step1.title"),           // 1: Clinic
+    t("stepHours.title"),       // 2: Hours
+    t("stepServices.title"),    // 3: Services
+    t("stepBilling.title"),     // 4: Billing
+    t("step3.title"),           // 5: WhatsApp
   ];
 
   // --- Render ---
@@ -470,13 +367,7 @@ export function SetupWizard() {
         );
       case 3:
         return (
-          <StepProfessional
-            profName={profName}
-            onProfNameChange={setProfName}
-            specialty={specialty}
-            onSpecialtyChange={setSpecialty}
-            duration={duration}
-            onDurationChange={setDuration}
+          <StepServices
             clinicType={clinicType}
             services={services}
             onServicesChange={setServices}
@@ -502,17 +393,6 @@ export function SetupWizard() {
             testResult={whatsappTestResult}
             testing={whatsappTesting}
             onTest={testWhatsapp}
-          />
-        );
-      case 6:
-        return (
-          <StepCalendar
-            profName={profName}
-            specialty={specialty}
-            hasProfessional={!!createdProfId}
-            calendarConnected={calendarConnected}
-            calendarLoading={calendarLoading}
-            onConnect={connectGoogleCalendar}
           />
         );
       default:

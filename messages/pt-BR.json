@@ -492,6 +492,17 @@
       "noServices": "Adicione pelo menos um serviço.",
       "removeService": "Remover"
     },
+    "stepServices": {
+      "title": "Serviços",
+      "description": "Adicione os serviços oferecidos pela sua clínica.",
+      "selectService": "Selecionar serviço...",
+      "customService": "Outro (personalizado)",
+      "customServiceName": "Nome do serviço",
+      "serviceDuration": "Duração (min)",
+      "servicePrice": "Preço (R$)",
+      "noServices": "Adicione pelo menos um serviço.",
+      "removeService": "Remover"
+    },
     "stepBilling": {
       "title": "Cobrança",
       "subtitle": "Configure a cobrança automática para consultas agendadas",

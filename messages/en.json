@@ -492,6 +492,17 @@
       "noServices": "Add at least one service.",
       "removeService": "Remove"
     },
+    "stepServices": {
+      "title": "Services",
+      "description": "Add the services offered by your clinic.",
+      "selectService": "Select service...",
+      "customService": "Other (custom)",
+      "customServiceName": "Service name",
+      "serviceDuration": "Duration (min)",
+      "servicePrice": "Price",
+      "noServices": "Add at least one service.",
+      "removeService": "Remove"
+    },
     "stepBilling": {
       "title": "Billing",
       "subtitle": "Configure automatic billing for scheduled appointments",

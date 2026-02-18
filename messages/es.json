@@ -492,6 +492,17 @@
       "noServices": "Agregue al menos un servicio.",
       "removeService": "Eliminar"
     },
+    "stepServices": {
+      "title": "Servicios",
+      "description": "Agregue los servicios ofrecidos por su clínica.",
+      "selectService": "Seleccionar servicio...",
+      "customService": "Otro (personalizado)",
+      "customServiceName": "Nombre del servicio",
+      "serviceDuration": "Duración (min)",
+      "servicePrice": "Precio",
+      "noServices": "Agregue al menos un servicio.",
+      "removeService": "Eliminar"
+    },
     "stepBilling": {
       "title": "Facturación",
       "subtitle": "Configure la facturación automática para citas programadas",
