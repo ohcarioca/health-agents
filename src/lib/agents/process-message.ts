@@ -273,7 +273,7 @@ export async function processMessage(
 
   const { data: services } = await supabase
     .from("services")
-    .select("id, name")
+    .select("id, name, price_cents, duration_minutes")
     .eq("clinic_id", clinicId);
 
   const { data: professionals } = await supabase
@@ -289,9 +289,15 @@ export async function processMessage(
         address: clinic.address ?? undefined,
         timezone: clinic.timezone,
         insurancePlans: (insurancePlans ?? []).map((p) => p.name),
-        services: (services ?? []).map(
-          (s) => `${s.name} [ID: ${s.id}]`
-        ),
+        services: (services ?? []).map((s) => {
+          const price = s.price_cents
+            ? ` — R$ ${(s.price_cents / 100).toFixed(2).replace(".", ",")}`
+            : "";
+          const duration = s.duration_minutes
+            ? ` (${s.duration_minutes}min)`
+            : "";
+          return `${s.name}${duration}${price} [ID: ${s.id}]`;
+        }),
         professionals: (professionals ?? []).map((p) => ({
           id: p.id as string,
           name: p.name as string,
@@ -340,17 +346,18 @@ export async function processMessage(
     },
   });
 
-  // 11. Compose final response
-  let finalResponse = engineResult.responseText;
-  if (engineResult.appendToResponse) {
-    finalResponse += `\n\n${engineResult.appendToResponse}`;
-  }
+  // 11. Compose final response — split into parts for separate WhatsApp messages
+  const mainResponse = engineResult.responseText;
+  const appendix = engineResult.appendToResponse ?? "";
+  const fullResponse = appendix
+    ? `${mainResponse}\n\n${appendix}`
+    : mainResponse;
 
-  // 12. Save assistant response
+  // 12. Save assistant response (full content for conversation history)
   await supabase.from("messages").insert({
     conversation_id: conversationId,
     clinic_id: clinicId,
-    content: finalResponse,
+    content: fullResponse,
     role: "assistant",
   });
 
@@ -370,43 +377,77 @@ export async function processMessage(
     })
     .eq("id", conversationId);
 
-  // 15. Queue outbound message
-  const { data: queueRow } = await supabase
-    .from("message_queue")
-    .insert({
-      conversation_id: conversationId,
-      clinic_id: clinicId,
-      channel: "whatsapp",
-      content: finalResponse,
-      status: "pending",
-      attempts: 0,
-      max_attempts: 3,
-    })
-    .select("id")
-    .single();
+  // 15-17. Queue + send via WhatsApp — split long messages
+  const messageParts = appendix
+    ? [mainResponse, appendix]
+    : splitLongMessage(mainResponse);
 
-  // 16. Send via WhatsApp
-  const sendResult = await sendTextMessage(normalizedPhone, finalResponse, whatsappCredentials);
-
-  // 17. Update queue status
-  if (queueRow) {
-    await supabase
+  for (const part of messageParts) {
+    const { data: queueRow } = await supabase
       .from("message_queue")
-      .update({
-        status: sendResult.success ? "sent" : "failed",
-        ...(sendResult.success ? { sent_at: new Date().toISOString() } : {}),
-        ...(sendResult.error ? { error: sendResult.error } : {}),
-        attempts: 1,
+      .insert({
+        conversation_id: conversationId,
+        clinic_id: clinicId,
+        channel: "whatsapp",
+        content: part,
+        status: "pending",
+        attempts: 0,
+        max_attempts: 3,
       })
-      .eq("id", queueRow.id);
+      .select("id")
+      .single();
+
+    const sendResult = await sendTextMessage(normalizedPhone, part, whatsappCredentials);
+
+    if (queueRow) {
+      await supabase
+        .from("message_queue")
+        .update({
+          status: sendResult.success ? "sent" : "failed",
+          ...(sendResult.success ? { sent_at: new Date().toISOString() } : {}),
+          ...(sendResult.error ? { error: sendResult.error } : {}),
+          attempts: 1,
+        })
+        .eq("id", queueRow.id);
+    }
   }
 
   return {
     conversationId,
-    responseText: finalResponse,
+    responseText: fullResponse,
     module: finalModule,
     toolCallCount: engineResult.toolCallCount,
     toolCallNames: engineResult.toolCallNames,
-    queued: sendResult.success,
+    queued: true,
   };
+}
+
+// ── Helpers ──
+
+const WHATSAPP_MAX_LENGTH = 4000;
+
+function splitLongMessage(text: string): string[] {
+  if (text.length <= WHATSAPP_MAX_LENGTH) {
+    return [text];
+  }
+
+  const parts: string[] = [];
+  const paragraphs = text.split("\n\n");
+  let current = "";
+
+  for (const paragraph of paragraphs) {
+    const candidate = current ? `${current}\n\n${paragraph}` : paragraph;
+    if (candidate.length > WHATSAPP_MAX_LENGTH && current) {
+      parts.push(current.trim());
+      current = paragraph;
+    } else {
+      current = candidate;
+    }
+  }
+
+  if (current.trim()) {
+    parts.push(current.trim());
+  }
+
+  return parts.length > 0 ? parts : [text];
 }

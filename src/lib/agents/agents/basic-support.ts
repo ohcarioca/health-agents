@@ -134,7 +134,7 @@ async function handleGetClinicInfo(
         .eq("clinic_id", context.clinicId),
       context.supabase
         .from("services")
-        .select("name")
+        .select("name, price_cents, duration_minutes")
         .eq("clinic_id", context.clinicId),
     ]);
 
@@ -146,7 +146,13 @@ async function handleGetClinicInfo(
 
     const clinic = clinicResult.data;
     const insurancePlans = insuranceResult.data?.map((p) => p.name) ?? [];
-    const services = servicesResult.data?.map((s) => s.name) ?? [];
+    const services = (servicesResult.data ?? []).map((s) => {
+      const price = s.price_cents
+        ? ` — R$ ${(s.price_cents / 100).toFixed(2).replace(".", ",")}`
+        : "";
+      const duration = s.duration_minutes ? ` (${s.duration_minutes}min)` : "";
+      return `${s.name}${duration}${price}`;
+    });
 
     const parts: string[] = [
       `Clinic: ${clinic.name}`,

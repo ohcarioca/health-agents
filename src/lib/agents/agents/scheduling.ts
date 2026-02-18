@@ -557,10 +557,10 @@ async function handleBookAppointment(
           } else {
             const { data: service } = await context.supabase
               .from("services")
-              .select("base_price_cents")
+              .select("price_cents")
               .eq("id", resolvedServiceId)
               .single();
-            priceCents = (service?.base_price_cents as number) ?? 0;
+            priceCents = (service?.price_cents as number) ?? 0;
           }
         }
 
