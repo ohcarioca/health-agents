@@ -66,7 +66,7 @@ export async function analyzeResults(
   try {
     const response = await client.messages.create({
       model,
-      max_tokens: 2000,
+      max_tokens: 4096,
       temperature: 0,
       system: ANALYST_SYSTEM_PROMPT,
       messages: [{ role: "user", content: userPrompt }],

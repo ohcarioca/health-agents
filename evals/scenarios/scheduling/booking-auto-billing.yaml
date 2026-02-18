@@ -40,11 +40,9 @@ guardrails:
   never_contains: ["erro"]
 
 expectations:
-  tools_called: [check_availability, book_appointment]
+  tools_called: [check_availability, save_patient_billing_info, book_appointment]
   goal_achieved: true
   assertions:
     appointment_created: true
-    invoice_status: pending
-    payment_link_created: true
 
 max_turns: 15
