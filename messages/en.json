@@ -465,7 +465,16 @@
     },
     "stepHours": {
       "title": "Hours",
-      "description": "Set your clinic's operating hours. Click and drag to select time slots."
+      "description": "Set your clinic's operating hours."
+    },
+    "scheduleGrid": {
+      "presetCommercial": "Business hours",
+      "presetCommercialSat": "Business + Saturday",
+      "presetExtended": "Extended hours",
+      "presetCustom": "Custom",
+      "closed": "Closed",
+      "weekend": "Weekend",
+      "copyMondayToWeekdays": "Copy Monday to weekdays"
     },
     "step2": {
       "title": "Team & Services",

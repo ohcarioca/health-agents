@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { CompactScheduleGrid } from "@/components/settings/compact-schedule-grid";
+import { SchedulePicker } from "@/components/onboarding/schedule-picker";
 import type { ScheduleGrid } from "@/lib/validations/settings";
 
 interface StepHoursProps {
@@ -17,7 +17,7 @@ export function StepHours({ operatingHours, onOperatingHoursChange }: StepHoursP
       <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
         {t("stepHours.description")}
       </p>
-      <CompactScheduleGrid value={operatingHours} onChange={onOperatingHoursChange} />
+      <SchedulePicker value={operatingHours} onChange={onOperatingHoursChange} />
     </div>
   );
 }

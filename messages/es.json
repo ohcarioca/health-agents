@@ -465,7 +465,16 @@
     },
     "stepHours": {
       "title": "Horarios",
-      "description": "Defina el horario de atención de la clínica. Haga clic y arrastre para seleccionar los horarios."
+      "description": "Define el horario de atención de la clínica."
+    },
+    "scheduleGrid": {
+      "presetCommercial": "Comercial",
+      "presetCommercialSat": "Comercial + Sábado",
+      "presetExtended": "Horario extendido",
+      "presetCustom": "Personalizado",
+      "closed": "Cerrado",
+      "weekend": "Fin de semana",
+      "copyMondayToWeekdays": "Copiar lunes a días laborales"
     },
     "step2": {
       "title": "Equipo y Servicios",
