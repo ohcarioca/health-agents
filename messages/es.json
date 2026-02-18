@@ -476,22 +476,6 @@
       "weekend": "Fin de semana",
       "copyMondayToWeekdays": "Copiar lunes a días laborales"
     },
-    "step2": {
-      "title": "Equipo y Servicios",
-      "description": "Agregue el profesional principal y los servicios ofrecidos.",
-      "profSection": "Profesional",
-      "name": "Nombre",
-      "specialty": "Especialidad",
-      "duration": "Duración predeterminada de la consulta (min)",
-      "serviceSection": "Servicios",
-      "selectService": "Seleccionar servicio...",
-      "customService": "Otro (personalizado)",
-      "customServiceName": "Nombre del servicio",
-      "serviceDuration": "Duración (min)",
-      "servicePrice": "Precio",
-      "noServices": "Agregue al menos un servicio.",
-      "removeService": "Eliminar"
-    },
     "stepServices": {
       "title": "Servicios",
       "description": "Agregue los servicios ofrecidos por su clínica.",
@@ -522,15 +506,6 @@
       "testFailed": "Credenciales inválidas. Verifique los datos.",
       "testLoading": "Probando...",
       "helpText": "Encuentre estos valores en Meta Business Manager."
-    },
-    "step4": {
-      "title": "Google Calendar",
-      "description": "Conecte Google Calendar del profesional para sincronizar citas.",
-      "connectFor": "Conectar para {name}",
-      "connected": "Conectado",
-      "notConnected": "No conectado",
-      "connect": "Conectar Google Calendar",
-      "waitingCallback": "Esperando autorización..."
     },
     "back": "Volver",
     "next": "Siguiente",

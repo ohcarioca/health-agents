@@ -476,22 +476,6 @@
       "weekend": "Weekend",
       "copyMondayToWeekdays": "Copy Monday to weekdays"
     },
-    "step2": {
-      "title": "Team & Services",
-      "description": "Add the main professional and the services offered.",
-      "profSection": "Professional",
-      "name": "Name",
-      "specialty": "Specialty",
-      "duration": "Default appointment duration (min)",
-      "serviceSection": "Services",
-      "selectService": "Select service...",
-      "customService": "Other (custom)",
-      "customServiceName": "Service name",
-      "serviceDuration": "Duration (min)",
-      "servicePrice": "Price",
-      "noServices": "Add at least one service.",
-      "removeService": "Remove"
-    },
     "stepServices": {
       "title": "Services",
       "description": "Add the services offered by your clinic.",
@@ -522,15 +506,6 @@
       "testFailed": "Invalid credentials. Check your details.",
       "testLoading": "Testing...",
       "helpText": "Find these values in Meta Business Manager."
-    },
-    "step4": {
-      "title": "Google Calendar",
-      "description": "Connect Google Calendar for the professional to sync appointments.",
-      "connectFor": "Connect for {name}",
-      "connected": "Connected",
-      "notConnected": "Not connected",
-      "connect": "Connect Google Calendar",
-      "waitingCallback": "Waiting for authorization..."
     },
     "back": "Back",
     "next": "Next",
