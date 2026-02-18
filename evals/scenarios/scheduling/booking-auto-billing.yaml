@@ -1,15 +1,20 @@
-id: scheduling-happy-path-booking
+id: scheduling-booking-auto-billing
 agent: scheduling
 locale: pt-BR
-description: "Patient books a standard appointment with a specific professional"
+description: "Patient books appointment with auto-billing enabled, provides CPF/email"
 
 persona:
-  name: Maria Silva
-  phone: "11987650003"
-  personality: "polite, prefers mornings, patient"
+  name: Ana Costa
+  phone: "11987650020"
+  cpf: "12345678901"
+  email: "ana.costa@email.com"
+  personality: "cooperative, provides info quickly when asked"
   goal: "Book a cardiology appointment with Dr. Joao Silva for next week"
 
 fixtures:
+  module_configs:
+    - module_type: billing
+      settings: { auto_billing: true }
   professionals:
     - id: eval-prof-1
       name: Dr. Joao Silva
@@ -25,14 +30,21 @@ fixtures:
     - id: eval-svc-1
       name: Consulta Cardiologica
       duration_minutes: 30
+      base_price_cents: 25000
+  professional_services:
+    - professional_id: eval-prof-1
+      service_id: eval-svc-1
+      price_cents: 25000
 
 guardrails:
-  never_contains: ["erro", "nao consigo"]
+  never_contains: ["erro"]
 
 expectations:
   tools_called: [check_availability, book_appointment]
   goal_achieved: true
   assertions:
     appointment_created: true
+    invoice_status: pending
+    payment_link_created: true
 
-max_turns: 10
+max_turns: 15

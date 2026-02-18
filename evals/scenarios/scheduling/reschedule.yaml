@@ -1,13 +1,13 @@
-id: scheduling-happy-path-booking
+id: scheduling-reschedule
 agent: scheduling
 locale: pt-BR
-description: "Patient books a standard appointment with a specific professional"
+description: "Patient reschedules an existing appointment to a new time"
 
 persona:
-  name: Maria Silva
-  phone: "11987650003"
-  personality: "polite, prefers mornings, patient"
-  goal: "Book a cardiology appointment with Dr. Joao Silva for next week"
+  name: Fernanda Alves
+  phone: "11987650022"
+  personality: "friendly, flexible on times"
+  goal: "Reschedule my appointment to a different day next week"
 
 fixtures:
   professionals:
@@ -21,18 +21,15 @@ fixtures:
         wednesday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
         thursday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
         friday: [{ start: "08:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
-  services:
-    - id: eval-svc-1
-      name: Consulta Cardiologica
-      duration_minutes: 30
-
-guardrails:
-  never_contains: ["erro", "nao consigo"]
+  appointments:
+    - id: eval-appt-2
+      professional_id: eval-prof-1
+      starts_at: "2026-02-24T10:00:00.000Z"
+      ends_at: "2026-02-24T10:30:00.000Z"
+      status: scheduled
 
 expectations:
-  tools_called: [check_availability, book_appointment]
+  tools_called: [reschedule_appointment]
   goal_achieved: true
-  assertions:
-    appointment_created: true
 
-max_turns: 10
+max_turns: 12

@@ -6,6 +6,8 @@ description: "Patient cancels an existing appointment"
 persona:
   name: Pedro Costa
   phone: "11987650004"
+  personality: "direct, apologetic about cancelling"
+  goal: "Cancel my upcoming appointment because I had an emergency"
 
 fixtures:
   professionals:
@@ -13,8 +15,6 @@ fixtures:
       name: Dra. Ana Souza
       specialty: Clinico Geral
       appointment_duration_minutes: 30
-      schedule_grid:
-        monday: [{ start: "08:00", end: "18:00" }]
   appointments:
     - id: eval-appt-1
       professional_id: eval-prof-2
@@ -22,11 +22,8 @@ fixtures:
       ends_at: "2026-03-01T14:30:00.000Z"
       status: scheduled
 
-turns:
-  - user: "Preciso cancelar minha consulta"
-    expect:
-      tools_called: [list_patient_appointments]
+expectations:
+  tools_called: [cancel_appointment]
+  goal_achieved: true
 
-  - user: "Sim, pode cancelar. Tive um imprevisto."
-    expect:
-      tools_called: [cancel_appointment]
+max_turns: 8
