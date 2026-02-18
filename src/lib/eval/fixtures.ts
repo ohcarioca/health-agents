@@ -58,8 +58,7 @@ export async function seedFixtures(
     name: scenario.persona.name,
     phone: normalizedPhone,
     cpf: scenario.persona.cpf ?? null,
-    notes: scenario.persona.notes ?? null,
-    custom_fields: scenario.persona.custom_fields ?? {},
+    email: scenario.persona.email ?? null,
   });
 
   // 3. Create agent row (required by processMessage step 8)
@@ -79,7 +78,20 @@ export async function seedFixtures(
     active: true,
   });
 
-  // 4. Seed fixture data
+  // 4. Seed module_configs
+  if (scenario.fixtures?.module_configs) {
+    for (const mc of scenario.fixtures.module_configs) {
+      await insertRow(supabase, "module_configs", {
+        id: randomUUID(),
+        clinic_id: clinicId,
+        module_type: mc.module_type,
+        enabled: mc.enabled ?? true,
+        settings: mc.settings ?? {},
+      });
+    }
+  }
+
+  // 5. Seed fixture data
   if (scenario.fixtures?.professionals) {
     for (const prof of scenario.fixtures.professionals) {
       const profId = resolveId(idMap, prof.id);
@@ -105,6 +117,20 @@ export async function seedFixtures(
         clinic_id: clinicId,
         name: svc.name,
         duration_minutes: svc.duration_minutes ?? 30,
+        base_price_cents: svc.base_price_cents ?? null,
+      });
+    }
+  }
+
+  if (scenario.fixtures?.professional_services) {
+    for (const ps of scenario.fixtures.professional_services) {
+      const profId = resolveId(idMap, ps.professional_id);
+      const svcId = resolveId(idMap, ps.service_id);
+      await insertRow(supabase, "professional_services", {
+        id: randomUUID(),
+        professional_id: profId,
+        service_id: svcId,
+        price_cents: ps.price_cents,
       });
     }
   }
@@ -179,8 +205,10 @@ export async function cleanupFixtures(
     "conversations",
     "appointments",
     "insurance_plans",
+    "professional_services",
     "services",
     "professionals",
+    "module_configs",
     "agents",
     "patients",
     "clinics",
