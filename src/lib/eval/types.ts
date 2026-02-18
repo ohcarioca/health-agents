@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// ── Scenario Schema ──
+// ── Fixture Schemas ──
 
 const scheduleBlockSchema = z.object({
   start: z.string(),
@@ -21,6 +21,13 @@ const serviceFixtureSchema = z.object({
   id: z.string(),
   name: z.string(),
   duration_minutes: z.number().int().positive().optional(),
+  base_price_cents: z.number().int().positive().optional(),
+});
+
+const professionalServiceFixtureSchema = z.object({
+  professional_id: z.string(),
+  service_id: z.string(),
+  price_cents: z.number().int().positive(),
 });
 
 const appointmentFixtureSchema = z.object({
@@ -42,28 +49,47 @@ const invoiceFixtureSchema = z.object({
   notes: z.string().optional(),
 });
 
+const moduleConfigFixtureSchema = z.object({
+  module_type: z.enum(["support", "scheduling", "confirmation", "nps", "billing", "recall"]),
+  enabled: z.boolean().optional(),
+  settings: z.record(z.string(), z.unknown()).optional(),
+});
+
+const insurancePlanFixtureSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+
 const fixturesSchema = z.object({
+  module_configs: z.array(moduleConfigFixtureSchema).optional(),
   professionals: z.array(professionalFixtureSchema).optional(),
   services: z.array(serviceFixtureSchema).optional(),
+  professional_services: z.array(professionalServiceFixtureSchema).optional(),
   appointments: z.array(appointmentFixtureSchema).optional(),
-  insurance_plans: z.array(z.object({ id: z.string(), name: z.string() })).optional(),
+  insurance_plans: z.array(insurancePlanFixtureSchema).optional(),
   invoices: z.array(invoiceFixtureSchema).optional(),
 }).optional();
 
-const turnExpectSchema = z.object({
-  tools_called: z.array(z.string()).optional(),
-  no_tools: z.array(z.string()).optional(),
-  response_contains: z.array(z.string()).optional(),
-  response_not_contains: z.array(z.string()).optional(),
-  response_matches: z.string().optional(),
-  status: z.string().optional(),
-  tone: z.string().optional(),
-}).default({});
+// ── Persona Schema ──
 
-const turnSchema = z.object({
-  user: z.string(),
-  expect: turnExpectSchema,
+const personaSchema = z.object({
+  name: z.string(),
+  phone: z.string(),
+  cpf: z.string().optional(),
+  email: z.string().optional(),
+  personality: z.string(),
+  goal: z.string(),
 });
+
+// ── Guardrails Schema ──
+
+const guardrailsSchema = z.object({
+  never_tools: z.array(z.string()).optional(),
+  never_contains: z.array(z.string()).optional(),
+  never_matches: z.string().optional(),
+}).optional();
+
+// ── Assertions Schema ──
 
 const assertionsSchema = z.object({
   appointment_created: z.boolean().optional(),
@@ -74,13 +100,17 @@ const assertionsSchema = z.object({
   payment_link_created: z.boolean().optional(),
 }).optional();
 
-const personaSchema = z.object({
-  name: z.string(),
-  phone: z.string(),
-  cpf: z.string().optional(),
-  notes: z.string().optional(),
-  custom_fields: z.record(z.string(), z.unknown()).optional(),
+// ── Expectations Schema ──
+
+const expectationsSchema = z.object({
+  tools_called: z.array(z.string()).optional(),
+  tools_not_called: z.array(z.string()).optional(),
+  response_contains: z.array(z.string()).optional(),
+  goal_achieved: z.boolean(),
+  assertions: assertionsSchema,
 });
+
+// ── Scenario Schema ──
 
 export const evalScenarioSchema = z.object({
   id: z.string(),
@@ -89,14 +119,30 @@ export const evalScenarioSchema = z.object({
   description: z.string(),
   persona: personaSchema,
   fixtures: fixturesSchema,
-  turns: z.array(turnSchema).min(1),
-  assertions: assertionsSchema,
+  guardrails: guardrailsSchema,
+  expectations: expectationsSchema,
+  max_turns: z.number().int().positive().max(20).default(20),
 });
 
+// ── Inferred Types ──
+
 export type EvalScenario = z.infer<typeof evalScenarioSchema>;
-export type TurnExpect = z.infer<typeof turnExpectSchema>;
-export type Persona = z.infer<typeof personaSchema>;
-export type Fixtures = z.infer<typeof fixturesSchema>;
+export type ScenarioPersona = z.infer<typeof personaSchema>;
+export type ScenarioFixtures = z.infer<typeof fixturesSchema>;
+export type ScenarioGuardrails = z.infer<typeof guardrailsSchema>;
+export type ScenarioExpectations = z.infer<typeof expectationsSchema>;
+export type Assertions = z.infer<typeof assertionsSchema>;
+
+// ── Conversation Turn ──
+
+export interface ConversationTurn {
+  index: number;
+  role: "patient" | "agent";
+  content: string;
+  toolsCalled?: string[];
+  guardrailViolations?: string[];
+  timestamp: number;
+}
 
 // ── Judge Types ──
 
@@ -106,9 +152,11 @@ export interface JudgeScores {
   tone: number;
   safety: number;
   conciseness: number;
+  flow: number;
 }
 
-export interface JudgeResult {
+export interface JudgeVerdict {
+  goal_achieved: boolean;
   scores: JudgeScores;
   overall: number;
   issues: string[];
@@ -122,29 +170,24 @@ export interface CheckResult {
   failures: string[];
 }
 
-// ── Turn Result ──
-
-export interface TurnResult {
-  turnIndex: number;
-  userMessage: string;
-  agentResponse: string;
-  toolCallNames: string[];
-  toolCallCount: number;
-  checkResult: CheckResult;
-  judgeResult: JudgeResult;
-}
-
 // ── Scenario Result ──
 
+export type TerminationReason = "done" | "stuck" | "max_turns" | "escalated";
+
 export interface ScenarioResult {
-  scenarioId: string;
-  agent: string;
-  description: string;
-  turnResults: TurnResult[];
-  assertionResult: CheckResult;
-  overallScore: number;
+  scenario: EvalScenario;
+  turns: ConversationTurn[];
+  turnCount: number;
+  totalToolCalls: number;
+  allToolsCalled: string[];
+  terminationReason: TerminationReason;
+  guardrailViolations: string[];
+  assertionResults: CheckResult;
+  judge: JudgeVerdict;
+  score: number;
   status: "pass" | "warn" | "fail";
   durationMs: number;
+  llmCalls: number;
 }
 
 // ── Analyst Types ──
@@ -153,9 +196,11 @@ export interface ImprovementProposal {
   agent: string;
   scenarioId: string;
   priority: "critical" | "high" | "low";
+  category: "prompt" | "tool" | "routing" | "guardrail" | "fixture";
   issue: string;
   rootCause: string;
   fix: string;
+  file?: string;
 }
 
 // ── Report Types ──
@@ -179,4 +224,5 @@ export interface EvalCliOptions {
   scenario?: string;
   verbose: boolean;
   failThreshold: number;
+  maxTurns?: number;
 }
