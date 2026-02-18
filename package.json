@@ -9,12 +9,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "eval": "tsx --conditions react-server --env-file=.env src/scripts/eval.ts",
-    "eval:verbose": "tsx --conditions react-server --env-file=.env src/scripts/eval.ts --verbose"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.76.0",
     "@langchain/core": "^1.1.24",
     "@langchain/openai": "^1.2.7",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -57,7 +54,6 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.55.0",
-    "vitest": "^4.0.18",
-    "yaml": "^2.8.2"
+    "vitest": "^4.0.18"
   }
 }
