@@ -313,7 +313,21 @@ export function SetupWizard() {
     if (step > 1) setStep(step - 1);
   }
 
-  function handleFinish() {
+  async function handleFinish() {
+    if (!canAdvance()) return;
+    setLoading(true);
+    try {
+      // Save the last step before showing completion
+      switch (step) {
+        case 5:
+          await saveStep5();
+          break;
+      }
+    } catch (err) {
+      console.error("[setup] save error:", err);
+    } finally {
+      setLoading(false);
+    }
     setShowCompletion(true);
   }
 

@@ -29,7 +29,7 @@ export interface RequirementsResult {
  *
  * 1. operating_hours — clinic has at least 1 day with time blocks
  * 2. professional_schedule — active professional with non-empty schedule_grid
- * 3. service_with_price — professional_services row with price_cents > 0
+ * 3. service_with_price — professional_services or services row with price_cents > 0
  * 4. whatsapp — all 3 WhatsApp credentials non-null/non-empty
  * 5. google_calendar — active professional with google_calendar_id set
  */
@@ -73,7 +73,7 @@ export async function checkRequirements(
   const professionalSchedule =
     profWithSchedule !== null && hasTimeBlocks(profWithSchedule?.schedule_grid);
 
-  // Check 3: professional_services row with price_cents > 0 for that professional
+  // Check 3: service with price > 0 (via professional_services or directly in services table)
   let serviceWithPrice = false;
   if (profWithSchedule) {
     const { data: profService } = await admin
@@ -84,6 +84,16 @@ export async function checkRequirements(
       .limit(1)
       .maybeSingle();
     serviceWithPrice = profService !== null;
+  }
+  if (!serviceWithPrice) {
+    const { data: directService } = await admin
+      .from("services")
+      .select("id")
+      .eq("clinic_id", clinicId)
+      .gt("price_cents", 0)
+      .limit(1)
+      .maybeSingle();
+    serviceWithPrice = directService !== null;
   }
 
   // Check 4: All 3 WhatsApp credentials present
