@@ -38,6 +38,7 @@ export const clinicSettingsSchema = z.object({
   whatsapp_phone_number_id: z.string().max(50).optional().or(z.literal("")),
   whatsapp_waba_id: z.string().max(50).optional().or(z.literal("")),
   whatsapp_access_token: z.string().max(500).optional().or(z.literal("")),
+  google_reviews_url: z.string().url().optional().or(z.literal("")).or(z.null()),
   operating_hours: scheduleGridSchema.optional(),
 });
 

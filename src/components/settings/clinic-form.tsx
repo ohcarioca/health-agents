@@ -38,6 +38,9 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
   const [timezone, setTimezone] = useState(
     clinic.timezone ?? "America/Sao_Paulo",
   );
+  const [googleReviewsUrl, setGoogleReviewsUrl] = useState(
+    clinic.google_reviews_url ?? "",
+  );
   const [operatingHours, setOperatingHours] = useState<ScheduleGrid>(
     (clinic.operating_hours as ScheduleGrid | undefined) ?? {
       monday: [], tuesday: [], wednesday: [], thursday: [],
@@ -66,6 +69,7 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
       state,
       zip_code: zipCode,
       timezone,
+      google_reviews_url: googleReviewsUrl,
       operating_hours: operatingHours,
     };
 
@@ -158,6 +162,15 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
           value={zipCode}
           onChange={(e) => setZipCode(e.target.value)}
           error={fieldErrors.zip_code}
+        />
+        <Input
+          id="googleReviewsUrl"
+          label={t("googleReviewsUrl")}
+          type="url"
+          placeholder="https://g.page/r/exemplo/review"
+          value={googleReviewsUrl}
+          onChange={(e) => setGoogleReviewsUrl(e.target.value)}
+          error={fieldErrors.google_reviews_url}
         />
         <div>
           <label
