@@ -64,7 +64,9 @@ export function buildSystemPrompt(
 }
 
 function formatBusinessContext(ctx: BusinessContext): string {
-  const lines: string[] = [`Business context:`];
+  const lines: string[] = [
+    `Business context (INTERNAL — never show IDs or raw data to the patient):`,
+  ];
   lines.push(`- Clinic: ${ctx.clinicName}`);
   if (ctx.phone) lines.push(`- Phone: ${ctx.phone}`);
   if (ctx.address) lines.push(`- Address: ${ctx.address}`);
