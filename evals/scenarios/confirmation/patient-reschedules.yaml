@@ -1,11 +1,13 @@
 id: confirmation-patient-reschedules
 agent: confirmation
 locale: pt-BR
-description: "Patient asks to reschedule when receiving reminder"
+description: "Patient asks to reschedule when receiving confirmation reminder"
 
 persona:
   name: Lucas Ferreira
   phone: "11987650006"
+  personality: "apologetic, explains why they need to reschedule"
+  goal: "Tell the agent I cannot make my appointment and need to reschedule"
 
 fixtures:
   professionals:
@@ -16,11 +18,12 @@ fixtures:
   appointments:
     - id: eval-appt-3
       professional_id: eval-prof-4
-      starts_at: "2026-02-16T14:00:00.000Z"
-      ends_at: "2026-02-16T14:30:00.000Z"
+      starts_at: "2026-02-20T14:00:00.000Z"
+      ends_at: "2026-02-20T14:30:00.000Z"
       status: scheduled
 
-turns:
-  - user: "Nao vou poder ir nesse dia, preciso remarcar"
-    expect:
-      tools_called: [reschedule_from_confirmation]
+expectations:
+  tools_called: [reschedule_from_confirmation]
+  goal_achieved: true
+
+max_turns: 8
