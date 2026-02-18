@@ -2,6 +2,8 @@ import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { registerAgentType } from "../registry";
 import { deleteEvent } from "@/services/google-calendar";
+import { isAutoBillingEnabled } from "@/lib/billing/auto-billing";
+import { createCustomer, createCharge, getPixQrCode } from "@/services/asaas";
 import type {
   AgentTypeConfig,
   AgentToolOptions,
@@ -161,10 +163,12 @@ async function handleConfirmAttendance(
       return { result: "No pending appointment found for this patient." };
     }
 
-    const { error: appointmentError } = await context.supabase
+    const { data: appointment, error: appointmentError } = await context.supabase
       .from("appointments")
       .update({ status: "confirmed" })
-      .eq("id", appointmentId);
+      .eq("id", appointmentId)
+      .select("id")
+      .single();
 
     if (appointmentError) {
       return {
@@ -178,8 +182,112 @@ async function handleConfirmAttendance(
       .eq("appointment_id", appointmentId)
       .eq("status", "sent");
 
+    // --- Payment reminder if auto-billing enabled ---
+    let paymentAppendix = "";
+    const autoBilling = await isAutoBillingEnabled(context.supabase, context.clinicId);
+
+    if (autoBilling && appointment) {
+      const { data: invoice } = await context.supabase
+        .from("invoices")
+        .select("id, amount_cents, due_date, status")
+        .eq("appointment_id", appointment.id)
+        .in("status", ["pending", "overdue"])
+        .single();
+
+      if (invoice) {
+        const { data: existingLink } = await context.supabase
+          .from("payment_links")
+          .select("url, pix_payload")
+          .eq("invoice_id", invoice.id)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        const amountFormatted = `R$ ${(invoice.amount_cents / 100).toFixed(2).replace(".", ",")}`;
+
+        if (existingLink?.url) {
+          paymentAppendix = `\n\n⚠️ Pagamento pendente: ${amountFormatted}\n🔗 Link: ${existingLink.url}`;
+          if (existingLink.pix_payload) {
+            paymentAppendix += `\n\nPix copia e cola:\n${existingLink.pix_payload}`;
+          }
+        } else {
+          // Try to create payment link if none exists
+          try {
+            const { data: patient } = await context.supabase
+              .from("patients")
+              .select("id, name, phone, email, cpf, asaas_customer_id")
+              .eq("id", context.recipientId)
+              .single();
+
+            if (patient?.cpf) {
+              let customerId = patient.asaas_customer_id as string | null;
+              if (!customerId) {
+                const customerResult = await createCustomer({
+                  name: patient.name,
+                  cpfCnpj: patient.cpf as string,
+                  phone: patient.phone ?? undefined,
+                  email: patient.email ?? undefined,
+                  externalReference: patient.id,
+                });
+                if (customerResult.success && customerResult.customerId) {
+                  customerId = customerResult.customerId;
+                  await context.supabase
+                    .from("patients")
+                    .update({ asaas_customer_id: customerId })
+                    .eq("id", patient.id);
+                }
+              }
+
+              if (customerId) {
+                const chargeResult = await createCharge({
+                  customerId,
+                  billingType: "UNDEFINED",
+                  valueCents: invoice.amount_cents,
+                  dueDate: invoice.due_date,
+                  description: `Consulta - ${invoice.due_date}`,
+                  externalReference: invoice.id,
+                });
+
+                if (chargeResult.success && chargeResult.chargeId) {
+                  const paymentUrl = chargeResult.invoiceUrl ?? "";
+                  let pixPayload: string | undefined;
+
+                  try {
+                    const pixResult = await getPixQrCode(chargeResult.chargeId);
+                    if (pixResult.success && pixResult.payload) {
+                      pixPayload = pixResult.payload;
+                    }
+                  } catch { /* optional — Pix QR code is best-effort */ }
+
+                  await context.supabase.from("payment_links").insert({
+                    clinic_id: context.clinicId,
+                    invoice_id: invoice.id,
+                    asaas_payment_id: chargeResult.chargeId,
+                    url: paymentUrl,
+                    invoice_url: chargeResult.invoiceUrl ?? null,
+                    method: "link",
+                    status: "active",
+                    pix_payload: pixPayload ?? null,
+                  });
+
+                  paymentAppendix = `\n\n⚠️ Pagamento pendente: ${amountFormatted}\n🔗 Link: ${paymentUrl}`;
+                  if (pixPayload) {
+                    paymentAppendix += `\n\nPix copia e cola:\n${pixPayload}`;
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            console.error("[confirmation] Payment link creation error (non-fatal):", err);
+          }
+        }
+      }
+    }
+
     return {
       result: "Appointment confirmed successfully. The patient will attend.",
+      appendToResponse: paymentAppendix || undefined,
     };
   } catch (error) {
     const message =
