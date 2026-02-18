@@ -23,7 +23,7 @@ export const createPatientSchema = z.object({
   phone: z
     .string()
     .transform((v) => v.replace(/\D/g, ""))
-    .pipe(z.string().min(10).max(11)),
+    .pipe(z.string().min(10).max(13)),
   email: z.string().email().optional().or(z.literal("")),
   date_of_birth: z
     .string()

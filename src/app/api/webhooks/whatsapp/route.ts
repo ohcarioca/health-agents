@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { verifySignature } from "@/services/whatsapp";
 import { whatsappWebhookSchema } from "@/lib/validations/webhook";
 import { processMessage } from "@/lib/agents";
+import { normalizeBRPhone } from "@/lib/utils/phone";
 
 // GET — Meta webhook verification handshake
 export async function GET(request: Request) {
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
   const { value } = change;
   const messages = value.messages ?? [];
   // Use display_phone_number (actual phone) to look up clinic, not phone_number_id (Meta internal ID)
-  const displayPhone = value.metadata.display_phone_number.replace(/\D/g, "");
+  const displayPhone = normalizeBRPhone(value.metadata.display_phone_number);
   const contactName = value.contacts?.[0]?.profile?.name;
 
   // 5. Process each message in after() for async processing

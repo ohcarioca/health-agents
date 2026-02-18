@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createPatientSchema } from "@/lib/validations/patients";
+import { phoneLookupVariants } from "@/lib/utils/phone";
 
 const PER_PAGE = 25;
 
@@ -50,7 +51,8 @@ export async function GET(request: NextRequest) {
   if (q.length >= 2) {
     const isDigits = /^\d+$/.test(q);
     if (isDigits) {
-      query = query.like("phone", q + "%");
+      const variants = phoneLookupVariants(q);
+      query = query.or(variants.map((v) => `phone.like.${v}%`).join(","));
     } else {
       query = query.ilike("name", "%" + q + "%");
     }

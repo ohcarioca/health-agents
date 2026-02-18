@@ -111,23 +111,27 @@ function createMockSupabase(options?: {
       patientSelectCallCount++;
       const currentCall = patientSelectCallCount;
 
+      const terminalMethods = {
+        // maybeSingle for initial lookup (call 1)
+        maybeSingle: vi.fn().mockResolvedValue({
+          data: currentCall === 1 ? mockPatient : null,
+          error: null,
+        }),
+        // single for race condition re-query
+        single: vi.fn().mockResolvedValue({
+          data: raceConditionPatient ? racePatient : null,
+          error: raceConditionPatient
+            ? null
+            : { message: "not found" },
+        }),
+      };
+
       return {
         select: vi.fn().mockImplementation(() => ({
           eq: vi.fn().mockImplementation(() => ({
-            eq: vi.fn().mockImplementation(() => ({
-              // maybeSingle for initial lookup (call 1)
-              maybeSingle: vi.fn().mockResolvedValue({
-                data: currentCall === 1 ? mockPatient : null,
-                error: null,
-              }),
-              // single for race condition re-query
-              single: vi.fn().mockResolvedValue({
-                data: raceConditionPatient ? racePatient : null,
-                error: raceConditionPatient
-                  ? null
-                  : { message: "not found" },
-              }),
-            })),
+            // Support both .eq().eq() (old) and .eq().in() (new) chains
+            eq: vi.fn().mockImplementation(() => terminalMethods),
+            in: vi.fn().mockImplementation(() => terminalMethods),
           })),
         })),
         insert: vi.fn().mockImplementation((data: Record<string, unknown>) => {

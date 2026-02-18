@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createPatientSchema } from "@/lib/validations/patients";
+import { normalizeBRPhone, phoneLookupVariants } from "@/lib/utils/phone";
 
 async function getClinicId() {
   const supabase = await createServerSupabaseClient();
@@ -81,22 +82,38 @@ export async function POST(request: Request) {
     });
   }
 
-  // Check existing phones in the clinic
-  const phones = validRows.map((r) => r.phone);
+  // Normalize phones to canonical BR format (adds 9th digit if missing)
+  const normalizedRows = validRows.map((row) => ({
+    ...row,
+    phone: normalizeBRPhone(row.phone),
+  }));
+
+  // Check existing phones in the clinic (expand to include 9th digit variants)
+  const allVariants: string[] = [];
+  for (const row of normalizedRows) {
+    allVariants.push(...phoneLookupVariants(row.phone));
+  }
+  const uniqueVariants = [...new Set(allVariants)];
+
   const admin = createAdminClient();
   const { data: existingRows, error: fetchError } = await admin
     .from("patients")
     .select("phone")
     .eq("clinic_id", clinicId)
-    .in("phone", phones);
+    .in("phone", uniqueVariants);
 
   if (fetchError) {
     return NextResponse.json({ error: fetchError.message }, { status: 500 });
   }
 
-  const existingPhones = new Set(
-    (existingRows ?? []).map((r) => r.phone as string),
-  );
+  // Build existing phone set including all variants of each existing phone
+  const existingPhones = new Set<string>();
+  for (const row of existingRows ?? []) {
+    for (const v of phoneLookupVariants(row.phone as string)) {
+      existingPhones.add(v);
+    }
+  }
+
   const seenPhones = new Set<string>();
   const skipped: BatchSkipped[] = [];
   const toInsert: Array<{
@@ -109,16 +126,20 @@ export async function POST(request: Request) {
     notes: string | null;
   }> = [];
 
-  for (const row of validRows) {
-    if (existingPhones.has(row.phone)) {
+  for (const row of normalizedRows) {
+    const variants = phoneLookupVariants(row.phone);
+    const isDuplicate = variants.some((v) => existingPhones.has(v));
+    const isSeenInBatch = variants.some((v) => seenPhones.has(v));
+
+    if (isDuplicate) {
       skipped.push({ phone: row.phone, reason: "duplicate" });
       continue;
     }
-    if (seenPhones.has(row.phone)) {
+    if (isSeenInBatch) {
       skipped.push({ phone: row.phone, reason: "duplicate_in_batch" });
       continue;
     }
-    seenPhones.add(row.phone);
+    for (const v of variants) seenPhones.add(v);
     toInsert.push({
       clinic_id: clinicId,
       name: row.name,

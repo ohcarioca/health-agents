@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { phoneLookupVariants } from "@/lib/utils/phone";
 
 async function getClinicId() {
   const supabase = await createServerSupabaseClient();
@@ -46,7 +47,8 @@ export async function GET(request: Request) {
     .limit(10);
 
   if (isPhoneSearch) {
-    query = query.like("phone", `${q}%`);
+    const variants = phoneLookupVariants(q);
+    query = query.or(variants.map((v) => `phone.like.${v}%`).join(","));
   } else {
     query = query.ilike("name", `%${q}%`);
   }

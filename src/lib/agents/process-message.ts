@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTextMessage, type WhatsAppCredentials } from "@/services/whatsapp";
+import { normalizeBRPhone, phoneLookupVariants } from "@/lib/utils/phone";
 
 import { getAgentType } from "./registry";
 import { buildMessages } from "./history";
@@ -50,13 +51,14 @@ export async function processMessage(
     };
   }
 
-  // 2. Find patient by phone
-  const normalizedPhone = phone.replace(/\D/g, "");
+  // 2. Find patient by phone (handle 9th digit variants)
+  const normalizedPhone = normalizeBRPhone(phone);
+  const phoneVariants = phoneLookupVariants(normalizedPhone);
   let { data: patient } = await supabase
     .from("patients")
     .select("id, name, phone, notes, custom_fields")
     .eq("clinic_id", clinicId)
-    .eq("phone", normalizedPhone)
+    .in("phone", phoneVariants)
     .maybeSingle();
 
   let isNewPatient = false;
@@ -80,7 +82,7 @@ export async function processMessage(
           .from("patients")
           .select("id, name, phone, notes, custom_fields")
           .eq("clinic_id", clinicId)
-          .eq("phone", normalizedPhone)
+          .in("phone", phoneVariants)
           .single();
 
         if (!existingPatient) {

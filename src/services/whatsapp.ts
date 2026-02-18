@@ -138,6 +138,4 @@ export function verifySignature(payload: string, signature: string): boolean {
   }
 }
 
-export function normalizePhone(phone: string): string {
-  return phone.replace(/\D/g, "");
-}
+export { stripNonDigits as normalizePhone } from "@/lib/utils/phone";
