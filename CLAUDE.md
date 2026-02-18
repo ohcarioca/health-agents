@@ -153,6 +153,7 @@ return NextResponse.json({ status: "ok" });
 - `clinics.social_links` (JSONB, default `[]`): array of `{ type, url, label }` for Linktree-style links.
 - `clinics.show_prices` (boolean, default true): toggles service price display on public page.
 - `payment_links.method`: `'pix'`, `'boleto'`, `'credit_card'`, or `'link'` (universal). Default `'link'` uses Asaas `UNDEFINED` billingType — patient chooses method on checkout page.
+- `module_configs.settings.auto_billing` (boolean): opt-in flag for automatic invoice creation on booking. Stored in billing module's settings JSONB.
 
 ---
 
@@ -450,11 +451,22 @@ Before shipping a new agent type, verify:
 | Type | File | Tools | Channel |
 |------|------|-------|---------|
 | `support` | `agents/basic-support.ts` | `get_clinic_info`, `escalate_to_human`, `route_to_module` | whatsapp |
-| `scheduling` | `agents/scheduling.ts` | `check_availability`, `book_appointment`, `reschedule_appointment`, `cancel_appointment`, `list_patient_appointments`, `escalate_to_human` | whatsapp |
+| `scheduling` | `agents/scheduling.ts` | `check_availability`, `book_appointment`, `reschedule_appointment`, `cancel_appointment`, `list_patient_appointments`, `save_patient_billing_info` (conditional), `escalate_to_human` | whatsapp |
 | `confirmation` | `agents/confirmation.ts` | `confirm_attendance`, `reschedule_from_confirmation`, `mark_no_show` | whatsapp |
 | `nps` | `agents/nps.ts` | `collect_nps_score`, `collect_nps_comment`, `redirect_to_google_reviews`, `alert_detractor` | whatsapp |
 | `billing` | `agents/billing.ts` | `list_patient_invoices`, `create_payment_link` (default: universal link), `check_payment_status`, `send_payment_reminder`, `escalate_billing` | whatsapp |
 | `recall` | `agents/recall.ts` | `send_reactivation_message`, `route_to_scheduling`, `mark_patient_inactive` | whatsapp |
+
+### Auto-Billing Integration
+
+When `module_configs.settings.auto_billing = true` for a clinic:
+
+- **Scheduling agent**: `handleBookAppointment` auto-creates invoice + Asaas payment link. `save_patient_billing_info` tool conditionally included to collect CPF/email before booking.
+- **Confirmation agent**: `handleConfirmAttendance` appends payment reminder with link if invoice is pending.
+- **Cancel/Reschedule**: Auto-cancels linked invoices and expires payment links.
+- **Onboarding**: Step 4 in wizard allows opt-in via toggle.
+
+Helper: `src/lib/billing/auto-billing.ts` → `isAutoBillingEnabled(supabase, clinicId)`
 
 ### Outbound Messaging (`src/lib/agents/outbound.ts`)
 
@@ -491,6 +503,7 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 | `/api/settings/insurance-plans` | GET, POST | Insurance plans CRUD (list/create) |
 | `/api/settings/insurance-plans/[id]` | DELETE | Insurance plan delete |
 | `/api/settings/public-page` | GET, PUT | Public page config (accent color, links, toggle) |
+| `/api/settings/modules/billing` | GET, PUT | Billing module auto_billing toggle |
 
 ### Public API Routes
 
