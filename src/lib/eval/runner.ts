@@ -1,24 +1,35 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { EvalScenario, ScenarioResult, TurnResult } from "./types";
+import type {
+  EvalScenario,
+  ScenarioResult,
+  ConversationTurn,
+  TerminationReason,
+} from "./types";
 import { seedFixtures, cleanupFixtures, type SeededData } from "./fixtures";
-import { checkTurn, checkAssertions } from "./checker";
-import { judgeResponse } from "./judge";
+import { checkGuardrails, checkToolExpectations, checkAssertions } from "./checker";
+import { judgeConversation } from "./judge";
+import { generatePatientMessage } from "./patient-simulator";
 
 // Import from barrel to ensure agent side-effect registration
 import { processMessage } from "@/lib/agents";
+
+const DEFAULT_MAX_TURNS = 20;
 
 interface RunScenarioOptions {
   supabase: SupabaseClient;
   scenario: EvalScenario;
   verbose?: boolean;
+  maxTurnsOverride?: number;
 }
 
 export async function runScenario(options: RunScenarioOptions): Promise<ScenarioResult> {
-  const { supabase, scenario, verbose } = options;
+  const { supabase, scenario, verbose, maxTurnsOverride } = options;
   const startTime = Date.now();
+  const maxTurns = maxTurnsOverride ?? scenario.max_turns ?? DEFAULT_MAX_TURNS;
 
   let seededData: SeededData | null = null;
   let conversationId = "";
+  let llmCalls = 0;
 
   try {
     // 1. Seed fixtures
@@ -28,110 +39,178 @@ export async function runScenario(options: RunScenarioOptions): Promise<Scenario
       console.log(`  Seeded: clinic=${seededData.clinicId}, patient=${seededData.patientId}`);
     }
 
-    // 2. Run each turn
-    const turnResults: TurnResult[] = [];
+    // 2. Conversation loop
+    const turns: ConversationTurn[] = [];
+    const allToolsCalled: string[] = [];
+    const allGuardrailViolations: string[] = [];
+    const allAgentResponses: string[] = [];
+    const history: { role: "patient" | "agent"; content: string }[] = [];
+    let terminationReason: TerminationReason = "max_turns";
+    let turnIndex = 0;
 
-    for (let i = 0; i < scenario.turns.length; i++) {
-      const turn = scenario.turns[i];
-      const externalId = `eval-${scenario.id}-${i}-${Date.now()}`;
+    for (let i = 0; i < maxTurns; i++) {
+      // 2a. Generate patient message
+      const patientResult = await generatePatientMessage({
+        persona: scenario.persona,
+        locale: scenario.locale,
+        history,
+      });
+      llmCalls++;
+
+      const patientMessage = patientResult.content;
 
       if (verbose) {
-        console.log(`    [Turn ${i + 1}] Patient: "${turn.user}"`);
+        console.log(`    [${turnIndex + 1}] PATIENT: "${patientMessage}"`);
       }
 
-      // Call real processMessage
-      const result = await processMessage({
+      // Record patient turn
+      turns.push({
+        index: turnIndex,
+        role: "patient",
+        content: patientMessage,
+        timestamp: Date.now() - startTime,
+      });
+      history.push({ role: "patient", content: patientMessage });
+      turnIndex++;
+
+      // Check if patient signaled termination before sending to agent
+      if (patientResult.signal === "done") {
+        terminationReason = "done";
+        if (verbose) console.log(`    → Patient signaled [DONE]`);
+        break;
+      }
+      if (patientResult.signal === "stuck") {
+        terminationReason = "stuck";
+        if (verbose) console.log(`    → Patient signaled [STUCK]`);
+        break;
+      }
+
+      // 2b. Send to real agent pipeline
+      const externalId = `eval-${scenario.id}-${i}-${Date.now()}`;
+      const agentResult = await processMessage({
         phone: scenario.persona.phone,
-        message: turn.user,
+        message: patientMessage,
         externalId,
         clinicId: seededData.clinicId,
       });
+      llmCalls++;
 
-      conversationId = result.conversationId;
-
-      if (verbose) {
-        console.log(`    [Turn ${i + 1}] Agent: "${result.responseText.slice(0, 120)}..."`);
-        console.log(`    [Turn ${i + 1}] Tools: [${result.toolCallNames.join(", ")}]`);
-      }
-
-      // Deterministic checks
-      const checkResult = checkTurn(
-        turn.expect,
-        result.toolCallNames,
-        result.responseText
-      );
-
-      // LLM judge
-      const judgeResult = await judgeResponse({
-        agentType: scenario.agent,
-        userMessage: turn.user,
-        agentResponse: result.responseText,
-        toolsCalled: result.toolCallNames,
-        expectedBehavior: turn.expect,
-        personaName: scenario.persona.name,
-        turnIndex: i,
-      });
+      conversationId = agentResult.conversationId;
+      const agentResponse = agentResult.responseText;
+      const toolCallNames = agentResult.toolCallNames;
 
       if (verbose) {
-        console.log(`    [Turn ${i + 1}] Score: ${judgeResult.overall}/10`);
-        if (checkResult.failures.length > 0) {
-          console.log(`    [Turn ${i + 1}] FAILURES: ${checkResult.failures.join("; ")}`);
+        console.log(`    [${turnIndex + 1}] AGENT: "${agentResponse.slice(0, 150)}${agentResponse.length > 150 ? "..." : ""}"`);
+        if (toolCallNames.length > 0) {
+          console.log(`             tools: [${toolCallNames.join(", ")}]`);
         }
       }
 
-      turnResults.push({
-        turnIndex: i,
-        userMessage: turn.user,
-        agentResponse: result.responseText,
-        toolCallNames: result.toolCallNames,
-        toolCallCount: result.toolCallCount,
-        checkResult,
-        judgeResult,
+      // Track tools
+      for (const tool of toolCallNames) {
+        if (!allToolsCalled.includes(tool)) {
+          allToolsCalled.push(tool);
+        }
+      }
+      allAgentResponses.push(agentResponse);
+
+      // 2c. Guardrail check
+      const guardrailResult = checkGuardrails(
+        scenario.guardrails,
+        toolCallNames,
+        agentResponse
+      );
+      const violations = guardrailResult.failures;
+      if (violations.length > 0) {
+        allGuardrailViolations.push(...violations);
+        if (verbose) {
+          console.log(`             GUARDRAIL: ${violations.join("; ")}`);
+        }
+      }
+
+      // Record agent turn
+      turns.push({
+        index: turnIndex,
+        role: "agent",
+        content: agentResponse,
+        toolsCalled: toolCallNames,
+        guardrailViolations: violations.length > 0 ? violations : undefined,
+        timestamp: Date.now() - startTime,
       });
+      history.push({ role: "agent", content: agentResponse });
+      turnIndex++;
+
+      // Check if agent escalated to human
+      if (toolCallNames.includes("escalate_to_human") || toolCallNames.includes("escalate_billing")) {
+        terminationReason = "escalated";
+        if (verbose) console.log(`    → Agent escalated to human`);
+        break;
+      }
     }
 
-    // 3. Final assertions
-    const assertionResult = await checkAssertions(
+    // 3. Post-conversation checks
+    const toolExpectations = checkToolExpectations(
+      scenario.expectations,
+      allToolsCalled,
+      allAgentResponses
+    );
+
+    const assertionResults = await checkAssertions(
       supabase,
-      scenario.assertions,
+      scenario.expectations.assertions,
       seededData.clinicId,
       seededData.patientId,
       conversationId
     );
 
-    // 4. Calculate overall score
-    const judgeScores = turnResults.map((t) => t.judgeResult.overall);
-    const avgJudgeScore =
-      judgeScores.length > 0
-        ? judgeScores.reduce((a, b) => a + b, 0) / judgeScores.length
-        : 0;
+    // Merge tool expectation failures into assertion results
+    const combinedAssertions = {
+      passed: toolExpectations.passed && assertionResults.passed,
+      failures: [...toolExpectations.failures, ...assertionResults.failures],
+    };
 
-    // Penalize for deterministic failures
-    const deterministicFailures = turnResults.filter((t) => !t.checkResult.passed).length;
-    const assertionFailures = assertionResult.failures.length;
-    const penalty = (deterministicFailures + assertionFailures) * 1.5;
-    const overallScore = Math.max(0, Math.min(10, avgJudgeScore - penalty));
+    // 4. Judge the full conversation
+    const judge = await judgeConversation({
+      scenario,
+      transcript: turns,
+      terminationReason,
+      allToolsCalled,
+    });
+    llmCalls++;
 
-    // Determine status
+    // 5. Calculate final score
+    const baseScore = judge.overall;
+    const guardrailPenalty = allGuardrailViolations.length * 1.5;
+    const assertionPenalty = combinedAssertions.failures.length * 2.0;
+    const goalPenalty = judge.goal_achieved ? 0 : 3.0;
+    const totalPenalty = guardrailPenalty + assertionPenalty + goalPenalty;
+    const score = Math.max(0, Math.min(10, baseScore - totalPenalty));
+    const roundedScore = Math.round(score * 10) / 10;
+
+    // 6. Determine status
     const status: ScenarioResult["status"] =
-      overallScore < 5 || deterministicFailures > 0 || assertionFailures > 0
-        ? "fail"
-        : overallScore < 7
+      roundedScore >= 7 && judge.goal_achieved && combinedAssertions.passed
+        ? "pass"
+        : roundedScore >= 5
           ? "warn"
-          : "pass";
+          : "fail";
 
     return {
-      scenarioId: scenario.id,
-      agent: scenario.agent,
-      description: scenario.description,
-      turnResults,
-      assertionResult,
-      overallScore: Math.round(overallScore * 10) / 10,
+      scenario,
+      turns,
+      turnCount: Math.ceil(turns.length / 2),
+      totalToolCalls: allToolsCalled.length,
+      allToolsCalled,
+      terminationReason,
+      guardrailViolations: allGuardrailViolations,
+      assertionResults: combinedAssertions,
+      judge,
+      score: roundedScore,
       status,
       durationMs: Date.now() - startTime,
+      llmCalls,
     };
   } finally {
-    // 5. Always cleanup
     if (seededData) {
       await cleanupFixtures(supabase, seededData.clinicId);
     }
