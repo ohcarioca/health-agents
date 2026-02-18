@@ -528,12 +528,14 @@ export function SetupWizard() {
         labels={stepLabels}
       />
 
-      <div className="mt-3">
-        <StepSlider stepKey={step}>
-          {renderStep()}
-        </StepSlider>
+      <div className="mt-3 flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <StepSlider stepKey={step}>
+            {renderStep()}
+          </StepSlider>
+        </div>
 
-        <div className="mt-5 flex items-center justify-between">
+        <div className="mt-5 flex shrink-0 items-center justify-between">
           <Button variant="ghost" onClick={prevStep} disabled={step === 1}>
             {t("back")}
           </Button>
