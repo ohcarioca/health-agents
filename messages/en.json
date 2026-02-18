@@ -465,16 +465,20 @@
     },
     "stepHours": {
       "title": "Hours",
-      "description": "Set your clinic's operating hours. Click and drag to select time slots."
+      "description": "Set your clinic's operating hours."
     },
-    "step2": {
-      "title": "Team & Services",
-      "description": "Add the main professional and the services offered.",
-      "profSection": "Professional",
-      "name": "Name",
-      "specialty": "Specialty",
-      "duration": "Default appointment duration (min)",
-      "serviceSection": "Services",
+    "scheduleGrid": {
+      "presetCommercial": "Business hours",
+      "presetCommercialSat": "Business + Saturday",
+      "presetExtended": "Extended hours",
+      "presetCustom": "Custom",
+      "closed": "Closed",
+      "weekend": "Weekend",
+      "copyMondayToWeekdays": "Copy Monday to weekdays"
+    },
+    "stepServices": {
+      "title": "Services",
+      "description": "Add the services offered by your clinic.",
       "selectService": "Select service...",
       "customService": "Other (custom)",
       "customServiceName": "Service name",
@@ -503,25 +507,23 @@
       "testLoading": "Testing...",
       "helpText": "Find these values in Meta Business Manager."
     },
-    "step4": {
-      "title": "Google Calendar",
-      "description": "Connect Google Calendar for the professional to sync appointments.",
-      "connectFor": "Connect for {name}",
-      "connected": "Connected",
-      "notConnected": "Not connected",
-      "connect": "Connect Google Calendar",
-      "waitingCallback": "Waiting for authorization..."
-    },
     "back": "Back",
     "next": "Next",
     "finish": "Finish",
     "finishing": "Finishing...",
     "completion": {
       "title": "Setup complete!",
-      "subtitle": "Your clinic is almost ready to start serving patients.",
-      "requirementsTitle": "Activation requirements",
-      "allMet": "All requirements are met. Activate your clinic to start receiving appointments via WhatsApp.",
-      "someMissing": "Some requirements still need to be completed. You can finish later in Settings.",
+      "titleAllMet": "All set!",
+      "subtitle": "Your clinic is almost ready. Complete the pending items to activate.",
+      "subtitleAllMet": "All requirements are met. Activate your clinic now!",
+      "progress": "Progress",
+      "pendingLabel": "Pending",
+      "goToSettings": "Configure now",
+      "hint_operating_hours": "Set your clinic's operating days and hours in Settings > Clinic.",
+      "hint_professional_schedule": "Add a professional and configure their weekly schedule in Settings > Professionals.",
+      "hint_service_with_price": "Add at least one service with a price in Settings > Services.",
+      "hint_whatsapp": "Connect your WhatsApp Business with Meta credentials in Settings > WhatsApp.",
+      "hint_google_calendar": "Connect a professional's Google Calendar in Settings > Integrations.",
       "activate": "Activate Clinic",
       "activating": "Activating...",
       "goToDashboard": "Go to Dashboard",

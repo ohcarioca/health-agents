@@ -13,11 +13,12 @@ export function OnboardingModal() {
 
       {/* Modal card */}
       <div
-        className="relative z-10 mx-4 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border p-5"
+        className="relative z-10 mx-4 flex w-full max-w-2xl flex-col rounded-2xl border p-5"
         style={{
           backgroundColor: "var(--surface)",
           borderColor: "var(--border-strong)",
           boxShadow: "var(--shadow-lg)",
+          height: "min(640px, 90vh)",
         }}
       >
         <SetupWizard />

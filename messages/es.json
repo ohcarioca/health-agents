@@ -465,16 +465,20 @@
     },
     "stepHours": {
       "title": "Horarios",
-      "description": "Defina el horario de atención de la clínica. Haga clic y arrastre para seleccionar los horarios."
+      "description": "Define el horario de atención de la clínica."
     },
-    "step2": {
-      "title": "Equipo y Servicios",
-      "description": "Agregue el profesional principal y los servicios ofrecidos.",
-      "profSection": "Profesional",
-      "name": "Nombre",
-      "specialty": "Especialidad",
-      "duration": "Duración predeterminada de la consulta (min)",
-      "serviceSection": "Servicios",
+    "scheduleGrid": {
+      "presetCommercial": "Comercial",
+      "presetCommercialSat": "Comercial + Sábado",
+      "presetExtended": "Horario extendido",
+      "presetCustom": "Personalizado",
+      "closed": "Cerrado",
+      "weekend": "Fin de semana",
+      "copyMondayToWeekdays": "Copiar lunes a días laborales"
+    },
+    "stepServices": {
+      "title": "Servicios",
+      "description": "Agregue los servicios ofrecidos por su clínica.",
       "selectService": "Seleccionar servicio...",
       "customService": "Otro (personalizado)",
       "customServiceName": "Nombre del servicio",
@@ -503,25 +507,23 @@
       "testLoading": "Probando...",
       "helpText": "Encuentre estos valores en Meta Business Manager."
     },
-    "step4": {
-      "title": "Google Calendar",
-      "description": "Conecte Google Calendar del profesional para sincronizar citas.",
-      "connectFor": "Conectar para {name}",
-      "connected": "Conectado",
-      "notConnected": "No conectado",
-      "connect": "Conectar Google Calendar",
-      "waitingCallback": "Esperando autorización..."
-    },
     "back": "Volver",
     "next": "Siguiente",
     "finish": "Finalizar",
     "finishing": "Finalizando...",
     "completion": {
       "title": "¡Configuración completada!",
-      "subtitle": "Su clínica está casi lista para comenzar a atender.",
-      "requirementsTitle": "Requisitos para activación",
-      "allMet": "Todos los requisitos fueron cumplidos. Active su clínica para comenzar a recibir citas por WhatsApp.",
-      "someMissing": "Algunos requisitos aún necesitan ser completados. Puede finalizar después en Configuraciones.",
+      "titleAllMet": "¡Todo listo!",
+      "subtitle": "Su clínica está casi lista. Complete los elementos pendientes para activar.",
+      "subtitleAllMet": "Todos los requisitos fueron cumplidos. ¡Active su clínica ahora!",
+      "progress": "Progreso",
+      "pendingLabel": "Pendientes",
+      "goToSettings": "Configurar ahora",
+      "hint_operating_hours": "Defina los días y horarios de atención de la clínica en Configuraciones > Clínica.",
+      "hint_professional_schedule": "Registre un profesional y configure su agenda semanal en Configuraciones > Profesionales.",
+      "hint_service_with_price": "Agregue al menos un servicio con precio en Configuraciones > Servicios.",
+      "hint_whatsapp": "Conecte su WhatsApp Business con las credenciales de Meta en Configuraciones > WhatsApp.",
+      "hint_google_calendar": "Conecte el Google Calendar de un profesional en Configuraciones > Integraciones.",
       "activate": "Activar Clínica",
       "activating": "Activando...",
       "goToDashboard": "Ir al Panel",

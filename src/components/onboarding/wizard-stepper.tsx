@@ -10,17 +10,17 @@ interface WizardStepperProps {
 
 export function WizardStepper({ currentStep, totalSteps, labels }: WizardStepperProps) {
   return (
-    <div className="mb-5 px-2">
-      <div className="flex items-start">
+    <div className="mb-5">
+      <div className="flex items-center">
         {Array.from({ length: totalSteps }, (_, i) => {
           const stepNum = i + 1;
           const isCompleted = stepNum < currentStep;
           const isActive = stepNum === currentStep;
 
           return (
-            <div key={stepNum} className="flex flex-1 items-start last:flex-none">
+            <div key={stepNum} className="flex flex-1 items-center last:flex-none">
               {/* Circle + label */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center gap-1.5">
                 <div
                   className={`flex size-9 items-center justify-center rounded-full border-2 text-xs font-semibold transition-all duration-300 ${
                     isCompleted
@@ -39,24 +39,23 @@ export function WizardStepper({ currentStep, totalSteps, labels }: WizardStepper
                 </div>
                 {/* Label — hidden on small screens */}
                 <span
-                  className="mt-1.5 hidden text-center text-[10px] font-medium leading-tight sm:block"
+                  className="hidden text-center text-[10px] font-medium leading-tight sm:block"
                   style={{
                     color: isActive
                       ? "var(--text-primary)"
                       : isCompleted
                         ? "var(--accent)"
                         : "var(--text-muted)",
-                    maxWidth: "5.5rem",
                   }}
                 >
                   {labels[i]}
                 </span>
               </div>
 
-              {/* Connecting line — pinned at circle center (size-9 = 36px, center = 18px) */}
+              {/* Connecting line — vertically centered with circle */}
               {stepNum < totalSteps && (
                 <div
-                  className="mx-1.5 mt-[17px] h-0.5 flex-1 rounded-full transition-colors duration-500"
+                  className="mx-2 mb-5 h-0.5 flex-1 rounded-full transition-colors duration-500 sm:mb-5"
                   style={{
                     backgroundColor: isCompleted
                       ? "var(--accent)"
