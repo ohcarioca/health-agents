@@ -248,6 +248,31 @@ const escalateToHumanTool = tool(
   }
 );
 
+const savePatientBillingInfoTool = tool(
+  async (input) => {
+    return JSON.stringify({
+      action: "save_patient_billing_info",
+      cpf: input.cpf,
+      email: input.email,
+    });
+  },
+  {
+    name: "save_patient_billing_info",
+    description:
+      "Saves the patient's CPF and/or email for billing purposes. Call this BEFORE book_appointment when the patient is missing CPF or email and auto-billing is enabled.",
+    schema: z.object({
+      cpf: z
+        .string()
+        .optional()
+        .describe("Patient's CPF (11 digits, numbers only). Only include if the patient provided it."),
+      email: z
+        .string()
+        .optional()
+        .describe("Patient's email address. Only include if the patient provided it."),
+    }),
+  }
+);
+
 // ── Tool Handlers ──
 
 async function handleCheckAvailability(
@@ -846,6 +871,39 @@ async function handleListPatientAppointments(
   }
 }
 
+async function handleSavePatientBillingInfo(
+  args: Record<string, unknown>,
+  context: ToolCallContext
+): Promise<ToolCallResult> {
+  const cpf = typeof args.cpf === "string" ? args.cpf.replace(/\D/g, "") : undefined;
+  const email = typeof args.email === "string" ? args.email.trim() : undefined;
+
+  if (cpf && cpf.length !== 11) {
+    return { result: "Invalid CPF. Must be exactly 11 digits." };
+  }
+
+  if (!cpf && !email) {
+    return { result: "No CPF or email provided. Ask the patient for at least one." };
+  }
+
+  const updates: Record<string, string> = {};
+  if (cpf) updates.cpf = cpf;
+  if (email) updates.email = email;
+
+  const { error } = await context.supabase
+    .from("patients")
+    .update(updates)
+    .eq("id", context.recipientId);
+
+  if (error) {
+    console.error("[scheduling] Failed to save billing info:", error);
+    return { result: "Failed to save patient billing information. Try again." };
+  }
+
+  const saved = [cpf && "CPF", email && "email"].filter(Boolean).join(" and ");
+  return { result: `Patient ${saved} saved successfully. You can now proceed with booking.` };
+}
+
 async function handleEscalateToHuman(
   args: Record<string, unknown>,
   _context: ToolCallContext
@@ -906,6 +964,8 @@ const schedulingConfig: AgentTypeConfig = {
         return handleListPatientAppointments(toolCall.args, context);
       case "escalate_to_human":
         return handleEscalateToHuman(toolCall.args, context);
+      case "save_patient_billing_info":
+        return handleSavePatientBillingInfo(toolCall.args, context);
       default:
         console.warn(`[scheduling] Unknown tool call: ${toolCall.name}`);
         return {};
