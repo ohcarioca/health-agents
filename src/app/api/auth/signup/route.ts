@@ -87,6 +87,7 @@ export async function POST(request: Request) {
     clinic_id: clinic.id,
     module_type: type,
     enabled: true,
+    settings: type === "billing" ? { auto_billing: false } : {},
   }));
 
   await supabase.from("module_configs").insert(moduleInserts);
