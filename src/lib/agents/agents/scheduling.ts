@@ -12,12 +12,14 @@ import type {
 } from "../types";
 import { getAvailableSlots } from "@/lib/scheduling/availability";
 import { enqueueConfirmations } from "@/lib/scheduling/enqueue-confirmations";
+import { isAutoBillingEnabled } from "@/lib/billing/auto-billing";
 import {
   createEvent,
   updateEvent,
   deleteEvent,
   getFreeBusy,
 } from "@/services/google-calendar";
+import { createCustomer, createCharge, getPixQrCode } from "@/services/asaas";
 import type { ScheduleGrid } from "@/lib/validations/settings";
 
 // ── Base System Prompts ──
@@ -466,6 +468,128 @@ async function handleBookAppointment(
       console.error("[scheduling] failed to enqueue confirmations:", enqueueError);
     }
 
+    // --- Auto-billing: create invoice + payment link ---
+    let billingAppendix = "";
+    const autoBilling = await isAutoBillingEnabled(context.supabase, context.clinicId);
+
+    if (autoBilling && appointment) {
+      try {
+        // 1. Get price from professional_services (fallback to service base price)
+        let priceCents = 0;
+        if (serviceId) {
+          const { data: profService } = await context.supabase
+            .from("professional_services")
+            .select("price_cents")
+            .eq("professional_id", professionalId)
+            .eq("service_id", serviceId)
+            .single();
+
+          if (profService?.price_cents) {
+            priceCents = profService.price_cents as number;
+          } else {
+            const { data: service } = await context.supabase
+              .from("services")
+              .select("base_price_cents")
+              .eq("id", serviceId)
+              .single();
+            priceCents = (service?.base_price_cents as number) ?? 0;
+          }
+        }
+
+        if (priceCents > 0) {
+          // 2. Create invoice
+          const dueDate = startsAt.split("T")[0]; // YYYY-MM-DD
+          const { data: invoice, error: invError } = await context.supabase
+            .from("invoices")
+            .insert({
+              clinic_id: context.clinicId,
+              patient_id: context.recipientId,
+              appointment_id: appointment.id,
+              amount_cents: priceCents,
+              due_date: dueDate,
+              status: "pending",
+            })
+            .select("id")
+            .single();
+
+          if (invError || !invoice) {
+            console.error("[scheduling] Failed to create auto-invoice:", invError);
+          } else {
+            // 3. Try to create payment link
+            const { data: billingPatient } = await context.supabase
+              .from("patients")
+              .select("id, name, phone, email, cpf, asaas_customer_id")
+              .eq("id", context.recipientId)
+              .single();
+
+            if (billingPatient?.cpf) {
+              let customerId = billingPatient.asaas_customer_id as string | null;
+              if (!customerId) {
+                const customerResult = await createCustomer({
+                  name: billingPatient.name as string,
+                  cpfCnpj: billingPatient.cpf as string,
+                  phone: (billingPatient.phone as string) ?? undefined,
+                  email: (billingPatient.email as string) ?? undefined,
+                  externalReference: billingPatient.id as string,
+                });
+                if (customerResult.success && customerResult.customerId) {
+                  customerId = customerResult.customerId;
+                  await context.supabase
+                    .from("patients")
+                    .update({ asaas_customer_id: customerId })
+                    .eq("id", billingPatient.id);
+                }
+              }
+
+              if (customerId) {
+                const chargeResult = await createCharge({
+                  customerId,
+                  billingType: "UNDEFINED",
+                  valueCents: priceCents,
+                  dueDate,
+                  description: `Consulta - ${dueDate}`,
+                  externalReference: invoice.id as string,
+                });
+
+                if (chargeResult.success && chargeResult.chargeId) {
+                  const paymentUrl = chargeResult.invoiceUrl ?? "";
+                  let pixPayload: string | undefined;
+
+                  try {
+                    const pixResult = await getPixQrCode(chargeResult.chargeId);
+                    if (pixResult.success && pixResult.payload) {
+                      pixPayload = pixResult.payload;
+                    }
+                  } catch {
+                    // PIX QR is optional
+                  }
+
+                  await context.supabase.from("payment_links").insert({
+                    clinic_id: context.clinicId,
+                    invoice_id: invoice.id,
+                    asaas_payment_id: chargeResult.chargeId,
+                    url: paymentUrl,
+                    invoice_url: chargeResult.invoiceUrl ?? null,
+                    method: "link",
+                    status: "active",
+                    pix_payload: pixPayload ?? null,
+                  });
+
+                  const amountFormatted = `R$ ${(priceCents / 100).toFixed(2).replace(".", ",")}`;
+                  billingAppendix = `\n\n💳 Pagamento: ${amountFormatted}\n🔗 Link: ${paymentUrl}`;
+                  if (pixPayload) {
+                    billingAppendix += `\n\nPix copia e cola:\n${pixPayload}`;
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("[scheduling] Auto-billing error (non-fatal):", err);
+      }
+    }
+
     // Load clinic timezone for formatting and calendar sync
     const { data: bookClinic } = await context.supabase
       .from("clinics")
@@ -488,13 +612,13 @@ async function handleBookAppointment(
         professional?.google_refresh_token &&
         professional?.google_calendar_id
       ) {
-        const { data: patient } = await context.supabase
+        const { data: calPatient } = await context.supabase
           .from("patients")
           .select("name")
           .eq("id", patientId)
           .single();
 
-        const patientName = (patient?.name as string) ?? "Patient";
+        const patientName = (calPatient?.name as string) ?? "Patient";
         const clinicName = (bookClinic?.name as string) ?? "Clinic";
 
         const eventResult = await createEvent(
@@ -535,6 +659,7 @@ async function handleBookAppointment(
 
       return {
         result: `Appointment booked with ${professionalName} on ${dateFormatted} at ${timeFormatted}.`,
+        appendToResponse: billingAppendix || undefined,
       };
     } catch (calendarError) {
       // Calendar sync failed but appointment was created
@@ -544,6 +669,7 @@ async function handleBookAppointment(
       );
       return {
         result: "Appointment booked successfully. (Calendar sync skipped.)",
+        appendToResponse: billingAppendix || undefined,
       };
     }
   } catch (error) {
