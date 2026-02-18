@@ -1,13 +1,13 @@
-id: scheduling-happy-path-booking
-agent: scheduling
+id: cross-recall-to-scheduling
+agent: recall
 locale: pt-BR
-description: "Patient books a standard appointment with a specific professional"
+description: "Reactivated patient wants to book a new appointment"
 
 persona:
-  name: Maria Silva
-  phone: "11987650003"
-  personality: "polite, prefers mornings, patient"
-  goal: "Book a cardiology appointment with Dr. Joao Silva for next week"
+  name: Patricia Almeida
+  phone: "11987650028"
+  personality: "warm, glad to be reminded, ready to book"
+  goal: "Accept the reactivation offer and ask to schedule a new appointment"
 
 fixtures:
   professionals:
@@ -26,13 +26,8 @@ fixtures:
       name: Consulta Cardiologica
       duration_minutes: 30
 
-guardrails:
-  never_contains: ["erro", "nao consigo"]
-
 expectations:
-  tools_called: [check_availability, book_appointment]
+  tools_called: [route_to_scheduling]
   goal_achieved: true
-  assertions:
-    appointment_created: true
 
-max_turns: 10
+max_turns: 15

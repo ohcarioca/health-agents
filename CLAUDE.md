@@ -13,6 +13,7 @@ Follow strictly when generating, modifying, or reviewing code.
 | UI | React 19 + TypeScript (strict) |
 | Styling | Tailwind CSS v4 (CSS-first config — no `tailwind.config.*`) |
 | AI | LangChain + OpenAI |
+| AI (Eval) | Anthropic Claude (`@anthropic-ai/sdk`) — judge + analyst |
 | Database | Supabase (PostgreSQL + Auth + RLS) |
 | Payments | Asaas (Pix + boleto + credit/debit card + universal link) |
 | Email | Gmail API + Google Pub/Sub |
@@ -599,7 +600,7 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 
 ## Eval System
 
-CLI-driven evaluation pipeline that runs YAML scenarios against real LangChain agents, scores responses with deterministic checks + LLM judge, and proposes improvements.
+Conversational evaluation pipeline: an LLM-simulated patient pursues a goal through natural conversation with the real agent, then a Claude judge scores the full transcript. OpenAI drives the patient simulator + agent; Claude drives the judge + analyst.
 
 ### Running Evals
 
@@ -609,9 +610,10 @@ npm run eval -- --agent scheduling              # Filter by agent type
 npm run eval -- --scenario nps-promoter-flow    # Single scenario
 npm run eval -- --verbose                       # Detailed per-turn output
 npm run eval -- --threshold 7                   # Custom pass threshold (default: 5)
+npm run eval -- --max-turns 15                  # Override max turns (default: 20)
 ```
 
-Requires `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `OPENAI_API_KEY` in `.env`.
+Requires `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, and `CLAUDE_API_KEY` in `.env`.
 
 ### Architecture
 
@@ -620,70 +622,100 @@ Requires `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `OPENAI_AP
 | Types | `src/lib/eval/types.ts` | Zod schemas and TypeScript interfaces |
 | Loader | `src/lib/eval/loader.ts` | Reads YAML scenarios from `evals/scenarios/{agent}/` |
 | Fixtures | `src/lib/eval/fixtures.ts` | Seeds and cleans up test data in Supabase |
-| Runner | `src/lib/eval/runner.ts` | Orchestrates multi-turn scenario execution via `processMessage()` |
-| Checker | `src/lib/eval/checker.ts` | Deterministic pass/fail checks (tools called, response content, DB assertions) |
-| Judge | `src/lib/eval/judge.ts` | LLM-based scoring on 5 dimensions (correctness, helpfulness, tone, safety, conciseness) |
-| Analyst | `src/lib/eval/analyst.ts` | Reviews failures via LLM and proposes specific fixes |
+| Patient | `src/lib/eval/patient-simulator.ts` | OpenAI-powered patient LLM that pursues persona goals |
+| Runner | `src/lib/eval/runner.ts` | Goal-driven conversation loop (patient ↔ agent) |
+| Checker | `src/lib/eval/checker.ts` | Guardrails (per-turn) + expectations (post-conversation) + DB assertions |
+| Judge | `src/lib/eval/judge.ts` | Claude-powered scoring on 6 dimensions |
+| Analyst | `src/lib/eval/analyst.ts` | Claude-powered failure analysis with improvement proposals |
 | Reporter | `src/lib/eval/reporter.ts` | CLI output formatting + JSON report to `evals/reports/` |
 | CLI | `src/scripts/eval.ts` | Entry point with arg parsing |
 
+### Conversation Loop
+
+```
+Patient LLM generates message (based on persona + goal)
+    ↓
+processMessage() runs real agent pipeline
+    ↓
+Guardrail checks (per-turn safety)
+    ↓
+Patient receives agent response, generates next message
+    ↓
+Repeat until: [DONE] | [STUCK] | max_turns | escalated
+    ↓
+Post-conversation: expectations check → DB assertions → Claude judge
+```
+
+The patient signals termination with `[DONE]` (goal achieved) or `[STUCK]` (can't progress). These markers are stripped before sending to the agent.
+
 ### Scenario Format
 
-Scenarios are YAML files in `evals/scenarios/{agent-type}/`. Each scenario defines a persona, fixtures, and conversation turns with expectations.
+Scenarios are YAML files in `evals/scenarios/{agent-type}/`. Cross-module scenarios go in `evals/scenarios/cross/`. Each scenario defines a persona with a goal, fixtures, guardrails, and post-conversation expectations.
 
 ```yaml
 id: scheduling-happy-path-booking
 agent: scheduling
 locale: pt-BR
 description: "Patient books a standard appointment"
+max_turns: 12
 
 persona:
   name: Maria Silva
   phone: "11987650003"
+  personality: "Polite, straightforward, no medical knowledge"
+  goal: "Book a cardiology appointment with Dr. Joao for any available slot"
 
 fixtures:
   professionals:
-    - id: eval-prof-1                    # Mapped to real UUID at runtime
+    - id: eval-prof-1
       name: Dr. Joao Silva
       specialty: Cardiologia
   services:
     - id: eval-svc-1
       name: Consulta Cardiologica
-  invoices:                              # Billing scenarios
-    - id: eval-inv-1
-      amount_cents: 15000
-      due_date: "2026-02-20"
-      status: pending
+      price_cents: 25000
+  professional_services:
+    - professional_id: eval-prof-1
+      service_id: eval-svc-1
+      price_cents: 25000
+  module_configs:
+    - module: billing
+      enabled: true
+      settings:
+        auto_billing: false
 
-turns:
-  - user: "Quero marcar uma consulta com o Dr. Joao"
-    expect:
-      tools_called: [check_availability]
-      no_tools: [book_appointment]
+guardrails:
+  never_tools: [cancel_appointment]
+  never_contains: ["cancelar", "cancelamento"]
 
-  - user: "Pode ser o primeiro horario disponivel"
-    expect:
-      tools_called: [book_appointment]
+expectations:
+  tools_called: [check_availability, book_appointment]
+  tools_not_called: [cancel_appointment]
+  goal_achieved: true
 ```
 
 ### Writing Scenarios
 
 - Fixture IDs (e.g. `eval-prof-1`) are mapped to real UUIDs at runtime — use any string.
-- `tools_called` checks that specific tools were invoked during the turn.
-- `no_tools` checks that specific tools were NOT invoked.
-- `response_contains` / `response_not_contains` check the agent's text response.
-- `response_matches` checks the response against a regex pattern.
-- `persona.cpf` (optional) seeds the patient's CPF — required for billing scenarios (Asaas customer creation).
-- Fixture `invoices` seeds rows in the `invoices` table with `amount_cents`, `due_date`, `status`.
-- Assertion `invoice_status` checks that the patient's invoice has the expected status.
-- Assertion `payment_link_created` checks that a `payment_links` row was created for the clinic.
+- `persona.goal` defines what the patient LLM tries to achieve through conversation.
+- `persona.personality` shapes how the patient communicates (e.g., "anxious", "impatient").
+- `persona.cpf` / `persona.email` (optional) — patient info only revealed when agent asks.
+- **Guardrails** (per-turn safety): `never_tools`, `never_contains`, `never_matches`.
+- **Expectations** (post-conversation): `tools_called`, `tools_not_called`, `response_contains`, `response_not_contains`, `response_matches`, `goal_achieved`.
+- **DB Assertions**: `invoice_status`, `payment_link_created` — checked against Supabase after conversation ends.
+- Fixture `module_configs` seeds module settings (e.g., `auto_billing: true`).
+- Fixture `professional_services` seeds the junction table with per-professional pricing.
+- Fixture `invoices` seeds rows with `amount_cents`, `due_date`, `status`.
 - Valid agent types: `support`, `scheduling`, `confirmation`, `nps`, `billing`, `recall`.
+- Cross-module scenarios use `agent: support` (or whichever starts the flow) and are stored in `evals/scenarios/cross/`.
 
 ### Scoring
 
-- Each turn gets a deterministic check (pass/fail) and an LLM judge score (0-10).
-- Overall score = average judge score minus 1.5 points per deterministic failure.
-- Status: `pass` (>= 7), `warn` (5-7), `fail` (< 5 or any deterministic failure).
+- Claude judge scores the full transcript on 6 dimensions (0-10 each): **correctness**, **helpfulness**, **tone**, **safety**, **conciseness**, **flow**.
+- Base score = average of 6 dimensions.
+- Penalties: `-1.5` per guardrail violation, `-2.0` per assertion failure, `-3.0` if goal not achieved.
+- Status: `pass` (score >= 7 AND goal achieved AND no assertion failures), `warn` (score 5-7), `fail` (score < 5 OR goal not achieved OR assertion failures).
+- Termination reasons: `done` (patient signaled success), `stuck` (patient can't progress), `max_turns` (hit limit), `escalated` (agent escalated to human).
 
 ---
 

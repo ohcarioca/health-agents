@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Brazilian CPF check-digit validation
-function isValidCpf(cpf: string): boolean {
+export function isValidCpf(cpf: string): boolean {
   if (cpf.length !== 11) return false;
   if (/^(\d)\1{10}$/.test(cpf)) return false;
 

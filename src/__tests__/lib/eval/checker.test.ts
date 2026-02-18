@@ -1,40 +1,21 @@
 import { describe, it, expect } from "vitest";
-import { checkTurn, checkAssertions } from "@/lib/eval/checker";
-import type { TurnExpect } from "@/lib/eval/types";
+import { checkGuardrails, checkToolExpectations, checkAssertions } from "@/lib/eval/checker";
+import type { ScenarioGuardrails, ScenarioExpectations } from "@/lib/eval/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-describe("checkTurn", () => {
-  it("passes when all expectations met", () => {
-    const expect_: TurnExpect = {
-      tools_called: ["check_availability"],
-      no_tools: ["book_appointment"],
-      response_contains: ["disponivel"],
-      response_not_contains: ["https://"],
-    };
-    const result = checkTurn(
-      expect_,
-      ["check_availability"],
-      "Temos horarios disponivel para voce"
-    );
+describe("checkGuardrails", () => {
+  it("passes when no guardrails defined", () => {
+    const result = checkGuardrails(undefined, ["check_availability"], "Some response");
     expect(result.passed).toBe(true);
     expect(result.failures).toHaveLength(0);
   });
 
-  it("fails when expected tool not called", () => {
-    const expect_: TurnExpect = {
-      tools_called: ["check_availability"],
-    };
-    const result = checkTurn(expect_, [], "Some response");
-    expect(result.passed).toBe(false);
-    expect(result.failures[0]).toContain("check_availability");
-  });
-
   it("fails when forbidden tool was called", () => {
-    const expect_: TurnExpect = {
-      no_tools: ["book_appointment"],
+    const guardrails: ScenarioGuardrails = {
+      never_tools: ["book_appointment"],
     };
-    const result = checkTurn(
-      expect_,
+    const result = checkGuardrails(
+      guardrails,
       ["check_availability", "book_appointment"],
       "Booked!"
     );
@@ -42,40 +23,109 @@ describe("checkTurn", () => {
     expect(result.failures[0]).toContain("book_appointment");
   });
 
-  it("fails when expected substring missing", () => {
-    const expect_: TurnExpect = {
-      response_contains: ["horario"],
+  it("fails when response contains forbidden text", () => {
+    const guardrails: ScenarioGuardrails = {
+      never_contains: ["https://"],
     };
-    const result = checkTurn(expect_, [], "Ola, como posso ajudar?");
-    expect(result.passed).toBe(false);
-    expect(result.failures[0]).toContain("horario");
-  });
-
-  it("fails when forbidden substring present", () => {
-    const expect_: TurnExpect = {
-      response_not_contains: ["https://"],
-    };
-    const result = checkTurn(
-      expect_,
+    const result = checkGuardrails(
+      guardrails,
       [],
       "Acesse https://fake-link.com para pagar"
     );
     expect(result.passed).toBe(false);
+    expect(result.failures[0]).toContain("https://");
   });
 
-  it("checks response_matches regex", () => {
-    const expect_: TurnExpect = {
-      response_matches: "\\d{2}/\\d{2}/\\d{4}",
+  it("fails when response matches forbidden pattern", () => {
+    const guardrails: ScenarioGuardrails = {
+      never_matches: "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}",
     };
-    const pass = checkTurn(expect_, [], "Sua consulta e em 18/02/2026");
-    expect(pass.passed).toBe(true);
-
-    const fail = checkTurn(expect_, [], "Consulta marcada");
-    expect(fail.passed).toBe(false);
+    const result = checkGuardrails(guardrails, [], "Seu CPF e 123.456.789-00");
+    expect(result.passed).toBe(false);
   });
 
-  it("passes with empty expectations", () => {
-    const result = checkTurn({}, ["any_tool"], "any response");
+  it("passes when no violations found", () => {
+    const guardrails: ScenarioGuardrails = {
+      never_tools: ["cancel_appointment"],
+      never_contains: ["cancelar"],
+    };
+    const result = checkGuardrails(
+      guardrails,
+      ["check_availability"],
+      "Temos horarios disponiveis"
+    );
+    expect(result.passed).toBe(true);
+    expect(result.failures).toHaveLength(0);
+  });
+});
+
+describe("checkToolExpectations", () => {
+  const baseExpectations: ScenarioExpectations = {
+    goal_achieved: true,
+    assertions: undefined,
+  };
+
+  it("passes when expected tools were called", () => {
+    const expectations: ScenarioExpectations = {
+      ...baseExpectations,
+      tools_called: ["check_availability", "book_appointment"],
+    };
+    const result = checkToolExpectations(
+      expectations,
+      ["check_availability", "book_appointment"],
+      ["response"]
+    );
+    expect(result.passed).toBe(true);
+  });
+
+  it("fails when expected tool not called", () => {
+    const expectations: ScenarioExpectations = {
+      ...baseExpectations,
+      tools_called: ["check_availability", "book_appointment"],
+    };
+    const result = checkToolExpectations(
+      expectations,
+      ["check_availability"],
+      ["response"]
+    );
+    expect(result.passed).toBe(false);
+    expect(result.failures[0]).toContain("book_appointment");
+  });
+
+  it("fails when forbidden tool was called", () => {
+    const expectations: ScenarioExpectations = {
+      ...baseExpectations,
+      tools_not_called: ["cancel_appointment"],
+    };
+    const result = checkToolExpectations(
+      expectations,
+      ["check_availability", "cancel_appointment"],
+      ["response"]
+    );
+    expect(result.passed).toBe(false);
+    expect(result.failures[0]).toContain("cancel_appointment");
+  });
+
+  it("fails when expected response text not found", () => {
+    const expectations: ScenarioExpectations = {
+      ...baseExpectations,
+      response_contains: ["horario"],
+    };
+    const result = checkToolExpectations(
+      expectations,
+      [],
+      ["Ola, como posso ajudar?"]
+    );
+    expect(result.passed).toBe(false);
+    expect(result.failures[0]).toContain("horario");
+  });
+
+  it("passes with minimal expectations", () => {
+    const result = checkToolExpectations(
+      baseExpectations,
+      ["any_tool"],
+      ["any response"]
+    );
     expect(result.passed).toBe(true);
   });
 });

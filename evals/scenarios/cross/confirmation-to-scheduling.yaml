@@ -1,13 +1,13 @@
-id: confirmation-patient-reschedules
+id: cross-confirmation-to-scheduling
 agent: confirmation
 locale: pt-BR
-description: "Patient asks to reschedule when receiving confirmation reminder"
+description: "Patient declines confirmation and asks to reschedule with a different professional"
 
 persona:
-  name: Lucas Ferreira
-  phone: "11987650006"
-  personality: "apologetic, explains why they need to reschedule"
-  goal: "Tell the agent I cannot make my appointment and need to reschedule"
+  name: Ricardo Ferreira
+  phone: "11987650027"
+  personality: "polite, has a conflict but wants to see a different doctor"
+  goal: "Decline my current appointment and ask to reschedule with a different professional"
 
 fixtures:
   professionals:
@@ -16,7 +16,7 @@ fixtures:
       specialty: Clinico Geral
       appointment_duration_minutes: 30
   appointments:
-    - id: eval-appt-3
+    - id: eval-appt-6
       professional_id: eval-prof-4
       starts_at: "2026-02-20T14:00:00.000Z"
       ends_at: "2026-02-20T14:30:00.000Z"
@@ -26,4 +26,4 @@ expectations:
   tools_called: [reschedule_from_confirmation]
   goal_achieved: true
 
-max_turns: 8
+max_turns: 12

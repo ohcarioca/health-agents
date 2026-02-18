@@ -6,6 +6,8 @@ description: "Patient confirms attendance after receiving reminder"
 persona:
   name: Julia Mendes
   phone: "11987650005"
+  personality: "brief, positive"
+  goal: "Confirm that I will attend my upcoming appointment"
 
 fixtures:
   professionals:
@@ -16,11 +18,12 @@ fixtures:
   appointments:
     - id: eval-appt-2
       professional_id: eval-prof-3
-      starts_at: "2026-02-16T10:00:00.000Z"
-      ends_at: "2026-02-16T10:30:00.000Z"
+      starts_at: "2026-02-20T10:00:00.000Z"
+      ends_at: "2026-02-20T10:30:00.000Z"
       status: scheduled
 
-turns:
-  - user: "Sim, confirmo minha presenca"
-    expect:
-      tools_called: [confirm_attendance]
+expectations:
+  tools_called: [confirm_attendance]
+  goal_achieved: true
+
+max_turns: 6

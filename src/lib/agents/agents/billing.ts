@@ -16,6 +16,7 @@ import {
   getChargeStatus,
   getPixQrCode,
 } from "@/services/asaas";
+import { isValidCpf } from "@/lib/validations/patients";
 
 // ── Base System Prompts ──
 
@@ -39,7 +40,8 @@ Regras:
 - Nao insista mais de 2 vezes se o paciente nao responder.
 - Mostre valores sempre no formato R$ (ex: R$ 150,00).
 - Apos chamar uma ferramenta, SEMPRE responda ao paciente em linguagem natural e amigavel. Nunca exponha resultados internos.
-- Seja PROATIVO: se voce tem informacao suficiente para agir, aja. Nao faca perguntas desnecessarias.`,
+- Seja PROATIVO: se voce tem informacao suficiente para agir, aja. Nao faca perguntas desnecessarias.
+- Se o create_payment_link retornar erro de CPF invalido, informe o paciente que o CPF cadastrado esta incorreto e peca que ele informe o CPF correto. Nunca invente numeros de telefone ou contatos.`,
 
   en: `You are the clinic's billing and payment assistant. Your role is to help patients with invoices, generate payment links, and track payment status.
 
@@ -60,7 +62,8 @@ Rules:
 - Do not insist more than 2 times if the patient does not respond.
 - Show values in the appropriate currency format.
 - After calling a tool, ALWAYS respond to the patient in natural, friendly language. Never expose internal results.
-- Be PROACTIVE: if you have enough information to act, act. Do not ask unnecessary questions.`,
+- Be PROACTIVE: if you have enough information to act, act. Do not ask unnecessary questions.
+- If create_payment_link returns a CPF error, inform the patient that the registered CPF is incorrect and ask them to provide the correct one. Never fabricate phone numbers or contacts.`,
 
   es: `Eres el asistente de cobros y pagos de la clinica. Tu funcion es ayudar a pacientes con facturas, generar enlaces de pago y hacer seguimiento del estado de pagos.
 
@@ -81,7 +84,8 @@ Reglas:
 - No insistas mas de 2 veces si el paciente no responde.
 - Muestra valores siempre en el formato adecuado de moneda.
 - Despues de llamar una herramienta, SIEMPRE responde al paciente en lenguaje natural y amigable. Nunca expongas resultados internos.
-- Se PROACTIVO: si tienes suficiente informacion para actuar, actua. No hagas preguntas innecesarias.`,
+- Se PROACTIVO: si tienes suficiente informacion para actuar, actua. No hagas preguntas innecesarias.
+- Si create_payment_link retorna un error de CPF invalido, informa al paciente que el CPF registrado es incorrecto y pidele que proporcione el correcto. Nunca inventes numeros de telefono o contactos.`,
 };
 
 // ── Instructions ──
@@ -228,6 +232,11 @@ async function ensureAsaasCustomer(
     return null;
   }
 
+  const cleanCpf = patient.cpf.replace(/\D/g, "");
+  if (!isValidCpf(cleanCpf)) {
+    return null;
+  }
+
   const result = await createCustomer({
     name: patient.name,
     cpfCnpj: patient.cpf,
@@ -332,7 +341,7 @@ async function handleCreatePaymentLink(
     if (!customerId) {
       return {
         result:
-          "Could not create payment: patient CPF is required to generate a payment link.",
+          "Could not create payment: a valid CPF is required to generate a payment link. Ask the patient to confirm their CPF and try again.",
       };
     }
 

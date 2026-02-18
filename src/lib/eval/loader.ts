@@ -41,9 +41,6 @@ export function loadScenarios(options?: LoadOptions): EvalScenario[] {
     const stat = fs.statSync(agentPath);
     if (!stat.isDirectory()) continue;
 
-    // Filter by agent if specified
-    if (options?.agent && String(agentDir) !== options.agent) continue;
-
     const files = fs.readdirSync(agentPath);
     for (const file of files) {
       const fileName = String(file);
@@ -52,7 +49,10 @@ export function loadScenarios(options?: LoadOptions): EvalScenario[] {
       const filePath = path.join(agentPath, fileName);
       const scenario = loadScenarioFile(filePath);
 
-      // Filter by scenario ID if specified
+      // Filter by agent type (from scenario.agent field, not directory name)
+      if (options?.agent && scenario.agent !== options.agent) continue;
+
+      // Filter by scenario ID
       if (options?.scenario && scenario.id !== options.scenario) continue;
 
       scenarios.push(scenario);

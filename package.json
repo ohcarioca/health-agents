@@ -14,6 +14,7 @@
     "eval:verbose": "tsx --conditions react-server --env-file=.env src/scripts/eval.ts --verbose"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.76.0",
     "@langchain/core": "^1.1.24",
     "@langchain/openai": "^1.2.7",
     "@radix-ui/react-dialog": "^1.1.15",

@@ -1,0 +1,24 @@
+id: billing-check-status
+agent: billing
+locale: pt-BR
+description: "Patient checks if their payment was processed"
+
+persona:
+  name: Ana Beatriz Costa
+  phone: "11987650011"
+  cpf: "07746842089"
+  personality: "anxious about payment confirmation"
+  goal: "Check if my payment was received and processed"
+
+fixtures:
+  invoices:
+    - id: eval-inv-2
+      amount_cents: 25000
+      due_date: "2026-02-18"
+      status: pending
+
+expectations:
+  tools_called: [check_payment_status]
+  goal_achieved: true
+
+max_turns: 6

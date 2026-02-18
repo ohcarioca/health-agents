@@ -2,12 +2,10 @@ import { createClient } from "@supabase/supabase-js";
 import { loadScenarios } from "../lib/eval/loader";
 import { runScenario } from "../lib/eval/runner";
 import { analyzeResults } from "../lib/eval/analyst";
-import { printResults, saveReport } from "../lib/eval/reporter";
+import { printResults, printVerboseTranscript, saveReport } from "../lib/eval/reporter";
 import type { ScenarioResult, EvalCliOptions } from "../lib/eval/types";
 
 // Import agent barrel to trigger side-effect registrations.
-// The barrel imports `server-only`, which requires the `react-server`
-// condition — that's why the npm script uses `tsx --conditions react-server`.
 import "../lib/agents";
 
 function parseArgs(): EvalCliOptions {
@@ -32,6 +30,9 @@ function parseArgs(): EvalCliOptions {
       case "--threshold":
         options.failThreshold = parseFloat(args[++i]);
         break;
+      case "--max-turns":
+        options.maxTurns = parseInt(args[++i], 10);
+        break;
     }
   }
 
@@ -45,6 +46,7 @@ async function main(): Promise<void> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
+  const claudeKey = process.env.CLAUDE_API_KEY;
 
   if (!supabaseUrl || !serviceRoleKey) {
     console.error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
@@ -54,13 +56,15 @@ async function main(): Promise<void> {
     console.error("Missing OPENAI_API_KEY");
     process.exit(1);
   }
+  if (!claudeKey) {
+    console.error("Missing CLAUDE_API_KEY (required for judge + analyst)");
+    process.exit(1);
+  }
 
-  // Create admin Supabase client directly (bypass server-only import)
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  // Load scenarios
   const scenarios = loadScenarios({
     agent: options.agent,
     scenario: options.scenario,
@@ -71,9 +75,11 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  console.log(`Loaded ${scenarios.length} scenario(s). Running eval...\n`);
+  console.log(`Loaded ${scenarios.length} scenario(s). Running conversational eval...\n`);
+  console.log(`  Patient: OpenAI (${process.env.OPENAI_MODEL ?? "gpt-5-mini"})`);
+  console.log(`  Judge:   Claude (${process.env.CLAUDE_MODEL ?? "claude-sonnet-4-20250514"})`);
+  console.log("");
 
-  // Run each scenario sequentially
   const results: ScenarioResult[] = [];
 
   for (const scenario of scenarios) {
@@ -85,19 +91,21 @@ async function main(): Promise<void> {
       supabase,
       scenario,
       verbose: options.verbose,
+      maxTurnsOverride: options.maxTurns,
     });
 
     results.push(result);
 
-    // Quick status indicator for non-verbose mode
-    if (!options.verbose) {
+    if (options.verbose) {
+      printVerboseTranscript(result);
+    } else {
       const icon = result.status === "pass" ? "." : result.status === "warn" ? "W" : "F";
       process.stdout.write(icon);
     }
   }
 
   if (!options.verbose) {
-    console.log(""); // newline after dots
+    console.log("");
   }
 
   // Analyze failures
