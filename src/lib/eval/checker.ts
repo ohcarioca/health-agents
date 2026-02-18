@@ -1,74 +1,83 @@
-import type { TurnExpect, CheckResult } from "./types";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { ScenarioGuardrails, ScenarioExpectations, CheckResult } from "./types";
 
-export function checkTurn(
-  expect: TurnExpect,
+/** Per-turn guardrail check during conversation */
+export function checkGuardrails(
+  guardrails: ScenarioGuardrails | undefined,
   toolCallNames: string[],
   responseText: string
 ): CheckResult {
+  if (!guardrails) return { passed: true, failures: [] };
+
   const failures: string[] = [];
   const responseLower = responseText.toLowerCase();
 
-  // Check required tools
-  if (expect.tools_called) {
-    for (const tool of expect.tools_called) {
-      if (!toolCallNames.includes(tool)) {
-        failures.push(`Expected tool "${tool}" to be called, but it was not. Called: [${toolCallNames.join(", ")}]`);
+  if (guardrails.never_tools) {
+    for (const tool of guardrails.never_tools) {
+      if (toolCallNames.includes(tool)) {
+        failures.push(`Guardrail violated: forbidden tool "${tool}" was called`);
       }
     }
   }
 
-  // Check forbidden tools
-  if (expect.no_tools) {
-    for (const tool of expect.no_tools) {
-      if (toolCallNames.includes(tool)) {
+  if (guardrails.never_contains) {
+    for (const substr of guardrails.never_contains) {
+      if (responseLower.includes(substr.toLowerCase())) {
+        failures.push(`Guardrail violated: response contains forbidden text "${substr}"`);
+      }
+    }
+  }
+
+  if (guardrails.never_matches) {
+    const regex = new RegExp(guardrails.never_matches, "i");
+    if (regex.test(responseText)) {
+      failures.push(`Guardrail violated: response matches forbidden pattern "${guardrails.never_matches}"`);
+    }
+  }
+
+  return { passed: failures.length === 0, failures };
+}
+
+/** Post-conversation tool expectations check */
+export function checkToolExpectations(
+  expectations: ScenarioExpectations,
+  allToolsCalled: string[],
+  allResponses: string[]
+): CheckResult {
+  const failures: string[] = [];
+
+  if (expectations.tools_called) {
+    for (const tool of expectations.tools_called) {
+      if (!allToolsCalled.includes(tool)) {
+        failures.push(`Expected tool "${tool}" to be called during conversation, but it was not. Called: [${allToolsCalled.join(", ")}]`);
+      }
+    }
+  }
+
+  if (expectations.tools_not_called) {
+    for (const tool of expectations.tools_not_called) {
+      if (allToolsCalled.includes(tool)) {
         failures.push(`Tool "${tool}" was called but should NOT have been`);
       }
     }
   }
 
-  // Check response contains
-  if (expect.response_contains) {
-    for (const substr of expect.response_contains) {
-      if (!responseLower.includes(substr.toLowerCase())) {
-        failures.push(`Response missing expected text: "${substr}"`);
+  if (expectations.response_contains) {
+    const allResponsesLower = allResponses.map((r) => r.toLowerCase()).join(" ");
+    for (const substr of expectations.response_contains) {
+      if (!allResponsesLower.includes(substr.toLowerCase())) {
+        failures.push(`No agent response contained expected text: "${substr}"`);
       }
     }
   }
 
-  // Check response not contains
-  if (expect.response_not_contains) {
-    for (const substr of expect.response_not_contains) {
-      if (responseLower.includes(substr.toLowerCase())) {
-        failures.push(`Response contains forbidden text: "${substr}"`);
-      }
-    }
-  }
-
-  // Check regex match
-  if (expect.response_matches) {
-    const regex = new RegExp(expect.response_matches);
-    if (!regex.test(responseText)) {
-      failures.push(`Response does not match pattern: ${expect.response_matches}`);
-    }
-  }
-
-  return {
-    passed: failures.length === 0,
-    failures,
-  };
+  return { passed: failures.length === 0, failures };
 }
 
+/** Post-conversation DB assertions */
 export async function checkAssertions(
   supabase: SupabaseClient,
-  assertions: {
-    appointment_created?: boolean;
-    confirmation_queue_entries?: number;
-    conversation_status?: string;
-    nps_score_recorded?: boolean;
-    invoice_status?: string;
-    payment_link_created?: boolean;
-  } | undefined,
+  assertions: ScenarioExpectations["assertions"],
   clinicId: string,
   patientId: string,
   conversationId: string
@@ -158,8 +167,5 @@ export async function checkAssertions(
     }
   }
 
-  return {
-    passed: failures.length === 0,
-    failures,
-  };
+  return { passed: failures.length === 0, failures };
 }
