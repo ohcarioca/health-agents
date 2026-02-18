@@ -17,6 +17,18 @@ vi.mock("@/services/google-calendar", () => ({
   deleteEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
+// Mock Asaas service (imported by confirmation agent for auto-billing)
+vi.mock("@/services/asaas", () => ({
+  createCustomer: vi.fn().mockResolvedValue({ success: false }),
+  createCharge: vi.fn().mockResolvedValue({ success: false }),
+  getPixQrCode: vi.fn().mockResolvedValue({ success: false }),
+}));
+
+// Mock auto-billing check (defaults to disabled in tests)
+vi.mock("@/lib/billing/auto-billing", () => ({
+  isAutoBillingEnabled: vi.fn().mockResolvedValue(false),
+}));
+
 import { getAgentType, getRegisteredTypes } from "@/lib/agents";
 import type { ToolCallContext, ToolCallResult } from "@/lib/agents";
 
@@ -165,7 +177,16 @@ function createDualPurposeChainable(options: {
   });
 
   chainable.update = vi.fn().mockReturnValue({
-    eq: vi.fn().mockResolvedValue(resolvedUpdate),
+    eq: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({
+          data: options.selectSingleData,
+          error: options.updateError ?? null,
+        }),
+      }),
+      // Also resolve directly for chains that don't use .select().single() after .eq()
+      then: (resolve: (v: unknown) => void) => resolve(resolvedUpdate),
+    }),
   });
 
   return chainable;

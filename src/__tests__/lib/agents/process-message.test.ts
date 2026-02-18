@@ -236,6 +236,22 @@ function createMockSupabase(options?: {
       };
     }
 
+    // ── module_configs table ──
+    if (table === "module_configs") {
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: { settings: {} },
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      };
+    }
+
     // ── insurance_plans table ──
     if (table === "insurance_plans") {
       return {
