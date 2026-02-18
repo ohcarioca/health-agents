@@ -480,13 +480,14 @@ Shared utility for proactive (system-initiated) messages:
 
 | Route | Schedule | Purpose |
 |-------|----------|---------|
-| `GET /api/cron/confirmations` | `0 8 * * *` | Scans `confirmation_queue`, sends reminders |
-| `GET /api/cron/nps` | `0 12 * * *` | Surveys patients after completed appointments |
-| `GET /api/cron/billing` | `0 9,14 * * 1-6` | Drip payment reminders (Mon-Sat) |
+| `GET /api/cron/confirmations` | `*/15 8-19 * * 1-6` | Scans `confirmation_queue`, sends reminders (every 15min Mon-Sat) |
+| `GET /api/cron/nps` | `0 12,16,19 * * *` | Surveys patients after completed appointments (3x/day) |
+| `GET /api/cron/billing` | `0 9,14 * * 1-6` | Drip payment reminders (2x/day Mon-Sat) |
 | `GET /api/cron/recall` | `0 10 * * 1-5` | Enqueue inactive patients (Mon-Fri) |
-| `GET /api/cron/recall-send` | `30 10 * * 1-5` | Send recall messages from queue (Mon-Fri) |
+| `GET /api/cron/recall-send` | `30 10,15 * * 1-5` | Send recall messages from queue (2x/day Mon-Fri) |
+| `GET /api/cron/message-retry` | `*/30 8-20 * * 1-6` | Retry failed WhatsApp sends (every 30min Mon-Sat) |
 
-Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqual()`).
+Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqual()`). Shared auth helper: `src/lib/cron/auth.ts`.
 
 **Auto-enqueue:** When `book_appointment` creates an appointment, it auto-inserts 48h/24h/2h entries into `confirmation_queue` via `enqueueConfirmations()`.
 
