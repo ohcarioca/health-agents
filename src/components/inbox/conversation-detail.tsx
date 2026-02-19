@@ -87,9 +87,11 @@ export function ConversationDetail({
     }
   }
 
-  async function submitMessage() {
+  async function handleSend(e: FormEvent) {
+    e.preventDefault();
     const text = messageText.trim();
-    if (!text || sendLoading) return;
+    if (!text) return;
+
     setSendLoading(true);
     try {
       const res = await fetch(
@@ -107,18 +109,6 @@ export function ConversationDetail({
       console.error("[inbox] send message failed");
     } finally {
       setSendLoading(false);
-    }
-  }
-
-  function handleSend(e: FormEvent) {
-    e.preventDefault();
-    submitMessage();
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      submitMessage();
     }
   }
 
@@ -212,17 +202,16 @@ export function ConversationDetail({
       {conversation.status === "escalated" && (
         <form
           onSubmit={handleSend}
-          className="flex items-end gap-2 border-t px-5 py-3"
+          className="flex items-center gap-2 border-t px-5 py-3"
           style={{ borderColor: "var(--border)" }}
         >
-          <textarea
-            rows={3}
+          <input
+            type="text"
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
-            onKeyDown={handleKeyDown}
             placeholder={t("messagePlaceholder")}
             disabled={sendLoading}
-            className="flex-1 resize-none overflow-y-auto rounded-lg border bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-ring)]"
+            className="flex-1 rounded-lg border bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-ring)]"
             style={{
               borderColor: "var(--border)",
               color: "var(--text-primary)",
