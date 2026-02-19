@@ -690,5 +690,196 @@
       "notFound": "Página não encontrada",
       "notFoundDescription": "Esta clínica não possui uma página pública ativa."
     }
+  },
+  "landing": {
+    "nav": {
+      "features": "Funcionalidades",
+      "pricing": "Preços",
+      "howItWorks": "Como funciona",
+      "signIn": "Entrar",
+      "startFree": "Começar grátis"
+    },
+    "hero": {
+      "headline1": "Sua clínica atende.",
+      "headline2": "A Órbita cuida do resto.",
+      "sub": "6 agentes autônomos que agendam, confirmam, cobram e reativam pacientes — tudo pelo WhatsApp. Sem app. Sem treinamento.",
+      "ctaPrimary": "Começar 14 dias grátis",
+      "ctaSecondary": "Ver como funciona",
+      "trustedBy": "Tecnologia pensada para clínicas brasileiras"
+    },
+    "problem": {
+      "stat1Value": "22%",
+      "stat1Label": "das consultas perdidas por não-comparecimento",
+      "stat2Value": "R$15 bi",
+      "stat2Label": "em receita não realizada por ano no Brasil",
+      "stat3Value": "3h/dia",
+      "stat3Label": "gastos em follow-up manual por recepcionistas"
+    },
+    "agents": {
+      "title": "Uma equipe de IA que nunca dorme",
+      "sub": "6 agentes especializados, cada um com uma missão clara — todos trabalhando pelo WhatsApp que seus pacientes já usam.",
+      "scheduling": {
+        "name": "Agendamento",
+        "desc": "Pacientes marcam, cancelam e remarcam 24h por dia, sem ligar para a clínica."
+      },
+      "confirmation": {
+        "name": "Confirmação",
+        "desc": "Lembretes automáticos em 3 momentos: 48h, 24h e 2h antes da consulta."
+      },
+      "billing": {
+        "name": "Cobrança",
+        "desc": "Cobranças gentis com link Pix gerado automaticamente. Sem constrangimento."
+      },
+      "nps": {
+        "name": "NPS",
+        "desc": "Pesquisa de satisfação após cada atendimento. Redireciona promotores para o Google."
+      },
+      "recall": {
+        "name": "Recall",
+        "desc": "Reativa pacientes que sumiram há 90+ dias com mensagens personalizadas."
+      },
+      "support": {
+        "name": "Suporte",
+        "desc": "Tira dúvidas, informa convênios aceitos e escala para humano quando necessário."
+      }
+    },
+    "howItWorks": {
+      "title": "Pronto em 15 minutos",
+      "sub": "Nenhuma integração complexa. Sem engenharia.",
+      "step1Title": "Conecte seu WhatsApp",
+      "step1Desc": "Integre com a API oficial do Meta em poucos cliques. Sem bot não-oficial.",
+      "step2Title": "Configure sua clínica",
+      "step2Desc": "Horários, serviços, profissionais. A Órbita aprende sobre o seu negócio.",
+      "step3Title": "Agentes em ação",
+      "step3Desc": "A partir daí, seus pacientes são atendidos automaticamente — 24h, 7 dias."
+    },
+    "features": {
+      "scheduling": {
+        "tag": "Agendamento",
+        "title": "Sua agenda cheia. Automaticamente.",
+        "desc": "Pacientes agendam pelo WhatsApp sem precisar ligar para a recepção. A Órbita verifica disponibilidade em tempo real e confirma na hora — de madrugada, nos fins de semana, sem parar.",
+        "bullets": [
+          "Consulta, cancelamento e remarcação self-service",
+          "Verificação de disponibilidade em tempo real",
+          "Confirmação imediata por WhatsApp"
+        ]
+      },
+      "confirmation": {
+        "tag": "Confirmação",
+        "title": "Zero falta. Zero surpresa.",
+        "desc": "Lembretes automáticos nos 3 momentos mais críticos. O paciente confirma ou reagenda com um toque — e sua agenda se ajusta automaticamente.",
+        "bullets": [
+          "Lembrete 48h antes: reduz faltas em até 70%",
+          "Lembrete 24h: janela para remarcação",
+          "Lembrete 2h: confirmação final"
+        ]
+      },
+      "billing": {
+        "tag": "Cobrança",
+        "title": "Receba mais. Cobre menos.",
+        "desc": "O agente de cobrança envia lembretes gentis e gera links de pagamento Pix, boleto ou cartão automaticamente. Sem constrangimento, sem recepcionista no meio.",
+        "bullets": [
+          "Links de Pix gerados automaticamente via Asaas",
+          "Lembretes de cobrança em sequência inteligente",
+          "Paciente escolhe o método de pagamento"
+        ]
+      },
+      "recall": {
+        "tag": "Recall",
+        "title": "Seus pacientes não somem. Eles voltam.",
+        "desc": "A Órbita identifica pacientes inativos há 90+ dias e envia uma mensagem personalizada de reativação. Receita nova sem precisar de novos pacientes.",
+        "bullets": [
+          "Identifica automaticamente pacientes inativos",
+          "Mensagem personalizada com nome e histórico",
+          "Rota diretamente para o agendamento"
+        ]
+      }
+    },
+    "dashboard": {
+      "title": "Tudo sob controle. Em tempo real.",
+      "desc": "Acompanhe agendamentos, taxas de confirmação, NPS e receita — tudo em um painel limpo e direto ao ponto."
+    },
+    "differentiators": {
+      "title": "Por que a Órbita?",
+      "d1Title": "Sem app para o paciente",
+      "d1Desc": "Funciona pelo WhatsApp que o paciente já usa. Zero atrito, zero instalação.",
+      "d2Title": "Setup em 15 minutos",
+      "d2Desc": "Sem integração complexa. Sem equipe de TI. Pronto para atender no mesmo dia.",
+      "d3Title": "Qualquer especialidade",
+      "d3Desc": "Odontologia, medicina, estética, fisioterapia, psicologia, veterinária e muito mais.",
+      "d4Title": "Controle total",
+      "d4Desc": "Inbox de escalada humana para os casos que merecem atenção pessoal."
+    },
+    "pricing": {
+      "title": "Simples. Transparente. Sem pegadinhas.",
+      "sub": "14 dias grátis em todos os planos. Sem cartão de crédito.",
+      "monthly": "mês",
+      "recommended": "Mais popular",
+      "ctaStart": "Começar grátis",
+      "ctaContact": "Falar com vendas",
+      "plan1Name": "Início",
+      "plan1Price": "R$197",
+      "plan1Desc": "Para clínicas com 1 profissional começando a automatizar.",
+      "plan1Features": [
+        "1 profissional",
+        "Todos os 6 agentes",
+        "Dashboard completo",
+        "Suporte por e-mail"
+      ],
+      "plan2Name": "Clínica",
+      "plan2Price": "R$397",
+      "plan2Desc": "Para clínicas em crescimento que querem mais controle.",
+      "plan2Features": [
+        "Até 5 profissionais",
+        "Todos os 6 agentes",
+        "Dashboard + Relatórios",
+        "Página pública da clínica",
+        "Suporte prioritário"
+      ],
+      "plan3Name": "Consultório",
+      "plan3Price": "R$797",
+      "plan3Desc": "Para clínicas maiores com necessidades avançadas.",
+      "plan3Features": [
+        "Profissionais ilimitados",
+        "Todos os 6 agentes",
+        "Relatórios avançados (PDF)",
+        "Integrações Google Calendar",
+        "Suporte dedicado + onboarding"
+      ]
+    },
+    "faq": {
+      "title": "Dúvidas frequentes",
+      "q1": "Preciso de uma conta WhatsApp Business API paga?",
+      "a1": "A Órbita usa a API oficial do Meta WhatsApp Business. Para volumes pequenos (até ~1.000 mensagens/mês), o Meta oferece um nível gratuito. Para volumes maiores, o custo é de centavos por conversa. Nós orientamos todo o processo de configuração.",
+      "q2": "Funciona para qualquer especialidade médica?",
+      "a2": "Sim. A Órbita foi desenhada para qualquer tipo de clínica de saúde: odontologia, medicina geral e especialidades, estética, fisioterapia, psicologia, fonoaudiologia, nutrição, veterinária, entre outras.",
+      "q3": "Como funciona o período de teste de 14 dias?",
+      "a3": "Você cria sua conta, configura sua clínica e conecta seu WhatsApp Business sem precisar de cartão de crédito. Durante 14 dias, você tem acesso completo a todos os recursos. Ao final, escolhe o plano que melhor se encaixa.",
+      "q4": "Posso personalizar as mensagens dos agentes?",
+      "a4": "Sim. Cada agente tem nome, descrição e instruções personalizáveis. Você define o tom (formal, amigável), o nome do agente e pode adicionar instruções específicas para o comportamento dele.",
+      "q5": "O que acontece se o paciente tiver uma dúvida muito complexa?",
+      "a5": "O agente de suporte reconhece quando uma dúvida está fora do seu escopo e escala automaticamente para um humano. Você recebe a notificação na Caixa de Entrada da Órbita e assume a conversa com todo o histórico disponível."
+    },
+    "finalCta": {
+      "title": "Pronto para transformar sua clínica?",
+      "sub": "Junte-se às clínicas que estão automatizando o relacionamento com pacientes.",
+      "cta": "Começar 14 dias grátis",
+      "noCc": "Sem cartão de crédito. Cancele a qualquer momento."
+    },
+    "footer": {
+      "tagline": "Plataforma de agentes autônomos para saúde.",
+      "product": "Produto",
+      "company": "Empresa",
+      "legal": "Legal",
+      "features": "Funcionalidades",
+      "pricing": "Preços",
+      "docs": "Documentação",
+      "about": "Sobre nós",
+      "blog": "Blog",
+      "contact": "Contato",
+      "terms": "Termos de Uso",
+      "privacy": "Privacidade",
+      "rights": "Todos os direitos reservados."
+    }
   }
 }
