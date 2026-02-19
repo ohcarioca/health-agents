@@ -13,7 +13,9 @@
     "eval": "tsx --tsconfig tsconfig.eval.json eval/runner.ts",
     "eval:unit": "tsx --tsconfig tsconfig.eval.json eval/runner.ts --only-unit",
     "eval:flows": "tsx --tsconfig tsconfig.eval.json eval/runner.ts --only-flows",
-    "eval:agent": "tsx --tsconfig tsconfig.eval.json eval/runner.ts --agent"
+    "eval:agent": "tsx --tsconfig tsconfig.eval.json eval/runner.ts --agent",
+    "test:whatsapp": "tsx scripts/test-whatsapp.ts",
+    "test:whatsapp:all": "tsx scripts/test-whatsapp.ts --all"
   },
   "dependencies": {
     "@langchain/core": "^1.1.24",
