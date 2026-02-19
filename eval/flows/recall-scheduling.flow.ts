@@ -23,9 +23,11 @@ export const recallSchedulingFlow: EvalFlow = {
       fixedPatientMessage: "Que ótimo, quero marcar uma consulta sim!",
       expectedToolsCalled: ["route_to_scheduling"],
     },
-    // Turn 3: scheduling checks availability
+    // Turn 3: scheduling receives a fresh intent (patient sim can produce context-confused msgs after routing)
     {
       agentType: "scheduling",
+      fixedPatientMessage:
+        "Olá! Gostaria de marcar uma consulta geral, por favor. Qualquer dia da semana funciona.",
       expectedToolsCalled: ["check_availability"],
     },
     // Turn 4: patient picks a slot, scheduling confirms booking

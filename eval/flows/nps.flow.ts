@@ -13,22 +13,21 @@ export const npsFlow: EvalFlow = {
     openingMessage: "Olá",
   },
   steps: [
-    // Turn 1: NPS agent asks for score
+    // Turn 1: patient says "Olá" — NPS agent asks for score (no tool yet, score not received)
     {
       agentType: "nps",
-      expectedToolsCalled: ["collect_nps_score"],
     },
-    // Turn 2: patient gives score 9, agent collects comment
+    // Turn 2: patient gives score 9 — agent MUST call collect_nps_score then ask for comment
     {
       agentType: "nps",
       fixedPatientMessage: "9",
-      expectedToolsCalled: ["collect_nps_comment"],
+      expectedToolsCalled: ["collect_nps_score"],
     },
-    // Turn 3: patient leaves comment, agent redirects to Google Reviews
+    // Turn 3: patient leaves comment — agent calls collect_nps_comment + redirect_to_google_reviews
     {
       agentType: "nps",
       fixedPatientMessage: "Atendimento excelente, super recomendo!",
-      expectedToolsCalled: ["redirect_to_google_reviews"],
+      expectedToolsCalled: ["collect_nps_comment", "redirect_to_google_reviews"],
     },
   ],
 };
