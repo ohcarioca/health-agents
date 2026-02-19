@@ -114,7 +114,7 @@ export function ConversationDetail({
 
   return (
     <div
-      className="flex h-full flex-col rounded-xl border"
+      className="flex min-h-0 flex-1 flex-col rounded-xl border"
       style={{
         backgroundColor: "var(--surface)",
         borderColor: "var(--border)",

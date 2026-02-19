@@ -112,9 +112,9 @@ export default function InboxPage() {
   return (
     <PageContainer>
       <PageHeader title={t("title")} />
-      <div className="mt-6 grid h-[calc(100vh-11rem)] grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="mt-6 grid h-[calc(100vh-11rem)] grid-cols-1 gap-6 overflow-hidden lg:grid-cols-3">
         {/* Left panel: conversation list */}
-        <div className="flex h-full flex-col overflow-hidden">
+        <div className="flex min-h-0 flex-col overflow-hidden">
           {listLoading ? (
             <div className="flex h-full items-center justify-center">
               <Spinner size="lg" />
@@ -129,7 +129,7 @@ export default function InboxPage() {
         </div>
 
         {/* Right panel: conversation detail */}
-        <div className="flex h-full flex-col lg:col-span-2">
+        <div className="flex min-h-0 flex-col lg:col-span-2">
           {detailLoading && !detail ? (
             <Card className="h-full">
               <div className="flex h-full items-center justify-center">
