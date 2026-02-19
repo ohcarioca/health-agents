@@ -99,7 +99,7 @@ export function StepCompletion() {
 
   function handleGoToDashboard() {
     document.cookie = "onboarding_active=; path=/; max-age=0";
-    router.push("/");
+    router.push("/dashboard");
     router.refresh();
   }
 

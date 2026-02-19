@@ -11,10 +11,12 @@ function isPublicRoute(pathname: string): boolean {
 }
 
 // Routes that authenticated users are redirected away from
-const AUTH_ROUTES = ["/login", "/signup", "/auth/callback"];
+const AUTH_ROUTES = ["/", "/login", "/signup", "/auth/callback"];
 
 function isAuthRoute(pathname: string): boolean {
-  return AUTH_ROUTES.some((route) => pathname.startsWith(route));
+  return AUTH_ROUTES.some((route) =>
+    route === "/" ? pathname === "/" : pathname.startsWith(route)
+  );
 }
 
 export async function proxy(request: NextRequest) {
