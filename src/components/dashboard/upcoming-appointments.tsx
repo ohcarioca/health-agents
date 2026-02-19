@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
-import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Plus, CheckCircle2 } from "lucide-react";
 
 interface AppointmentRow {
   id: string;
@@ -64,6 +64,7 @@ export function UpcomingAppointments() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekOffset, setWeekOffset] = useState(0);
+  const [completing, setCompleting] = useState<Set<string>>(new Set());
 
   const weekDays = useMemo(() => getWeekDays(weekOffset), [weekOffset]);
 
@@ -99,7 +100,23 @@ export function UpcomingAppointments() {
     [allAppointments, selectedDate],
   );
 
+  const handleComplete = useCallback(async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCompleting((prev) => new Set(prev).add(id));
+    try {
+      await fetch(`/api/appointments/${id}/complete`, { method: "POST" });
+      await fetchWeekAppointments();
+    } finally {
+      setCompleting((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  }, [fetchWeekAppointments]);
+
   const today = new Date();
+  const now = new Date();
 
   return (
     <div
@@ -267,6 +284,21 @@ export function UpcomingAppointments() {
                     {apt.professionals?.name ? ` \u00B7 ${apt.professionals.name}` : ""}
                   </p>
                 </div>
+
+                {new Date(apt.starts_at) < now &&
+                  (apt.status === "scheduled" || apt.status === "confirmed") && (
+                  <button
+                    onClick={(e) => handleComplete(apt.id, e)}
+                    disabled={completing.has(apt.id)}
+                    title="Confirmar atendimento"
+                    className="shrink-0 rounded-full p-1 transition-colors"
+                    style={{ color: "var(--success)" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(16,185,129,0.1)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                  >
+                    <CheckCircle2 className="size-4" />
+                  </button>
+                )}
 
                 {/* Status */}
                 <Badge variant={STATUS_BADGE_VARIANT[apt.status] ?? "neutral"}>
