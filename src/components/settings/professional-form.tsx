@@ -42,6 +42,10 @@ export function ProfessionalForm({
   const tf = useTranslations("settings.professionalForm");
   const isEditing = !!professional;
 
+  // Track the ID of a just-created professional so we stay in the dialog
+  const [createdId, setCreatedId] = useState<string | null>(null);
+  const effectiveId = professional?.id ?? createdId;
+
   const [activeSubTab, setActiveSubTab] = useState(0);
   const [name, setName] = useState(professional?.name ?? "");
   const [specialty, setSpecialty] = useState(professional?.specialty ?? "");
@@ -75,12 +79,12 @@ export function ProfessionalForm({
 
     setLoading(true);
     try {
-      const url = isEditing
-        ? `/api/settings/professionals/${professional.id}`
+      const url = effectiveId
+        ? `/api/settings/professionals/${effectiveId}`
         : "/api/settings/professionals";
 
       const res = await fetch(url, {
-        method: isEditing ? "PUT" : "POST",
+        method: effectiveId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed.data),
       });
@@ -91,7 +95,14 @@ export function ProfessionalForm({
         return;
       }
 
-      onSuccess();
+      if (!effectiveId) {
+        // Just created — store ID and switch to Services tab
+        const json = await res.json();
+        setCreatedId(json.data.id);
+        setActiveSubTab(2);
+      } else {
+        onSuccess();
+      }
     } catch {
       setError(t("saveError"));
     } finally {
@@ -99,8 +110,8 @@ export function ProfessionalForm({
     }
   }
 
-  // Subtabs available: always show Dados + Horário. Only show Serviços when editing.
-  const subtabs = isEditing ? SUBTAB_KEYS : SUBTAB_KEYS.slice(0, 2);
+  // Always show all 3 tabs — Services tab handles the "save first" state internally
+  const subtabs = SUBTAB_KEYS;
 
   return (
     <div className="space-y-4">
@@ -164,7 +175,7 @@ export function ProfessionalForm({
             <Button type="submit" disabled={loading}>
               {loading
                 ? "..."
-                : isEditing
+                : effectiveId
                   ? t("edit")
                   : t("add")}
             </Button>
@@ -193,8 +204,24 @@ export function ProfessionalForm({
         </form>
       )}
 
-      {activeSubTab === 2 && isEditing && (
-        <ProfessionalServicesForm professionalId={professional.id} />
+      {activeSubTab === 2 && (
+        effectiveId ? (
+          <div className="space-y-4">
+            <ProfessionalServicesForm professionalId={effectiveId} />
+            <div className="flex justify-end border-t pt-3" style={{ borderColor: "var(--border)" }}>
+              <Button type="button" onClick={onSuccess}>
+                {tf("done")}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p
+            className="py-6 text-center text-sm"
+            style={{ color: "var(--text-muted)" }}
+          >
+            {tf("saveFirst")}
+          </p>
+        )
       )}
     </div>
   );

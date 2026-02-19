@@ -171,7 +171,14 @@ export function ProfessionalsList() {
 
       <Dialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) {
+            setEditing(undefined);
+            setLoading(true);
+            fetchList();
+          }
+        }}
         title={editing ? t("edit") : t("add")}
         size="xl"
       >

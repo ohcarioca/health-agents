@@ -411,7 +411,9 @@
       "tabSchedule": "Schedule",
       "tabServices": "Services & Pricing",
       "noServices": "No services registered. Add services in the Services tab first.",
-      "priceRequired": "Set the price for each selected service"
+      "priceRequired": "Set the price for each selected service",
+      "saveFirst": "Save the professional first to assign services.",
+      "done": "Done"
     },
     "compactGrid": {
       "copyToAll": "Copy Mon to all",
