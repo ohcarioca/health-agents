@@ -227,88 +227,59 @@ export function IntegrationsTab() {
               <div className="h-px" style={{ backgroundColor: "var(--border)" }} />
             )}
 
-            {professionals.length === 0 ? (
-              <p
-                className="text-sm"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {t("comingSoon")}
-              </p>
-            ) : (
-              professionals.map((professional) => {
-                const isConnected = Boolean(
-                  professional.google_calendar_id
-                );
-                const isLoading = actionLoading === professional.id;
+            {professionals.map((professional) => {
+              const isConnected = Boolean(professional.google_calendar_id);
+              const isLoading = actionLoading === professional.id;
 
-                return (
-                  <div
-                    key={professional.id}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2"
-                    style={{
-                      backgroundColor: "var(--nav-hover-bg)",
-                    }}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p
-                        className="text-sm font-medium"
-                        style={{ color: "var(--text-primary)" }}
-                      >
-                        {professional.name}
-                      </p>
-                      {professional.specialty && (
-                        <p
-                          className="text-xs"
-                          style={{ color: "var(--text-muted)" }}
-                        >
-                          {professional.specialty}
-                        </p>
-                      )}
-                    </div>
-
-                    <Badge
-                      variant={isConnected ? "success" : "neutral"}
+              return (
+                <div
+                  key={professional.id}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2"
+                  style={{ backgroundColor: "var(--nav-hover-bg)" }}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="text-sm font-medium"
+                      style={{ color: "var(--text-primary)" }}
                     >
-                      {isConnected
-                        ? t("connected")
-                        : t("notConnected")}
-                    </Badge>
-
-                    {isConnected ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={isLoading}
-                        onClick={() =>
-                          handleDisconnect(professional.id)
-                        }
+                      {professional.name}
+                    </p>
+                    {professional.specialty && (
+                      <p
+                        className="text-xs"
+                        style={{ color: "var(--text-muted)" }}
                       >
-                        {isLoading ? (
-                          <Spinner size="sm" />
-                        ) : (
-                          t("disconnect")
-                        )}
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        disabled={isLoading}
-                        onClick={() =>
-                          handleConnect(professional.id)
-                        }
-                      >
-                        {isLoading ? (
-                          <Spinner size="sm" />
-                        ) : (
-                          t("connect")
-                        )}
-                      </Button>
+                        {professional.specialty}
+                      </p>
                     )}
                   </div>
-                );
-              })
-            )}
+
+                  <Badge variant={isConnected ? "success" : "neutral"}>
+                    {isConnected ? t("connected") : t("notConnected")}
+                  </Badge>
+
+                  {isConnected ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isLoading}
+                      onClick={() => handleDisconnect(professional.id)}
+                    >
+                      {isLoading ? <Spinner size="sm" /> : t("disconnect")}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      disabled={isLoading}
+                      onClick={() => handleConnect(professional.id)}
+                    >
+                      {isLoading ? <Spinner size="sm" /> : t("connect")}
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </Card>
       </div>
