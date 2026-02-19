@@ -37,7 +37,9 @@ function loadEnv(path: string) {
       const eq = t.indexOf("=");
       if (eq === -1) continue;
       const k = t.slice(0, eq).trim();
-      const v = t.slice(eq + 1).trim().replace(/^["']|["']$/g, "");
+      const v = t.slice(eq + 1).trim()
+        .replace(/\s+#.*$/, "")      // strip inline comments (e.g. KEY=value # comment)
+        .replace(/^["']|["']$/g, ""); // strip surrounding quotes
       if (!process.env[k]) process.env[k] = v;
     }
   } catch {}
@@ -246,6 +248,51 @@ const SCENARIOS: Record<string, () => Promise<void>> = {
   escalation: scenarioEscalation,
 };
 
+// ── Preflight checks ─────────────────────────────────────────────────────────
+async function preflight(): Promise<boolean> {
+  let ok = true;
+
+  // 1. Server reachable?
+  try {
+    const res = await fetch(`${BASE_URL}/api/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=ping&hub.challenge=test`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    // 200 or 403 both mean the server is up
+    if (res.status >= 500) {
+      console.error(`❌ Servidor retornou ${res.status}. Verifique se o app está rodando em ${BASE_URL}`);
+      ok = false;
+    } else {
+      console.log(`   ✓ Servidor OK (${BASE_URL})`);
+    }
+  } catch {
+    console.error(`❌ Servidor não responde em ${BASE_URL}`);
+    console.error(`   Execute: npm run dev`);
+    ok = false;
+  }
+
+  // 2. Clinic exists and is_active?
+  const { data: clinic, error } = await supabase
+    .from("clinics")
+    .select("id, name, is_active")
+    .eq("phone", CLINIC_PHONE.replace(/\D/g, ""))
+    .maybeSingle();
+
+  if (error || !clinic) {
+    console.error(`❌ Clínica com phone="${CLINIC_PHONE}" não encontrada no DB`);
+    console.error(`   Verifique TEST_CLINIC_PHONE no .env`);
+    ok = false;
+  } else if (!clinic.is_active) {
+    console.error(`❌ Clínica "${clinic.name}" encontrada mas is_active = false`);
+    console.error(`   Ative em: Dashboard → Integrações → Ativar clínica`);
+    console.error(`   Ou via SQL: UPDATE clinics SET is_active = true WHERE id = '${clinic.id}';`);
+    ok = false;
+  } else {
+    console.log(`   ✓ Clínica "${clinic.name}" ativa`);
+  }
+
+  return ok;
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
   const missing: string[] = [];
@@ -263,7 +310,9 @@ async function main() {
   console.log(`   Server:  ${BASE_URL}`);
   console.log(`   Clinic:  ${CLINIC_PHONE}`);
   console.log(`   Patient: ${PATIENT_PHONE} (criado automaticamente se não existir)`);
-  console.log(`   ⚠️  A clínica precisa ter is_active = true no DB`);
+
+  const ready = await preflight();
+  if (!ready) process.exit(1);
 
   const args = process.argv.slice(2);
   const scenarioIdx = args.indexOf("--scenario");
