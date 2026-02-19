@@ -53,8 +53,8 @@ export function ConversationList({
       : conversations.filter((c) => c.status === filter);
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="flex h-full flex-col gap-3">
+      <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
         {filters.map((f) => (
           <button key={f} type="button" onClick={() => setFilter(f)}>
             <Badge variant={filter === f ? "accent" : "neutral"}>
@@ -64,7 +64,7 @@ export function ConversationList({
         ))}
       </div>
 
-      <div className="space-y-2">
+      <div className="flex-1 space-y-2 overflow-y-auto">
         {filtered.length === 0 ? (
           <div className="flex min-h-[200px] items-center justify-center">
             <p
