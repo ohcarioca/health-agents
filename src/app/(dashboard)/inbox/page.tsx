@@ -116,7 +116,7 @@ export default function InboxPage() {
         {/* Left panel: conversation list */}
         <div className="flex h-full flex-col overflow-hidden">
           {listLoading ? (
-            <div className="flex min-h-[300px] items-center justify-center">
+            <div className="flex h-full items-center justify-center">
               <Spinner size="lg" />
             </div>
           ) : (
