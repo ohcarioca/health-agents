@@ -129,13 +129,18 @@ export async function GET(request: Request) {
         .update({ status: "processing" })
         .eq("id", entry.id);
 
-      // Find or create conversation for outbound template
+      // Find or create conversation for outbound template (skip if escalated)
       const conversationId = await findOrCreateConversation(
         supabase,
         entry.clinic_id,
         patientId,
         "cron/recall-send"
       );
+
+      if (conversationId === null) {
+        skipped++;
+        continue;
+      }
 
       const localBody = `Ola ${patientName}! Faz tempo desde sua ultima visita. Gostariam de agendar um retorno? Estamos a disposicao!`;
 

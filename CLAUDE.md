@@ -147,6 +147,7 @@ return NextResponse.json({ status: "ok" });
 - `professional_services` junction table: links professionals to services with per-professional `price_cents`. Cascade deletes on both FKs. Unique constraint on `(professional_id, service_id)`.
 - `clinics.operating_hours` (JSONB): same `ScheduleGrid` format as `professionals.schedule_grid`.
 - `appointments.insurance_plan_id` (nullable FK to `insurance_plans`) — optional insurance plan per appointment.
+- `conversations`: partial unique index `conversations_one_open_per_patient` on `(clinic_id, patient_id, channel) WHERE status IN ('active', 'escalated')` — enforces at most one open conversation per patient per clinic per channel.
 - `clinics.is_active` (boolean, default false): controls whether agents respond to WhatsApp messages and crons process the clinic. Requires 5 minimum requirements to activate via `PUT /api/onboarding/activate`.
 - `clinics.public_page_enabled` (boolean, default false): toggles public clinic page visibility at `/c/{slug}`.
 - `clinics.accent_color` (text, default `#0EA5E9`): hex color for public page branding.

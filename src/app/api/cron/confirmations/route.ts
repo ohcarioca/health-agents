@@ -191,13 +191,22 @@ export async function GET(request: Request) {
         .update({ status: "processing" })
         .eq("id", entry.id);
 
-      // 9. Find or create conversation
+      // 9. Find or create conversation (skip if escalated — reset to pending for retry)
       const conversationId = await findOrCreateConversation(
         supabase,
         entry.clinic_id,
         patient.id,
         "cron/confirmations"
       );
+
+      if (conversationId === null) {
+        await supabase
+          .from("confirmation_queue")
+          .update({ status: "pending" })
+          .eq("id", entry.id);
+        skipped++;
+        continue;
+      }
 
       // 10. Format message params
       const patientFirstName = getFirstName(patient.name);

@@ -6,19 +6,25 @@ export async function findOrCreateConversation(
   clinicId: string,
   patientId: string,
   logPrefix: string
-): Promise<string> {
+): Promise<string | null> {
   const { data: existing } = await supabase
     .from("conversations")
-    .select("id")
+    .select("id, status")
     .eq("clinic_id", clinicId)
     .eq("patient_id", patientId)
     .eq("channel", "whatsapp")
-    .eq("status", "active")
+    .in("status", ["active", "escalated"])
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
   if (existing) {
+    if (existing.status === "escalated") {
+      console.log(
+        `[${logPrefix}] skipping patient ${patientId}: conversation ${existing.id} is escalated`
+      );
+      return null;
+    }
     return existing.id;
   }
 

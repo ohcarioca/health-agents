@@ -147,7 +147,20 @@ export async function GET(request: Request) {
         continue;
       }
 
-      // 7. Create NPS response placeholder
+      // 7. Find or create conversation (skip if escalated)
+      const conversationId = await findOrCreateConversation(
+        supabase,
+        appointment.clinic_id,
+        patient.id,
+        "cron/nps"
+      );
+
+      if (conversationId === null) {
+        skipped++;
+        continue;
+      }
+
+      // 8. Create NPS response placeholder
       const { error: npsInsertError } = await supabase
         .from("nps_responses")
         .insert({
@@ -168,14 +181,6 @@ export async function GET(request: Request) {
         skipped++;
         continue;
       }
-
-      // 8. Find or create conversation
-      const conversationId = await findOrCreateConversation(
-        supabase,
-        appointment.clinic_id,
-        patient.id,
-        "cron/nps"
-      );
 
       // 9. Set conversation current_module to "nps"
       await supabase
