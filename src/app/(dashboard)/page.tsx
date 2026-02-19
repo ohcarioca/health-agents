@@ -6,7 +6,7 @@ import { AlertsList } from "@/components/dashboard/alerts-list";
 import { UpcomingAppointments } from "@/components/dashboard/upcoming-appointments";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getClinicId } from "@/lib/supabase/server";
-import { calculateNPS, formatCents } from "@/lib/analytics/kpis";
+import { calculateNPS, formatCents, calculateRevenueMetrics } from "@/lib/analytics/kpis";
 import {
   Calendar,
   CheckCircle2,
@@ -81,8 +81,7 @@ export default async function DashboardPage() {
       admin
         .from("invoices")
         .select("amount_cents, status")
-        .eq("clinic_id", clinicId)
-        .eq("status", "overdue"),
+        .eq("clinic_id", clinicId),
 
       admin
         .from("conversations")
@@ -96,9 +95,11 @@ export default async function DashboardPage() {
     .filter((s): s is number => s !== null);
   const nps = calculateNPS(npsScores);
 
-  const overdueTotal = (invoicesData.data || []).reduce(
-    (sum: number, inv: { amount_cents: number }) => sum + inv.amount_cents,
-    0,
+  const revenue = calculateRevenueMetrics(
+    (invoicesData.data || []).map((inv: { amount_cents: number; status: string }) => ({
+      amount_cents: inv.amount_cents,
+      status: inv.status,
+    }))
   );
 
   return (
@@ -124,11 +125,11 @@ export default async function DashboardPage() {
           />
           <KpiCard
             label={t("kpi.revenue")}
-            value={overdueTotal > 0 ? formatCents(overdueTotal) : "\u2014"}
+            value={revenue.paidCents > 0 ? formatCents(revenue.paidCents) : "\u2014"}
             icon={DollarSign}
-            iconBg="rgba(239,68,68,0.15)"
-            iconColor="var(--danger)"
-            subtitle={overdueTotal > 0 ? "overdue" : undefined}
+            iconBg="rgba(16,185,129,0.15)"
+            iconColor="var(--success)"
+            subtitle={revenue.overdueCount > 0 ? `${revenue.overdueCount} em atraso` : undefined}
           />
         </div>
 
