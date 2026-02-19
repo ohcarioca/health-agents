@@ -112,6 +112,14 @@ export function ConversationDetail({
     }
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!messageText.trim() || sendLoading) return;
+      handleSend(e as unknown as FormEvent);
+    }
+  }
+
   return (
     <div
       className="flex h-full flex-col rounded-xl border"
@@ -202,16 +210,17 @@ export function ConversationDetail({
       {conversation.status === "escalated" && (
         <form
           onSubmit={handleSend}
-          className="flex items-center gap-2 border-t px-5 py-3"
+          className="flex items-end gap-2 border-t px-5 py-3"
           style={{ borderColor: "var(--border)" }}
         >
-          <input
-            type="text"
+          <textarea
+            rows={3}
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder={t("messagePlaceholder")}
             disabled={sendLoading}
-            className="flex-1 rounded-lg border bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-ring)]"
+            className="flex-1 resize-none overflow-y-auto rounded-lg border bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-ring)]"
             style={{
               borderColor: "var(--border)",
               color: "var(--text-primary)",
