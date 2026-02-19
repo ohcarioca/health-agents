@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 import { PatientFormDialog } from "@/components/patients/patient-form-dialog";
 import { PatientImportDialog } from "@/components/patients/patient-import-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -67,6 +68,7 @@ export function PatientsView({
   const [editing, setEditing] = useState<PatientRow | undefined>();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deletingPatient, setDeletingPatient] = useState<PatientRow | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const totalPages = Math.ceil(count / PER_PAGE);
 
@@ -121,6 +123,7 @@ export function PatientsView({
 
   async function executeDelete() {
     if (!deletingPatient) return;
+    setDeleteError(null);
 
     try {
       const res = await fetch(`/api/patients/${deletingPatient.id}`, {
@@ -130,16 +133,16 @@ export function PatientsView({
       if (!res.ok) {
         const json = await res.json();
         if (res.status === 409 && json.count !== undefined) {
-          alert(t("deleteBlocked", { count: json.count }));
+          setDeleteError(t("deleteBlocked", { count: json.count }));
           return;
         }
-        alert(t("deleteError"));
+        setDeleteError(t("deleteError"));
         return;
       }
 
       fetchPatients(page, search);
     } catch {
-      alert(t("deleteError"));
+      setDeleteError(t("deleteError"));
     }
   }
 
@@ -417,6 +420,18 @@ export function PatientsView({
         variant="danger"
         onConfirm={executeDelete}
       />
+      <Dialog
+        open={deleteError !== null}
+        onOpenChange={() => setDeleteError(null)}
+        title="Atenção"
+        description={deleteError ?? ""}
+      >
+        <div className="flex justify-end pt-4">
+          <Button size="sm" variant="outline" onClick={() => setDeleteError(null)}>
+            OK
+          </Button>
+        </div>
+      </Dialog>
     </div>
   );
 }
