@@ -3,6 +3,8 @@
 @theme inline {
   --font-sans: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-display: var(--font-instrument-serif), Georgia, "Times New Roman", serif;
+  --font-landing: var(--font-dm-sans), var(--font-sans);
 }
 
 /* Dark mode (default) */
@@ -162,4 +164,65 @@ body {
 
 .phone-input-field .PhoneInputInput::placeholder {
   color: var(--text-muted);
+}
+
+/* ─── Landing page — always light, own design tokens ─── */
+.landing {
+  /* Force light-mode surface */
+  --background: #ffffff;
+  --surface: #f8fafc;
+  --surface-elevated: #ffffff;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  /* Landing accent — brand purple */
+  --lp-accent: #7c3aed;
+  --lp-accent-light: #ede9fe;
+  --lp-accent-fg: #ffffff;
+
+  /* Landing typography scale */
+  --lp-hero-size: clamp(2.75rem, 6vw, 5rem);
+  --lp-section-title-size: clamp(1.75rem, 3.5vw, 2.75rem);
+
+  background-color: #ffffff;
+  color: #0f172a;
+  font-family: var(--font-landing);
+}
+
+/* Entrance animation for landing elements */
+@keyframes lp-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lp-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes lp-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes lp-typing {
+  0%, 60%, 100% { opacity: 0.3; }
+  30% { opacity: 1; }
+}
+
+.lp-animate-fade-up {
+  animation: lp-fade-up 0.6s ease both;
+}
+
+.lp-animate-float {
+  animation: lp-float 4s ease-in-out infinite;
 }

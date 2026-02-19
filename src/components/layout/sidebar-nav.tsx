@@ -17,7 +17,7 @@ import {
 import * as Tooltip from "@radix-ui/react-tooltip";
 
 const NAV_ITEMS = [
-  { href: "/", icon: LayoutDashboard, labelKey: "nav.dashboard" },
+  { href: "/dashboard", icon: LayoutDashboard, labelKey: "nav.dashboard" },
   { href: "/inbox", icon: MessageSquare, labelKey: "nav.inbox" },
   { href: "/calendar", icon: CalendarDays, labelKey: "nav.calendar" },
   { href: "/patients", icon: UserRound, labelKey: "nav.patients" },
@@ -41,8 +41,8 @@ export function SidebarNav({ collapsed }: SidebarNavProps) {
       <nav className="flex flex-col gap-1 px-2">
         {NAV_ITEMS.map((item) => {
           const isActive =
-            item.href === "/"
-              ? pathname === "/"
+            item.href === "/dashboard"
+              ? pathname === "/dashboard"
               : pathname.startsWith(item.href);
           const Icon = item.icon;
           const label = t(item.labelKey);
