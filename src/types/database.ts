@@ -210,6 +210,8 @@ export type Database = {
           created_at: string
           description: string | null
           email: string | null
+          google_calendar_id: string | null
+          google_refresh_token: string | null
           google_reviews_url: string | null
           id: string
           is_active: boolean
@@ -237,6 +239,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           email?: string | null
+          google_calendar_id?: string | null | undefined
+          google_refresh_token?: string | null | undefined
           google_reviews_url?: string | null
           id?: string
           is_active?: boolean
@@ -264,6 +268,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           email?: string | null
+          google_calendar_id?: string | null | undefined
+          google_refresh_token?: string | null | undefined
           google_reviews_url?: string | null
           id?: string
           is_active?: boolean
@@ -973,6 +979,7 @@ export type Database = {
           created_at: string
           duration_minutes: number
           id: string
+          modality: string
           name: string
           price_cents: number | null
         }
@@ -981,6 +988,7 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           id?: string
+          modality?: string | undefined
           name: string
           price_cents?: number | null
         }
@@ -989,6 +997,7 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           id?: string
+          modality?: string | null | undefined
           name?: string
           price_cents?: number | null
         }
