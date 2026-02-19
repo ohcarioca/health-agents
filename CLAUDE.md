@@ -599,6 +599,60 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 
 ---
 
+## Agent Evaluation System (`eval/`)
+
+End-to-end eval suite that tests all 6 production agents against real Supabase + real OpenAI. Uses Claude as judge (`ANTHROPIC_API_KEY` + `CLAUDE_MODEL`).
+
+### Scripts
+
+| Script | What it runs |
+|--------|-------------|
+| `npm run eval` | All 19 unit cases + 4 E2E flows |
+| `npm run eval:unit` | Unit cases only |
+| `npm run eval:flows` | E2E flows only |
+| `npm run eval:agent -- --agent <type>` | Single agent (e.g. `nps`) |
+
+### Structure
+
+```
+eval/
+  cases/          # 19 unit cases (one file per agent)
+  flows/          # 4 E2E flow definitions
+  fixtures/       # create/teardown test clinic + patient + appointments
+  stubs/          # server-only no-op (bypasses Next.js guard)
+  agent-executor.ts   # runs agents via chatWithToolLoop directly
+  evaluator.ts        # Claude-as-judge (6 criteria, 0-10)
+  patient-simulator.ts # LLM patient for E2E turns
+  report.ts           # colorful console + JSON output
+  runner.ts           # main orchestrator
+  supabase.ts         # eval-specific Supabase admin client
+  types.ts            # shared types
+eval-results/     # JSON reports (git-ignored)
+tsconfig.eval.json
+```
+
+### How it works
+
+1. Fixtures are created fresh each run (clinic + patient + professional + appointments) and torn down in `finally`.
+2. `agent-executor.ts` imports all 6 agents via side-effects and calls `chatWithToolLoop()` directly, bypassing Next.js.
+3. `server-only` is stubbed to a no-op so agent code compiles outside Next.js.
+4. WhatsApp sends use fake credentials — Meta returns 4xx, services log gracefully.
+5. Claude evaluates each response on 6 criteria (Corretude, Tom, Completude, Uso de ferramentas, Fluidez, Segurança).
+6. **Pass threshold**: avg score ≥ 7.0. **Critical fail**: Segurança < 5 → exit code 1.
+
+### Required env vars
+
+```
+ANTHROPIC_API_KEY=sk-ant-xxx
+CLAUDE_MODEL=claude-sonnet-4-6   # evaluator model
+OPENAI_API_KEY=...               # agent model (same as production)
+OPENAI_MODEL=...
+NEXT_PUBLIC_SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...
+```
+
+---
+
 ## Git
 
 - Commit messages: imperative, lowercase, max 72 characters.
