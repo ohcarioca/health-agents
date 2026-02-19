@@ -107,7 +107,7 @@ function createBillingMockSupabase(options: {
         name: "Maria Silva",
         phone: "5511999999999",
         email: "maria@example.com",
-        cpf: "12345678900",
+        cpf: "52998224725",
         asaas_customer_id: null,
       },
     },

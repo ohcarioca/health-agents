@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface StepSliderProps {
@@ -29,20 +29,18 @@ const transition = {
 };
 
 export function StepSlider({ stepKey, children }: StepSliderProps) {
-  const prevStep = useRef(stepKey);
-  const [direction, setDirection] = useState(1);
+  const [slide, setSlide] = useState({ prev: stepKey, direction: 1 });
 
-  if (stepKey !== prevStep.current) {
-    setDirection(stepKey > prevStep.current ? 1 : -1);
-    prevStep.current = stepKey;
+  if (stepKey !== slide.prev) {
+    setSlide({ prev: stepKey, direction: stepKey > slide.prev ? 1 : -1 });
   }
 
   return (
     <div className="overflow-hidden">
-      <AnimatePresence mode="wait" custom={direction}>
+      <AnimatePresence mode="wait" custom={slide.direction}>
         <motion.div
           key={stepKey}
-          custom={direction}
+          custom={slide.direction}
           variants={variants}
           initial="enter"
           animate="center"

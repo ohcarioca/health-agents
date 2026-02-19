@@ -52,8 +52,6 @@ function createChainable(
   }
 ): MockChainable {
   const chainable: MockChainable = {} as MockChainable;
-  const self = () => chainable;
-
   chainable.select = vi.fn().mockReturnValue(chainable);
   chainable.insert = vi.fn().mockReturnValue(chainable);
   chainable.update = vi.fn().mockReturnValue(chainable);
@@ -527,10 +525,8 @@ describe("scheduling agent", () => {
           error: null,
         });
 
-        let appointmentCallCount = 0;
         const mockFromFn = vi.fn().mockImplementation((table: string) => {
           if (table === "appointments") {
-            appointmentCallCount++;
             return listChainable;
           }
           if (table === "professionals") {

@@ -23,6 +23,12 @@ export default [
     },
   },
   {
+    files: ["src/__tests__/**/*.ts", "src/__tests__/**/*.tsx"],
+    rules: {
+      "@typescript-eslint/no-non-null-assertion": "off",
+    },
+  },
+  {
     ignores: [".next/", "node_modules/", "coverage/", ".worktrees/", "eval/"],
   },
 ];

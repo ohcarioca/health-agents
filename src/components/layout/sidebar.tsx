@@ -12,7 +12,9 @@ interface SidebarProps {
 }
 
 export function Sidebar({ clinicName, isActive, onCollapseChange }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(
+    () => localStorage.getItem("sidebar-collapsed") === "true"
+  );
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const updateCollapsed = useCallback(
@@ -23,12 +25,13 @@ export function Sidebar({ clinicName, isActive, onCollapseChange }: SidebarProps
     [onCollapseChange]
   );
 
+  // Notify parent of initial collapsed state on mount
   useEffect(() => {
-    const stored = localStorage.getItem("sidebar-collapsed");
-    if (stored === "true") {
-      updateCollapsed(true);
+    if (collapsed) {
+      onCollapseChange?.(collapsed);
     }
-  }, [updateCollapsed]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function toggleCollapsed() {
     const next = !collapsed;
