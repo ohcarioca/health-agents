@@ -3,9 +3,10 @@ import { z } from "zod";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const disconnectSchema = z.object({
-  professional_id: z.string().uuid(),
-});
+const disconnectSchema = z.union([
+  z.object({ professional_id: z.string().uuid() }),
+  z.object({ target: z.literal("clinic") }),
+]);
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -22,8 +23,6 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-
-  const { professional_id } = parsed.data;
 
   const supabase = await createServerSupabaseClient();
   const {
@@ -46,6 +45,19 @@ export async function POST(request: Request) {
   if (!membership) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  if ("target" in parsed.data && parsed.data.target === "clinic") {
+    const { error } = await admin
+      .from("clinics")
+      .update({ google_calendar_id: null, google_refresh_token: null })
+      .eq("id", membership.clinic_id);
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ data: { disconnected: true } });
+  }
+
+  const { professional_id } = parsed.data as { professional_id: string };
 
   const { data: professional } = await admin
     .from("professionals")
