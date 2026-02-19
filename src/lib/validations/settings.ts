@@ -66,16 +66,20 @@ export type UpdateProfessionalInput = z.infer<typeof updateProfessionalSchema>;
 
 // --- Services ---
 
+const serviceModalitySchema = z.enum(['in_person', 'online', 'both']);
+
 export const createServiceSchema = z.object({
   name: z.string().min(2).max(100),
   duration_minutes: z.number().int().min(5).max(480).default(30),
   price_cents: z.number().int().min(0).optional(),
+  modality: serviceModalitySchema.default('both'),
 });
 
 export const updateServiceSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   duration_minutes: z.number().int().min(5).max(480).optional(),
   price_cents: z.number().int().min(0).optional().nullable(),
+  modality: serviceModalitySchema.optional(),
 });
 
 export type CreateServiceInput = z.infer<typeof createServiceSchema>;

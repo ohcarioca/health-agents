@@ -4,10 +4,16 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getConsentUrl } from "@/services/google-calendar";
 
-const connectSchema = z.object({
-  professional_id: z.string().uuid(),
-  return_to: z.string().optional(),
-});
+const connectSchema = z.union([
+  z.object({
+    professional_id: z.string().uuid(),
+    return_to: z.string().optional(),
+  }),
+  z.object({
+    target: z.literal("clinic"),
+    return_to: z.string().optional(),
+  }),
+]);
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -24,8 +30,6 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-
-  const { professional_id, return_to } = parsed.data;
 
   const supabase = await createServerSupabaseClient();
   const {
@@ -49,6 +53,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const returnTo = parsed.data.return_to;
+
+  if ("target" in parsed.data && parsed.data.target === "clinic") {
+    const state = returnTo
+      ? `clinic::${membership.clinic_id}::${returnTo}`
+      : `clinic::${membership.clinic_id}`;
+    const url = getConsentUrl(state);
+    return NextResponse.json({ data: { url } });
+  }
+
+  // Professional-level (existing logic)
+  const { professional_id } = parsed.data as { professional_id: string; return_to?: string };
+
   const { data: professional } = await admin
     .from("professionals")
     .select("id")
@@ -64,8 +81,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const state = return_to
-    ? `${professional_id}::${return_to}`
+  const state = returnTo
+    ? `${professional_id}::${returnTo}`
     : professional_id;
   const url = getConsentUrl(state);
 

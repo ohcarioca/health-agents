@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
@@ -44,6 +45,7 @@ const POLL_INTERVAL_MS = 10_000;
 
 export default function InboxPage() {
   const t = useTranslations("inbox");
+  const searchParams = useSearchParams();
 
   const [conversations, setConversations] = useState<ConversationListItem[]>(
     []
@@ -84,6 +86,16 @@ export default function InboxPage() {
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
+
+  // Auto-select conversation from ?conversation= query param
+  useEffect(() => {
+    if (listLoading) return;
+    const id = searchParams.get("conversation");
+    if (id && id !== selectedId) {
+      handleSelect(id);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listLoading]);
 
   // Poll for updates
   useEffect(() => {

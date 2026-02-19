@@ -91,12 +91,15 @@ describe("GET /api/cron/billing", () => {
   });
 
   it("returns 200 with valid CRON_SECRET and no pending invoices", async () => {
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        in: vi.fn().mockReturnValue({
-          lte: vi.fn().mockResolvedValue({ data: [], error: null }),
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "module_configs") return createModuleConfigsMock();
+      return {
+        select: vi.fn().mockReturnValue({
+          in: vi.fn().mockReturnValue({
+            lte: vi.fn().mockResolvedValue({ data: [], error: null }),
+          }),
         }),
-      }),
+      };
     });
 
     const response = await GET(createRequest(`Bearer ${CRON_SECRET}`));
@@ -112,6 +115,8 @@ describe("GET /api/cron/billing", () => {
 
     mockFrom.mockImplementation((table: string) => {
       callCounts[table] = (callCounts[table] ?? 0) + 1;
+
+      if (table === "module_configs") return createModuleConfigsMock();
 
       if (table === "invoices") {
         return {
@@ -202,6 +207,8 @@ describe("GET /api/cron/billing", () => {
     (isWithinBusinessHours as ReturnType<typeof vi.fn>).mockReturnValue(false);
 
     mockFrom.mockImplementation((table: string) => {
+      if (table === "module_configs") return createModuleConfigsMock();
+
       if (table === "invoices") {
         return {
           select: vi.fn().mockReturnValue({
@@ -240,6 +247,8 @@ describe("GET /api/cron/billing", () => {
     (canSendToPatient as ReturnType<typeof vi.fn>).mockResolvedValue(false);
 
     mockFrom.mockImplementation((table: string) => {
+      if (table === "module_configs") return createModuleConfigsMock();
+
       if (table === "invoices") {
         return {
           select: vi.fn().mockReturnValue({
@@ -285,6 +294,8 @@ describe("GET /api/cron/billing", () => {
 
     mockFrom.mockImplementation((table: string) => {
       callCounts[table] = (callCounts[table] ?? 0) + 1;
+
+      if (table === "module_configs") return createModuleConfigsMock();
 
       if (table === "invoices") {
         const callNum = callCounts[table];
@@ -349,15 +360,18 @@ describe("GET /api/cron/billing", () => {
   });
 
   it("returns 500 when database query fails", async () => {
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        in: vi.fn().mockReturnValue({
-          lte: vi.fn().mockResolvedValue({
-            data: null,
-            error: { message: "connection_error" },
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "module_configs") return createModuleConfigsMock();
+      return {
+        select: vi.fn().mockReturnValue({
+          in: vi.fn().mockReturnValue({
+            lte: vi.fn().mockResolvedValue({
+              data: null,
+              error: { message: "connection_error" },
+            }),
           }),
         }),
-      }),
+      };
     });
 
     const response = await GET(createRequest(`Bearer ${CRON_SECRET}`));
@@ -369,6 +383,17 @@ describe("GET /api/cron/billing", () => {
 });
 
 // ── Chain helpers ──
+
+/** module_configs: .select().eq("module_type",...).eq("enabled",...) → [] */
+function createModuleConfigsMock() {
+  return {
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
+    }),
+  };
+}
 
 function createChainWithSingle(
   data: unknown,

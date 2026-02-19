@@ -183,7 +183,21 @@ export async function processMessage(
   // 6. Route message to module
   let moduleType: ModuleType;
 
-  if (currentModule && getAgentType(currentModule)) {
+  // Fetch disabled module types so routing skips them
+  const { data: moduleConfigRows } = await supabase
+    .from("module_configs")
+    .select("module_type, enabled")
+    .eq("clinic_id", clinicId);
+
+  const disabledModules = new Set(
+    (moduleConfigRows ?? [])
+      .filter((c) => c.enabled === false)
+      .map((c) => c.module_type as string)
+  );
+
+  const isModuleEnabled = (type: string) => !disabledModules.has(type);
+
+  if (currentModule && getAgentType(currentModule) && isModuleEnabled(currentModule)) {
     moduleType = currentModule as ModuleType;
   } else if (isNewPatient && getAgentType("support")) {
     moduleType = "support" as ModuleType;
@@ -196,7 +210,7 @@ export async function processMessage(
       .eq("active", true);
 
     const registeredModules = (activeAgents ?? [])
-      .filter((a) => getAgentType(a.type))
+      .filter((a) => getAgentType(a.type) && isModuleEnabled(a.type))
       .map((a) => a.type as ModuleType);
 
     if (registeredModules.length === 1) {
@@ -273,7 +287,7 @@ export async function processMessage(
 
   const { data: services } = await supabase
     .from("services")
-    .select("id, name, price_cents, duration_minutes")
+    .select("id, name, price_cents, duration_minutes, modality")
     .eq("clinic_id", clinicId);
 
   const { data: professionals } = await supabase
@@ -296,7 +310,13 @@ export async function processMessage(
           const duration = s.duration_minutes
             ? ` (${s.duration_minutes}min)`
             : "";
-          return `${s.name}${duration}${price} [ID: ${s.id}]`;
+          const modalityMap: Record<string, string> = {
+            in_person: "presencial",
+            online: "online",
+            both: "presencial/online",
+          };
+          const modStr = s.modality ? ` [${modalityMap[s.modality as string] ?? s.modality}]` : "";
+          return `${s.name}${duration}${price}${modStr} [ID: ${s.id}]`;
         }),
         professionals: (professionals ?? []).map((p) => ({
           id: p.id as string,

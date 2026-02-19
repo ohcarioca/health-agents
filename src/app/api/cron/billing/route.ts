@@ -40,6 +40,16 @@ export async function GET(request: Request) {
   const supabase = createAdminClient();
   const today = new Date().toISOString().split("T")[0];
 
+  // Build a set of clinic IDs where the billing module is disabled
+  const { data: disabledBillingModules } = await supabase
+    .from("module_configs")
+    .select("clinic_id")
+    .eq("module_type", "billing")
+    .eq("enabled", false);
+  const billingDisabledClinicIds = new Set(
+    (disabledBillingModules ?? []).map((m) => m.clinic_id as string)
+  );
+
   const { data: invoices, error } = await supabase
     .from("invoices")
     .select(`
@@ -64,6 +74,11 @@ export async function GET(request: Request) {
   for (const invoice of invoices) {
     const patient = invoice.patients as Record<string, unknown>;
     if (!patient) continue;
+
+    if (billingDisabledClinicIds.has(invoice.clinic_id)) {
+      skipped++;
+      continue;
+    }
 
     const patientPhone = (patient.phone as string) ?? "";
     const patientName = ((patient.name as string) ?? "").split(" ")[0];

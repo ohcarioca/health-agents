@@ -9,14 +9,26 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get("state");
   const error = searchParams.get("error");
 
-  // Decode state: "professionalId" or "professionalId::returnTo"
-  let professionalId = state ?? "";
+  // Decode state:
+  // - "professionalId"
+  // - "professionalId::returnTo"
+  // - "clinic::clinicId"
+  // - "clinic::clinicId::returnTo"
+  let isClinicTarget = false;
+  let professionalId = "";
+  let clinicIdFromState = "";
   let returnTo = "/settings?tab=integrations";
 
-  if (state && state.includes("::")) {
+  if (state) {
     const parts = state.split("::");
-    professionalId = parts[0];
-    returnTo = parts.slice(1).join("::");
+    if (parts[0] === "clinic") {
+      isClinicTarget = true;
+      clinicIdFromState = parts[1] ?? "";
+      if (parts.length > 2) returnTo = parts.slice(2).join("::");
+    } else {
+      professionalId = parts[0];
+      if (parts.length > 1) returnTo = parts.slice(1).join("::");
+    }
   }
 
   const appendParam = (base: string, param: string) =>
@@ -93,42 +105,70 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const { data: professional } = await admin
-    .from("professionals")
-    .select("id")
-    .eq("id", professionalId)
-    .eq("clinic_id", membership.clinic_id)
-    .limit(1)
-    .single();
+  if (isClinicTarget) {
+    if (clinicIdFromState !== membership.clinic_id) {
+      return NextResponse.redirect(
+        new URL(appendParam(returnTo, "error=unauthorized"), request.url)
+      );
+    }
+    const { error: updateError } = await admin
+      .from("clinics")
+      .update({
+        google_refresh_token: exchangeResult.refreshToken,
+        google_calendar_id: calendarResult.calendarId,
+      })
+      .eq("id", membership.clinic_id);
 
-  if (!professional) {
-    return NextResponse.redirect(
-      new URL(
-        appendParam(returnTo, "error=professional_not_found"),
-        request.url
-      )
-    );
-  }
+    if (updateError) {
+      console.error(
+        "[google-calendar/callback] update clinic failed:",
+        updateError.message
+      );
+      return NextResponse.redirect(
+        new URL(
+          appendParam(returnTo, "error=calendar_save_failed"),
+          request.url
+        )
+      );
+    }
+  } else {
+    const { data: professional } = await admin
+      .from("professionals")
+      .select("id")
+      .eq("id", professionalId)
+      .eq("clinic_id", membership.clinic_id)
+      .limit(1)
+      .single();
 
-  const { error: updateError } = await admin
-    .from("professionals")
-    .update({
-      google_refresh_token: exchangeResult.refreshToken,
-      google_calendar_id: calendarResult.calendarId,
-    })
-    .eq("id", professionalId);
+    if (!professional) {
+      return NextResponse.redirect(
+        new URL(
+          appendParam(returnTo, "error=professional_not_found"),
+          request.url
+        )
+      );
+    }
 
-  if (updateError) {
-    console.error(
-      "[google-calendar/callback] update professional failed:",
-      updateError.message
-    );
-    return NextResponse.redirect(
-      new URL(
-        appendParam(returnTo, "error=calendar_save_failed"),
-        request.url
-      )
-    );
+    const { error: updateError } = await admin
+      .from("professionals")
+      .update({
+        google_refresh_token: exchangeResult.refreshToken,
+        google_calendar_id: calendarResult.calendarId,
+      })
+      .eq("id", professionalId);
+
+    if (updateError) {
+      console.error(
+        "[google-calendar/callback] update professional failed:",
+        updateError.message
+      );
+      return NextResponse.redirect(
+        new URL(
+          appendParam(returnTo, "error=calendar_save_failed"),
+          request.url
+        )
+      );
+    }
   }
 
   return NextResponse.redirect(

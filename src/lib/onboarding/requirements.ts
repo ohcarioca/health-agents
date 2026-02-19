@@ -20,7 +20,6 @@ export interface RequirementsResult {
     professional_schedule: boolean;
     service_with_price: boolean;
     whatsapp: boolean;
-    google_calendar: boolean;
   };
 }
 
@@ -53,7 +52,6 @@ export async function checkRequirements(
         professional_schedule: false,
         service_with_price: false,
         whatsapp: false,
-        google_calendar: false,
       },
     };
   }
@@ -103,18 +101,6 @@ export async function checkRequirements(
       clinic.whatsapp_access_token
   );
 
-  // Check 5: Active professional with google_calendar_id set
-  const { data: profWithCalendar } = await admin
-    .from("professionals")
-    .select("id")
-    .eq("clinic_id", clinicId)
-    .eq("active", true)
-    .not("google_calendar_id", "is", null)
-    .limit(1)
-    .maybeSingle();
-
-  const googleCalendar = profWithCalendar !== null;
-
   return {
     is_active: clinic.is_active as boolean,
     requirements: {
@@ -122,7 +108,6 @@ export async function checkRequirements(
       professional_schedule: professionalSchedule,
       service_with_price: serviceWithPrice,
       whatsapp,
-      google_calendar: googleCalendar,
     },
   };
 }

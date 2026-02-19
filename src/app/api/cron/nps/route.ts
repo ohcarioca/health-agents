@@ -29,6 +29,16 @@ export async function GET(request: Request) {
 
   const supabase = createAdminClient();
 
+  // Build a set of clinic IDs where the NPS module is disabled
+  const { data: disabledNpsModules } = await supabase
+    .from("module_configs")
+    .select("clinic_id")
+    .eq("module_type", "nps")
+    .eq("enabled", false);
+  const npsDisabledClinicIds = new Set(
+    (disabledNpsModules ?? []).map((m) => m.clinic_id as string)
+  );
+
   // 1. Find completed appointments updated in the last 24 hours
   const cutoff = new Date(
     Date.now() - HOURS_SINCE_COMPLETION * 60 * 60 * 1000
@@ -57,6 +67,12 @@ export async function GET(request: Request) {
 
   for (const appointment of completedAppointments) {
     try {
+      // Skip if NPS module is disabled for this clinic
+      if (npsDisabledClinicIds.has(appointment.clinic_id)) {
+        skipped++;
+        continue;
+      }
+
       // 2. Check if NPS response already exists for this appointment
       const { data: existingNps } = await supabase
         .from("nps_responses")

@@ -118,12 +118,13 @@ export function SetupWizard() {
           const { data: svcList } = await serviceRes.json();
           if (Array.isArray(svcList) && svcList.length > 0) {
             setServices(
-              svcList.map((svc: { name: string; duration_minutes: number; price_cents: number | null }) => ({
+              svcList.map((svc: { name: string; duration_minutes: number; price_cents: number | null; modality?: string }) => ({
                 name: svc.name,
                 duration_minutes: svc.duration_minutes,
                 price: svc.price_cents != null && svc.price_cents > 0
                   ? (svc.price_cents / 100).toFixed(2)
                   : "",
+                modality: (svc.modality ?? "both") as ServiceItem["modality"],
               }))
             );
             if (autoStep >= 3 && svcList.length > 0 && svcList.some((s: { price_cents: number | null }) => s.price_cents != null && s.price_cents > 0)) autoStep = 4;
@@ -221,6 +222,7 @@ export function SetupWizard() {
           name: svc.name,
           duration_minutes: svc.duration_minutes,
           price_cents: priceCents,
+          modality: svc.modality ?? "both",
         }),
       });
       if (!res.ok) continue;

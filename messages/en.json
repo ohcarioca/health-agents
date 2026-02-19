@@ -182,9 +182,20 @@
     "disabled": "Inactive",
     "conversations": "{count} conversations",
     "noConversations": "No conversations",
+    "save": "Save",
+    "cancel": "Cancel",
+    "configure": "Configure",
+    "enableModule": "Enable module",
     "support": {
       "name": "Support",
-      "description": "FAQ and support via WhatsApp"
+      "description": "FAQ and support via WhatsApp",
+      "settingsTitle": "FAQ Base",
+      "faqDescription": "Questions and answers the agent will use to respond to patient inquiries",
+      "addFaq": "Add question",
+      "question": "Question",
+      "answer": "Answer",
+      "noFaqItems": "No questions added yet",
+      "deleteFaq": "Delete"
     },
     "scheduling": {
       "name": "Scheduling",
@@ -196,15 +207,22 @@
     },
     "nps": {
       "name": "NPS",
-      "description": "Post-appointment satisfaction survey"
+      "description": "Post-appointment satisfaction survey",
+      "settingsTitle": "NPS Settings"
     },
     "billing": {
       "name": "Billing",
-      "description": "Payment link delivery"
+      "description": "Payment link delivery",
+      "settingsTitle": "Billing Settings",
+      "autoBilling": "Automatic billing",
+      "autoBillingDescription": "Create invoice automatically when scheduling an appointment"
     },
     "recall": {
       "name": "Recall",
-      "description": "Inactive patient reactivation"
+      "description": "Inactive patient reactivation",
+      "settingsTitle": "Recall Settings",
+      "inactivityDays": "Inactivity threshold (days)",
+      "inactivityDaysDescription": "Days without appointment before initiating patient recall"
     }
   },
   "reports": {
@@ -351,7 +369,9 @@
       "connected": "Connected",
       "connect": "Connect",
       "disconnect": "Disconnect",
-      "connectDescription": "Connect each professional's Google Calendar to sync appointments.",
+      "connectDescription": "Sync appointments with the clinic's and professionals' Google Calendars.",
+      "clinicCalendarLabel": "Clinic Calendar",
+      "clinicCalendarDescription": "Connect the clinic's main calendar to sync all appointments.",
       "disconnectConfirm": "Disconnect Google Calendar?",
       "connectSuccess": "Google Calendar connected successfully",
       "connectError": "Failed to connect Google Calendar"
@@ -487,7 +507,11 @@
       "serviceDuration": "Duration (min)",
       "servicePrice": "Price",
       "noServices": "Add at least one service.",
-      "removeService": "Remove"
+      "removeService": "Remove",
+      "modality": "Modality",
+      "modalityBoth": "In-person & Online",
+      "modalityInPerson": "In-person",
+      "modalityOnline": "Online"
     },
     "stepBilling": {
       "title": "Billing",

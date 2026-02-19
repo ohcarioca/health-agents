@@ -10,6 +10,7 @@ export interface ServiceItem {
   name: string;
   duration_minutes: number;
   price: string;
+  modality: 'in_person' | 'online' | 'both';
 }
 
 interface StepServicesProps {
@@ -43,7 +44,7 @@ export function StepServices({
     if (tmpl) {
       onServicesChange([
         ...services,
-        { name: tmpl.name, duration_minutes: tmpl.duration_minutes, price: "" },
+        { name: tmpl.name, duration_minutes: tmpl.duration_minutes, price: "", modality: "both" },
       ]);
     }
     e.target.value = "";
@@ -53,7 +54,7 @@ export function StepServices({
     if (customName.trim().length < 2) return;
     onServicesChange([
       ...services,
-      { name: customName.trim(), duration_minutes: 30, price: "" },
+      { name: customName.trim(), duration_minutes: 30, price: "", modality: "both" },
     ]);
     setCustomName("");
     setShowCustomInput(false);
@@ -174,6 +175,24 @@ export function StepServices({
               <span className="text-xs" style={{ color: "var(--text-muted)" }}>
                 min
               </span>
+              {/* Modality selector */}
+              <select
+                value={svc.modality}
+                onChange={(e) =>
+                  updateService(index, "modality", e.target.value as ServiceItem["modality"])
+                }
+                className="rounded border px-2 py-1 text-xs"
+                style={{
+                  backgroundColor: "var(--background)",
+                  borderColor: "var(--border)",
+                  color: "var(--text-primary)",
+                }}
+                title={t("stepServices.modality")}
+              >
+                <option value="both">{t("stepServices.modalityBoth")}</option>
+                <option value="in_person">{t("stepServices.modalityInPerson")}</option>
+                <option value="online">{t("stepServices.modalityOnline")}</option>
+              </select>
               <div className="relative">
                 <span
                   className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs"

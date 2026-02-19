@@ -54,6 +54,7 @@ export async function PUT(
     updateData.duration_minutes = parsed.data.duration_minutes;
   if (parsed.data.price_cents !== undefined)
     updateData.price_cents = parsed.data.price_cents;
+  if (parsed.data.modality !== undefined) updateData.modality = parsed.data.modality;
 
   const admin = createAdminClient();
   const { data: service, error } = await admin

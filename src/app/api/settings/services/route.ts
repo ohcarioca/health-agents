@@ -31,7 +31,7 @@ export async function GET() {
   const admin = createAdminClient();
   const { data: services, error } = await admin
     .from("services")
-    .select("id, name, duration_minutes, price_cents, created_at")
+    .select("id, name, duration_minutes, price_cents, modality, created_at")
     .eq("clinic_id", clinicId)
     .order("created_at", { ascending: true });
 
@@ -71,6 +71,7 @@ export async function POST(request: Request) {
       name: parsed.data.name,
       duration_minutes: parsed.data.duration_minutes,
       price_cents: parsed.data.price_cents ?? null,
+      modality: parsed.data.modality ?? 'both',
     })
     .select()
     .single();

@@ -182,9 +182,20 @@
     "disabled": "Inactivo",
     "conversations": "{count} conversaciones",
     "noConversations": "Sin conversaciones",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "configure": "Configurar",
+    "enableModule": "Activar módulo",
     "support": {
       "name": "Soporte",
-      "description": "Atención y FAQ por WhatsApp"
+      "description": "Atención y FAQ por WhatsApp",
+      "settingsTitle": "Base de FAQ",
+      "faqDescription": "Preguntas y respuestas que el agente usará para responder consultas de pacientes",
+      "addFaq": "Agregar pregunta",
+      "question": "Pregunta",
+      "answer": "Respuesta",
+      "noFaqItems": "Sin preguntas registradas",
+      "deleteFaq": "Eliminar"
     },
     "scheduling": {
       "name": "Agendamiento",
@@ -196,15 +207,22 @@
     },
     "nps": {
       "name": "NPS",
-      "description": "Encuesta de satisfacción post-cita"
+      "description": "Encuesta de satisfacción post-cita",
+      "settingsTitle": "Configuración de NPS"
     },
     "billing": {
       "name": "Cobro",
-      "description": "Envío de enlaces de pago"
+      "description": "Envío de enlaces de pago",
+      "settingsTitle": "Configuración de Cobros",
+      "autoBilling": "Cobro automático",
+      "autoBillingDescription": "Crear factura automáticamente al agendar una cita"
     },
     "recall": {
       "name": "Recall",
-      "description": "Reactivación de pacientes inactivos"
+      "description": "Reactivación de pacientes inactivos",
+      "settingsTitle": "Configuración de Recall",
+      "inactivityDays": "Plazo de inactividad (días)",
+      "inactivityDaysDescription": "Días sin cita para iniciar el recall del paciente"
     }
   },
   "reports": {
@@ -351,7 +369,9 @@
       "connected": "Conectado",
       "connect": "Conectar",
       "disconnect": "Desconectar",
-      "connectDescription": "Conecta el Google Calendar de cada profesional para sincronizar citas.",
+      "connectDescription": "Sincroniza las citas con el Google Calendar de la clínica y los profesionales.",
+      "clinicCalendarLabel": "Calendario de la Clínica",
+      "clinicCalendarDescription": "Conecta el calendario principal de la clínica para sincronizar todas las citas.",
       "disconnectConfirm": "¿Desconectar Google Calendar?",
       "connectSuccess": "Google Calendar conectado exitosamente",
       "connectError": "Error al conectar Google Calendar"
@@ -487,7 +507,11 @@
       "serviceDuration": "Duración (min)",
       "servicePrice": "Precio",
       "noServices": "Agregue al menos un servicio.",
-      "removeService": "Eliminar"
+      "removeService": "Eliminar",
+      "modality": "Modalidad",
+      "modalityBoth": "Presencial y Online",
+      "modalityInPerson": "Presencial",
+      "modalityOnline": "Online"
     },
     "stepBilling": {
       "title": "Facturación",

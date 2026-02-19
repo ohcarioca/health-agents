@@ -23,15 +23,13 @@ type RequirementKey =
   | "operating_hours"
   | "professional_schedule"
   | "service_with_price"
-  | "whatsapp"
-  | "google_calendar";
+  | "whatsapp";
 
 const REQUIREMENT_KEYS: RequirementKey[] = [
   "operating_hours",
   "professional_schedule",
   "service_with_price",
   "whatsapp",
-  "google_calendar",
 ];
 
 const SETTINGS_TAB_MAP: Record<RequirementKey, string> = {
@@ -39,7 +37,6 @@ const SETTINGS_TAB_MAP: Record<RequirementKey, string> = {
   professional_schedule: "/settings?tab=professionals",
   service_with_price: "/settings?tab=services",
   whatsapp: "/settings?tab=whatsapp",
-  google_calendar: "/settings?tab=integrations",
 };
 
 export function StepCompletion() {

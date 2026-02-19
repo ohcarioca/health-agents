@@ -104,9 +104,10 @@ describe("GET /api/cron/nps", () => {
   });
 
   it("returns 200 with valid CRON_SECRET when no completed appointments", async () => {
-    mockFrom.mockReturnValue(
-      createChainWithData([], null)
-    );
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "module_configs") return createModuleConfigsMock();
+      return createChainWithData([], null);
+    });
 
     const response = await GET(createRequest(`Bearer ${CRON_SECRET}`));
     expect(response.status).toBe(200);
@@ -122,6 +123,8 @@ describe("GET /api/cron/nps", () => {
 
     mockFrom.mockImplementation((table: string) => {
       callCounts[table] = (callCounts[table] ?? 0) + 1;
+
+      if (table === "module_configs") return createModuleConfigsMock();
 
       if (table === "appointments") {
         // First call: select completed appointments
@@ -201,6 +204,8 @@ describe("GET /api/cron/nps", () => {
     mockFrom.mockImplementation((table: string) => {
       callCounts[table] = (callCounts[table] ?? 0) + 1;
 
+      if (table === "module_configs") return createModuleConfigsMock();
+
       if (table === "appointments") {
         return createChainWithData([COMPLETED_APPOINTMENT], null);
       }
@@ -226,6 +231,17 @@ describe("GET /api/cron/nps", () => {
 });
 
 // ── Chain helpers ──
+
+/** module_configs: .select().eq("module_type",...).eq("enabled",...) → [] */
+function createModuleConfigsMock() {
+  return {
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
+    }),
+  };
+}
 
 /**
  * Creates a chainable that resolves with array data (for queries that return
