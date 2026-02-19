@@ -183,7 +183,21 @@ export async function processMessage(
   // 6. Route message to module
   let moduleType: ModuleType;
 
-  if (currentModule && getAgentType(currentModule)) {
+  // Fetch disabled module types so routing skips them
+  const { data: moduleConfigRows } = await supabase
+    .from("module_configs")
+    .select("module_type, enabled")
+    .eq("clinic_id", clinicId);
+
+  const disabledModules = new Set(
+    (moduleConfigRows ?? [])
+      .filter((c) => c.enabled === false)
+      .map((c) => c.module_type as string)
+  );
+
+  const isModuleEnabled = (type: string) => !disabledModules.has(type);
+
+  if (currentModule && getAgentType(currentModule) && isModuleEnabled(currentModule)) {
     moduleType = currentModule as ModuleType;
   } else if (isNewPatient && getAgentType("support")) {
     moduleType = "support" as ModuleType;
@@ -196,7 +210,7 @@ export async function processMessage(
       .eq("active", true);
 
     const registeredModules = (activeAgents ?? [])
-      .filter((a) => getAgentType(a.type))
+      .filter((a) => getAgentType(a.type) && isModuleEnabled(a.type))
       .map((a) => a.type as ModuleType);
 
     if (registeredModules.length === 1) {
