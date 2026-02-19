@@ -115,7 +115,6 @@ export function UpcomingAppointments() {
     }
   }, [fetchWeekAppointments]);
 
-  const today = new Date();
   const now = new Date();
 
   return (
@@ -165,7 +164,7 @@ export function UpcomingAppointments() {
 
         <div className="flex flex-1 justify-between gap-1">
           {weekDays.map((day) => {
-            const isToday = isSameDay(day, today);
+            const isToday = isSameDay(day, now);
             const isSelected = isSameDay(day, selectedDate);
             const count = countAppointmentsForDay(allAppointments, day);
             const weekday = day.toLocaleDateString(locale, { weekday: "short" });
