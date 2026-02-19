@@ -23,6 +23,8 @@ Follow strictly when generating, modifying, or reviewing code.
 | Testing | Vitest + React Testing Library |
 | Charts | Recharts |
 | File parsing | papaparse (CSV) + xlsx (XLSX) |
+| Rate Limiting | @upstash/ratelimit + @upstash/redis |
+| Notifications | sonner (toast) |
 
 No alternative libraries without explicit approval.
 
@@ -85,7 +87,7 @@ No alternative libraries without explicit approval.
 - No global state library. If you need one, ask first.
 - Supabase clients (three files, never mix):
   - `client.ts` → browser only (`"use client"`)
-  - `server.ts` → SSR (reads cookies/session)
+  - `server.ts` → SSR (reads cookies/session, `import "server-only"`). Exports shared `getClinicId()` — import from here, never redefine locally.
   - `admin.ts` → service role (webhooks, cron — `import "server-only"`)
 - Environment variables: `NEXT_PUBLIC_*` → client. Everything else → server only. Never leak server secrets to the client.
 
@@ -583,8 +585,11 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 - Server secrets must never use `NEXT_PUBLIC_*` prefix.
 - Secret comparison: `crypto.timingSafeEqual()` — never `===`.
 - Webhook auth: cryptographic signature verification. Never trust unverified payloads.
-- Rate limit all public-facing and mutating endpoints.
+- Rate limit all public-facing and mutating endpoints via `checkRateLimit()` from `src/lib/rate-limit.ts` (Upstash Redis). Two tiers: `standard` (60/min) for authenticated routes, `strict` (10/min) for payment/auth.
 - Use parameterized queries (Supabase client handles this). Never concatenate SQL.
+- Security headers (HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) configured in `next.config.ts`.
+- Never expose CPF unmasked in API responses — use `maskCPF()` from `src/lib/utils/mask.ts`.
+- Never expose internal provider IDs (asaas_customer_id, whatsapp_phone_number_id) in public API responses.
 
 ---
 
