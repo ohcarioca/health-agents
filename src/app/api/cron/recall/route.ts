@@ -70,17 +70,19 @@ export async function GET(request: Request) {
 
     if (!patients || patients.length === 0) continue;
 
-    for (const patient of patients) {
-      // Check if already in recall_queue with an active status
-      const { data: existing } = await supabase
-        .from("recall_queue")
-        .select("id")
-        .eq("clinic_id", clinic.id)
-        .eq("patient_id", patient.id)
-        .in("status", ["pending", "processing", "sent"])
-        .maybeSingle();
+    // Batch-fetch existing recall entries to avoid N+1 queries
+    const { data: existingRecalls } = await supabase
+      .from("recall_queue")
+      .select("patient_id")
+      .eq("clinic_id", clinic.id)
+      .in("status", ["pending", "processing", "sent"]);
 
-      if (existing) continue;
+    const existingPatientIds = new Set(
+      (existingRecalls ?? []).map((r: { patient_id: string }) => r.patient_id)
+    );
+
+    for (const patient of patients) {
+      if (existingPatientIds.has(patient.id)) continue; // Already queued
 
       // Insert new recall entry (last_visit_at guaranteed non-null by query filter)
       const { error: insertError } = await supabase
