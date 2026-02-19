@@ -5,16 +5,9 @@ import { useTranslations, useLocale } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Calendar, ChevronLeft, ChevronRight, Plus, CheckCircle2 } from "lucide-react";
-
-interface AppointmentRow {
-  id: string;
-  starts_at: string;
-  ends_at: string;
-  status: string;
-  patients: { id: string; name: string; phone: string } | null;
-  services: { id: string; name: string; duration_minutes: number } | null;
-  professionals: { id: string; name: string } | null;
-}
+import { AppointmentModal } from "@/components/calendar/appointment-modal";
+import { getProfessionalColor } from "@/lib/calendar/utils";
+import type { CalendarAppointment, ProfessionalOption } from "@/components/calendar/types";
 
 const MAX_ROWS = 8;
 
@@ -52,7 +45,7 @@ function isSameDay(a: Date, b: Date): boolean {
     && a.getDate() === b.getDate();
 }
 
-function countAppointmentsForDay(appointments: AppointmentRow[], day: Date): number {
+function countAppointmentsForDay(appointments: CalendarAppointment[], day: Date): number {
   return appointments.filter((apt) => isSameDay(new Date(apt.starts_at), day)).length;
 }
 
@@ -60,11 +53,15 @@ export function UpcomingAppointments() {
   const t = useTranslations("dashboard");
   const tCal = useTranslations("calendar");
   const locale = useLocale();
-  const [allAppointments, setAllAppointments] = useState<AppointmentRow[]>([]);
+  const [allAppointments, setAllAppointments] = useState<CalendarAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekOffset, setWeekOffset] = useState(0);
   const [completing, setCompleting] = useState<Set<string>>(new Set());
+  const [professionals, setProfessionals] = useState<ProfessionalOption[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<CalendarAppointment | null>(null);
+  const [prefillDate, setPrefillDate] = useState<string | undefined>(undefined);
 
   const weekDays = useMemo(() => getWeekDays(weekOffset), [weekOffset]);
 
@@ -78,7 +75,7 @@ export function UpcomingAppointments() {
 
       const res = await fetch(`/api/calendar/appointments?start=${start}&end=${end}`);
       if (res.ok) {
-        const body: { data?: AppointmentRow[] } = await res.json();
+        const body: { data?: CalendarAppointment[] } = await res.json();
         setAllAppointments(body.data ?? []);
       }
     } catch {
@@ -91,6 +88,28 @@ export function UpcomingAppointments() {
   useEffect(() => {
     fetchWeekAppointments();
   }, [fetchWeekAppointments]);
+
+  const fetchProfessionals = useCallback(async () => {
+    try {
+      const res = await fetch("/api/settings/professionals");
+      if (res.ok) {
+        const body: { data?: { id: string; name: string }[] } = await res.json();
+        setProfessionals(
+          (body.data ?? []).map((p, i) => ({
+            id: p.id,
+            name: p.name,
+            color: getProfessionalColor(i),
+          }))
+        );
+      }
+    } catch {
+      // Supplementary — silently handle
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProfessionals();
+  }, [fetchProfessionals]);
 
   const dayAppointments = useMemo(
     () => allAppointments
@@ -115,6 +134,18 @@ export function UpcomingAppointments() {
     }
   }, [fetchWeekAppointments]);
 
+  const handleNewAppointment = useCallback(() => {
+    setEditingAppointment(null);
+    setPrefillDate(selectedDate.toISOString().split("T")[0]);
+    setModalOpen(true);
+  }, [selectedDate]);
+
+  const handleAppointmentClick = useCallback((apt: CalendarAppointment) => {
+    setEditingAppointment(apt);
+    setPrefillDate(undefined);
+    setModalOpen(true);
+  }, []);
+
   const now = new Date();
 
   return (
@@ -137,8 +168,8 @@ export function UpcomingAppointments() {
             {t("upcomingAppointments")}
           </p>
         </div>
-        <a
-          href="/calendar"
+        <button
+          onClick={handleNewAppointment}
           className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
           style={{
             backgroundColor: "var(--accent)",
@@ -147,7 +178,7 @@ export function UpcomingAppointments() {
         >
           <Plus className="size-3.5" />
           {t("addNew")}
-        </a>
+        </button>
       </div>
 
       {/* Date Strip */}
@@ -246,7 +277,8 @@ export function UpcomingAppointments() {
             {dayAppointments.map((apt) => (
               <div
                 key={apt.id}
-                className="flex items-center gap-4 rounded-lg px-3 py-2.5 transition-colors"
+                onClick={() => handleAppointmentClick(apt)}
+                className="flex cursor-pointer items-center gap-4 rounded-lg px-3 py-2.5 transition-colors"
                 style={{ backgroundColor: "var(--background)" }}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--nav-hover-bg)")}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--background)")}
@@ -273,7 +305,7 @@ export function UpcomingAppointments() {
                     className="truncate text-sm font-medium"
                     style={{ color: "var(--text-primary)" }}
                   >
-                    {apt.patients?.name ?? "\u2014"}
+                    {apt.patients.name}
                   </p>
                   <p
                     className="truncate text-xs"
@@ -308,6 +340,15 @@ export function UpcomingAppointments() {
           </div>
         )}
       </div>
+
+      <AppointmentModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        appointment={editingAppointment}
+        professionals={professionals}
+        prefillDate={prefillDate}
+        onSave={fetchWeekAppointments}
+      />
     </div>
   );
 }
