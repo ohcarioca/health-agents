@@ -206,12 +206,8 @@ export function ProfessionalForm({
             <Button type="button" variant="ghost" onClick={onCancel}>
               {tc("cancel")}
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading
-                ? "..."
-                : effectiveId
-                  ? t("edit")
-                  : t("add")}
+            <Button type="submit" loading={loading}>
+              {effectiveId ? tc("edit") : tc("save")}
             </Button>
           </div>
         </form>
@@ -231,8 +227,8 @@ export function ProfessionalForm({
             <Button type="button" variant="ghost" onClick={onCancel}>
               {tc("cancel")}
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "..." : tc("save")}
+            <Button type="submit" loading={loading}>
+              {tc("save")}
             </Button>
           </div>
         </form>

@@ -237,8 +237,8 @@ export function PatientFormDialog({
           >
             {tc("cancel")}
           </Button>
-          <Button type="submit" disabled={saving}>
-            {saving ? tc("loading") : tc("save")}
+          <Button type="submit" loading={saving}>
+            {tc("save")}
           </Button>
         </div>
       </form>

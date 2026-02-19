@@ -247,8 +247,8 @@ export function ServicesList() {
             <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)}>
               {tc("cancel")}
             </Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? "..." : editing ? t("edit") : t("add")}
+            <Button type="submit" loading={saving}>
+              {editing ? t("edit") : t("add")}
             </Button>
           </div>
         </form>

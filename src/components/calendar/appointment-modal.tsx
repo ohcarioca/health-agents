@@ -386,8 +386,8 @@ export function AppointmentModal({
             <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
               {tc("cancel")}
             </Button>
-            <Button size="sm" onClick={handleSave} disabled={saving}>
-              {saving ? tc("loading") : tc("save")}
+            <Button size="sm" onClick={handleSave} loading={saving}>
+              {tc("save")}
             </Button>
           </div>
         </div>
