@@ -87,11 +87,9 @@ export function ConversationDetail({
     }
   }
 
-  async function handleSend(e: FormEvent) {
-    e.preventDefault();
+  async function submitMessage() {
     const text = messageText.trim();
-    if (!text) return;
-
+    if (!text || sendLoading) return;
     setSendLoading(true);
     try {
       const res = await fetch(
@@ -112,11 +110,15 @@ export function ConversationDetail({
     }
   }
 
+  function handleSend(e: FormEvent) {
+    e.preventDefault();
+    submitMessage();
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (!messageText.trim() || sendLoading) return;
-      handleSend(e as unknown as FormEvent);
+      submitMessage();
     }
   }
 
