@@ -156,7 +156,7 @@ export async function GET() {
       title: patientName,
       description: "Message delivery failed",
       createdAt: msg.created_at,
-      entityId: msg.id,
+      entityId: msg.conversation_id,
     };
   });
 

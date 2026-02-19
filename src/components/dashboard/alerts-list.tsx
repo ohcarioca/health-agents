@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
@@ -17,6 +18,15 @@ interface Alert {
   title: string;
   description: string;
   createdAt: string;
+  entityId: string;
+}
+
+function getAlertRoute(type: Alert["type"], entityId: string): string {
+  if (type === "escalated" || type === "failure") {
+    return `/inbox?conversation=${entityId}`;
+  }
+  if (type === "overdue") return "/payments";
+  return "/inbox";
 }
 
 const ALERT_CONFIG = {
@@ -28,6 +38,7 @@ const ALERT_CONFIG = {
 
 export function AlertsList() {
   const t = useTranslations("dashboard");
+  const router = useRouter();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -100,7 +111,11 @@ export function AlertsList() {
             return (
               <div
                 key={alert.id}
-                className="flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-[var(--nav-hover-bg)]"
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push(getAlertRoute(alert.type, alert.entityId))}
+                onKeyDown={(e) => e.key === "Enter" && router.push(getAlertRoute(alert.type, alert.entityId))}
+                className="flex cursor-pointer items-start gap-3 rounded-lg p-3 transition-colors hover:bg-[var(--nav-hover-bg)]"
               >
                 <Icon
                   className="mt-0.5 size-4 shrink-0"
