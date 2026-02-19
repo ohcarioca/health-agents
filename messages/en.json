@@ -505,7 +505,11 @@
       "serviceDuration": "Duration (min)",
       "servicePrice": "Price",
       "noServices": "Add at least one service.",
-      "removeService": "Remove"
+      "removeService": "Remove",
+      "modality": "Modality",
+      "modalityBoth": "In-person & Online",
+      "modalityInPerson": "In-person",
+      "modalityOnline": "Online"
     },
     "stepBilling": {
       "title": "Billing",
