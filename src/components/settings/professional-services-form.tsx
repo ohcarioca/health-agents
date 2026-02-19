@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useImperativeHandle, forwardRef } from "react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
 interface ServiceRow {
@@ -23,10 +22,14 @@ interface ProfessionalServicesFormProps {
   preselectAll?: boolean;
 }
 
-export function ProfessionalServicesForm({
-  professionalId,
-  preselectAll = false,
-}: ProfessionalServicesFormProps) {
+export interface ProfessionalServicesFormHandle {
+  save: () => Promise<boolean>;
+}
+
+export const ProfessionalServicesForm = forwardRef<
+  ProfessionalServicesFormHandle,
+  ProfessionalServicesFormProps
+>(function ProfessionalServicesForm({ professionalId, preselectAll = false }, ref) {
   const t = useTranslations("settings.professionalForm");
 
   const [allServices, setAllServices] = useState<ServiceRow[]>([]);
@@ -101,7 +104,7 @@ export function ProfessionalServicesForm({
     });
   }
 
-  async function handleSave() {
+  async function handleSave(): Promise<boolean> {
     setSaving(true);
     setFeedback(null);
 
@@ -120,17 +123,21 @@ export function ProfessionalServicesForm({
       );
 
       if (res.ok) {
-        setFeedback({ type: "success", message: "Salvo" });
+        return true;
       } else {
         const json = await res.json();
         setFeedback({ type: "error", message: json.error ?? "Erro" });
+        return false;
       }
     } catch {
       setFeedback({ type: "error", message: "Erro" });
+      return false;
     } finally {
       setSaving(false);
     }
   }
+
+  useImperativeHandle(ref, () => ({ save: handleSave }));
 
   if (loading) {
     return (
@@ -211,12 +218,6 @@ export function ProfessionalServicesForm({
           {feedback.message}
         </p>
       )}
-
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saving} size="sm">
-          {saving ? "..." : "Salvar"}
-        </Button>
-      </div>
     </div>
   );
-}
+});

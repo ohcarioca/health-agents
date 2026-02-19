@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useMemo, type FormEvent } from "react";
+import { useState, useRef, useMemo, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
 import { Button } from "@/components/ui/button";
 import { CompactScheduleGrid } from "./compact-schedule-grid";
-import { ProfessionalServicesForm } from "./professional-services-form";
+import {
+  ProfessionalServicesForm,
+  type ProfessionalServicesFormHandle,
+} from "./professional-services-form";
 import { createProfessionalSchema } from "@/lib/validations/settings";
 import type { ScheduleGrid } from "@/lib/validations/settings";
 import { getSpecialtySuggestions } from "@/lib/constants/specialties";
@@ -51,6 +54,8 @@ export function ProfessionalForm({
   // Track the ID of a just-created professional so we stay in the dialog
   const [createdId, setCreatedId] = useState<string | null>(null);
   const effectiveId = professional?.id ?? createdId;
+
+  const servicesRef = useRef<ProfessionalServicesFormHandle>(null);
 
   const specialtySuggestions = useMemo(
     () => getSpecialtySuggestions(clinicType),
@@ -123,6 +128,14 @@ export function ProfessionalForm({
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleDone() {
+    if (servicesRef.current) {
+      const ok = await servicesRef.current.save();
+      if (!ok) return;
+    }
+    onSuccess();
   }
 
   // Always show all 3 tabs — Services tab handles the "save first" state internally
@@ -224,9 +237,13 @@ export function ProfessionalForm({
       {activeSubTab === 2 && (
         effectiveId ? (
           <div className="space-y-4">
-            <ProfessionalServicesForm professionalId={effectiveId} preselectAll={!!createdId} />
+            <ProfessionalServicesForm
+              ref={servicesRef}
+              professionalId={effectiveId}
+              preselectAll={!!createdId}
+            />
             <div className="flex justify-end border-t pt-3" style={{ borderColor: "var(--border)" }}>
-              <Button type="button" onClick={onSuccess}>
+              <Button type="button" onClick={handleDone}>
                 {tf("done")}
               </Button>
             </div>

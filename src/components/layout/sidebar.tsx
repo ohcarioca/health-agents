@@ -13,7 +13,7 @@ interface SidebarProps {
 
 export function Sidebar({ clinicName, isActive, onCollapseChange }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(
-    () => localStorage.getItem("sidebar-collapsed") === "true"
+    () => typeof window !== "undefined" && localStorage.getItem("sidebar-collapsed") === "true"
   );
   const [mobileOpen, setMobileOpen] = useState(false);
 
