@@ -71,22 +71,66 @@ export async function GET(request: Request) {
     return NextResponse.json({ data: { processed: 0, sent: 0, failed: 0 } });
   }
 
+  // ── Batch-fetch all related entities ──
+  const appointmentIds = [...new Set(pendingEntries.map((e) => e.appointment_id))];
+  const clinicIds = [...new Set(pendingEntries.map((e) => e.clinic_id))];
+
+  const [appointmentsResult, clinicsResult] = await Promise.all([
+    supabase
+      .from("appointments")
+      .select("id, status, starts_at, patient_id, professional_id")
+      .in("id", appointmentIds),
+    supabase
+      .from("clinics")
+      .select("id, timezone, whatsapp_phone_number_id, whatsapp_access_token, is_active")
+      .in("id", clinicIds),
+  ]);
+
+  const appointmentsMap = new Map(
+    (appointmentsResult.data ?? []).map((a) => [a.id, a]),
+  );
+  const clinicsMap = new Map(
+    (clinicsResult.data ?? []).map((c) => [c.id, c]),
+  );
+
+  // Collect patient and professional IDs from fetched appointments
+  const patientIds = [...new Set(
+    (appointmentsResult.data ?? [])
+      .map((a) => a.patient_id)
+      .filter((id): id is string => !!id),
+  )];
+  const professionalIds = [...new Set(
+    (appointmentsResult.data ?? [])
+      .map((a) => a.professional_id)
+      .filter((id): id is string => !!id),
+  )];
+
+  const [patientsResult, professionalsResult] = await Promise.all([
+    patientIds.length > 0
+      ? supabase.from("patients").select("id, name, phone").in("id", patientIds)
+      : Promise.resolve({ data: [] as { id: string; name: string; phone: string }[] }),
+    professionalIds.length > 0
+      ? supabase.from("professionals").select("id, name").in("id", professionalIds)
+      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+  ]);
+
+  const patientsMap = new Map(
+    (patientsResult.data ?? []).map((p) => [p.id, p]),
+  );
+  const professionalsMap = new Map(
+    (professionalsResult.data ?? []).map((p) => [p.id, p]),
+  );
+
   let sent = 0;
   let failed = 0;
 
   for (const entry of pendingEntries) {
     try {
-      // 2. Fetch the appointment
-      const { data: appointment, error: apptError } = await supabase
-        .from("appointments")
-        .select("*")
-        .eq("id", entry.appointment_id)
-        .single();
-
-      if (apptError || !appointment) {
+      // 2. Look up appointment from batch
+      const appointment = appointmentsMap.get(entry.appointment_id);
+      if (!appointment) {
         console.error(
-          `[cron/confirmations] appointment not found for entry ${entry.id}:`,
-          apptError?.message
+          `[cron/confirmations] appointment not found for entry ${entry.id}`
         );
         await markFailed(supabase, entry.id);
         failed++;
@@ -103,64 +147,34 @@ export async function GET(request: Request) {
         continue;
       }
 
-      // 4. Fetch patient
-      const { data: patient, error: patientError } = await supabase
-        .from("patients")
-        .select("*")
-        .eq("id", appointment.patient_id)
-        .single();
-
-      if (patientError || !patient) {
+      // 4. Look up patient from batch
+      const patient = patientsMap.get(appointment.patient_id);
+      if (!patient) {
         console.error(
-          `[cron/confirmations] patient not found for entry ${entry.id}:`,
-          patientError?.message
+          `[cron/confirmations] patient not found for entry ${entry.id}`
         );
         await markFailed(supabase, entry.id);
         failed++;
         continue;
       }
 
-      // 5. Fetch professional (nullable)
-      let professionalName = "o profissional";
-      if (appointment.professional_id) {
-        const { data: professional } = await supabase
-          .from("professionals")
-          .select("name")
-          .eq("id", appointment.professional_id)
-          .single();
+      // 5. Look up professional name from batch (nullable)
+      const professionalName = appointment.professional_id
+        ? (professionalsMap.get(appointment.professional_id)?.name ?? "o profissional")
+        : "o profissional";
 
-        if (professional) {
-          professionalName = professional.name;
-        }
-      }
-
-      // 6. Fetch clinic for timezone
-      const { data: clinic, error: clinicError } = await supabase
-        .from("clinics")
-        .select("timezone, whatsapp_phone_number_id, whatsapp_access_token, is_active")
-        .eq("id", entry.clinic_id)
-        .single();
-
-      if (clinicError || !clinic) {
-        console.error(
-          `[cron/confirmations] clinic not found for entry ${entry.id}:`,
-          clinicError?.message
-        );
-        await markFailed(supabase, entry.id);
-        failed++;
-        continue;
-      }
-
-      if (!clinic.is_active) {
+      // 6. Look up clinic from batch
+      const clinic = clinicsMap.get(entry.clinic_id);
+      if (!clinic || !clinic.is_active) {
         console.log(
-          `[cron/confirmations] skipping entry ${entry.id}: clinic is not active`
+          `[cron/confirmations] skipping entry ${entry.id}: clinic not found or inactive`
         );
         await markFailed(supabase, entry.id);
         failed++;
         continue;
       }
 
-      const timezone = clinic.timezone;
+      const timezone = clinic.timezone as string;
 
       // 6b. Build WhatsApp credentials
       const credentials: WhatsAppCredentials = {
@@ -182,7 +196,7 @@ export async function GET(request: Request) {
         console.log(
           `[cron/confirmations] skipping entry ${entry.id}: outside business hours`
         );
-        continue;
+        continue; // Don't mark as failed — will be retried
       }
 
       // 8. Mark as processing
