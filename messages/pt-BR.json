@@ -369,7 +369,9 @@
       "connected": "Conectado",
       "connect": "Conectar",
       "disconnect": "Desconectar",
-      "connectDescription": "Conecte o Google Calendar de cada profissional para sincronizar consultas.",
+      "connectDescription": "Sincronize os agendamentos com o Google Calendar da clínica e dos profissionais.",
+      "clinicCalendarLabel": "Calendário da Clínica",
+      "clinicCalendarDescription": "Conecte o calendário principal da clínica para sincronizar todos os agendamentos.",
       "disconnectConfirm": "Desconectar o Google Calendar?",
       "connectSuccess": "Google Calendar conectado com sucesso",
       "connectError": "Falha ao conectar Google Calendar"

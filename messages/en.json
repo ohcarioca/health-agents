@@ -369,7 +369,9 @@
       "connected": "Connected",
       "connect": "Connect",
       "disconnect": "Disconnect",
-      "connectDescription": "Connect each professional's Google Calendar to sync appointments.",
+      "connectDescription": "Sync appointments with the clinic's and professionals' Google Calendars.",
+      "clinicCalendarLabel": "Clinic Calendar",
+      "clinicCalendarDescription": "Connect the clinic's main calendar to sync all appointments.",
       "disconnectConfirm": "Disconnect Google Calendar?",
       "connectSuccess": "Google Calendar connected successfully",
       "connectError": "Failed to connect Google Calendar"

@@ -31,7 +31,9 @@ export async function GET() {
   const admin = createAdminClient();
   const { data: clinic, error } = await admin
     .from("clinics")
-    .select("*")
+    .select(
+      "id, name, slug, phone, email, address, city, state, zip_code, logo_url, timezone, operating_hours, created_at, updated_at, google_reviews_url, whatsapp_phone_number_id, whatsapp_waba_id, whatsapp_access_token, is_active, type, description, public_page_enabled, accent_color, social_links, show_prices, google_calendar_id",
+    )
     .eq("id", ctx.clinicId)
     .single();
 
