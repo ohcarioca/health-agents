@@ -179,9 +179,6 @@ export function IntegrationsTab() {
                 {t("calendarTitle")}
               </h3>
             </div>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              {t("connectDescription")}
-            </p>
           </div>
 
           <div className="space-y-3">
