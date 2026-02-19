@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { PhoneInputField } from "@/components/ui/phone-input-field";
 import { CompactScheduleGrid } from "./compact-schedule-grid";
 import { clinicSettingsSchema } from "@/lib/validations/settings";
 import type { ScheduleGrid } from "@/lib/validations/settings";
@@ -119,11 +120,11 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
           error={fieldErrors.name}
           required
         />
-        <Input
+        <PhoneInputField
           id="phone"
           label={t("phone")}
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={setPhone}
           error={fieldErrors.phone}
         />
         <Input

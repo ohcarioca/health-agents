@@ -2,8 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
-import PhoneInput from "react-phone-number-input";
-import "react-phone-number-input/style.css";
+import { PhoneInputField } from "@/components/ui/phone-input-field";
 import { CLINIC_TYPES } from "@/lib/onboarding/clinic-templates";
 
 interface StepClinicProps {
@@ -105,21 +104,11 @@ export function StepClinic({
         />
       </div>
 
-      <div>
-        <label
-          className="mb-1.5 block text-sm font-medium"
-          style={{ color: "var(--text-primary)" }}
-        >
-          {t("step1.phone")}
-        </label>
-        <PhoneInput
-          defaultCountry="BR"
-          value={phone}
-          onChange={(val) => onPhoneChange(val || "")}
-          placeholder="(11) 98765-4321"
-          className="phone-input-wrapper"
-        />
-      </div>
+      <PhoneInputField
+        label={t("step1.phone")}
+        value={phone}
+        onChange={onPhoneChange}
+      />
 
       <Input
         id="address"
