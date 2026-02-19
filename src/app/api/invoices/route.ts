@@ -40,7 +40,7 @@ export async function GET(request: Request) {
   let query = admin
     .from("invoices")
     .select(
-      "*, patients!inner(id, name, phone, cpf, email), payment_links(*)",
+      "id, status, amount_cents, due_date, notes, paid_at, created_at, patient_id, patients!inner(id, name, phone, cpf, email), payment_links(id, url, invoice_url, pix_payload, boleto_identification_field, method, status, amount_cents, created_at)",
       { count: "exact" },
     )
     .eq("clinic_id", clinicId)
