@@ -56,6 +56,7 @@ export function PatientsView({
   initialCount,
 }: PatientsViewProps) {
   const t = useTranslations("patients");
+  const tc = useTranslations("common");
   const locale = useLocale();
 
   const [patients, setPatients] = useState<PatientRow[]>(initialPatients);
@@ -413,17 +414,17 @@ export function PatientsView({
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Excluir"
+        title={tc("delete")}
         description={t("deleteConfirm")}
-        confirmLabel="Excluir"
-        cancelLabel="Cancelar"
+        confirmLabel={tc("delete")}
+        cancelLabel={tc("cancel")}
         variant="danger"
         onConfirm={executeDelete}
       />
       <Dialog
         open={deleteError !== null}
         onOpenChange={() => setDeleteError(null)}
-        title="Atenção"
+        title={tc("attention")}
         description={deleteError ?? ""}
       >
         <div className="flex justify-end pt-4">

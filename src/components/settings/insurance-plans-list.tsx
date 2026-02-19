@@ -16,6 +16,7 @@ interface InsurancePlanRow {
 
 export function InsurancePlansList() {
   const t = useTranslations("settings.insurancePlans");
+  const tc = useTranslations("common");
 
   const [plans, setPlans] = useState<InsurancePlanRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -137,10 +138,10 @@ export function InsurancePlansList() {
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Excluir"
+        title={tc("delete")}
         description={t("deleteConfirm")}
-        confirmLabel="Excluir"
-        cancelLabel="Cancelar"
+        confirmLabel={tc("delete")}
+        cancelLabel={tc("cancel")}
         variant="danger"
         onConfirm={executeDelete}
       />

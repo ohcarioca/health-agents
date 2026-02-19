@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -128,6 +129,7 @@ export function PatientFormDialog({
         return;
       }
 
+      toast.success(tc("success"));
       onSuccess();
     } catch {
       setFieldErrors({ _form: t("saveError") });

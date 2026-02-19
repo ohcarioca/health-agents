@@ -14,6 +14,7 @@ import type { TeamMember, ClinicRole } from "@/types";
 
 export function TeamContent() {
   const t = useTranslations("team");
+  const tc = useTranslations("common");
 
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [currentUserId, setCurrentUserId] = useState("");
@@ -209,7 +210,7 @@ export function TeamContent() {
         title={t("remove")}
         description={t("removeConfirm")}
         confirmLabel={t("remove")}
-        cancelLabel="Cancelar"
+        cancelLabel={tc("cancel")}
         variant="danger"
         onConfirm={executeRemove}
       />

@@ -79,6 +79,7 @@ const LINK_STATUS_VARIANT: Record<string, "success" | "warning" | "neutral"> = {
 
 export function InvoiceDetailPanel({ invoice, onClose, onUpdate }: InvoiceDetailPanelProps) {
   const t = useTranslations("payments");
+  const tc = useTranslations("common");
   const td = useTranslations("payments.detail");
   const locale = useLocale();
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -330,7 +331,7 @@ export function InvoiceDetailPanel({ invoice, onClose, onUpdate }: InvoiceDetail
         title={confirmType === "markPaid" ? t("markPaid") : t("cancelInvoice")}
         description={confirmType === "markPaid" ? t("markPaidConfirm") : t("cancelConfirm")}
         confirmLabel={confirmType === "markPaid" ? t("markPaid") : t("cancelInvoice")}
-        cancelLabel="Cancelar"
+        cancelLabel={tc("cancel")}
         variant={confirmType === "markPaid" ? "primary" : "danger"}
         onConfirm={executeConfirmAction}
       />

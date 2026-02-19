@@ -28,6 +28,7 @@ interface ProfessionalsListProps {
 
 export function ProfessionalsList({ clinic }: ProfessionalsListProps) {
   const t = useTranslations("settings.professionals");
+  const tc = useTranslations("common");
 
   const [professionals, setProfessionals] = useState<ProfessionalRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -199,10 +200,10 @@ export function ProfessionalsList({ clinic }: ProfessionalsListProps) {
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Excluir"
+        title={tc("delete")}
         description={t("deleteConfirm")}
-        confirmLabel="Excluir"
-        cancelLabel="Cancelar"
+        confirmLabel={tc("delete")}
+        cancelLabel={tc("cancel")}
         variant="danger"
         onConfirm={executeDelete}
       />

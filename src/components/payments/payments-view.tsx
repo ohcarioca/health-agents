@@ -25,6 +25,7 @@ import { CreateInvoiceDialog } from "@/components/payments/create-invoice-dialog
 import { InvoiceDetailPanel } from "@/components/payments/invoice-detail-panel";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { InvoiceRow } from "@/components/payments/invoice-detail-panel";
+import { toast } from "sonner";
 import {
   formatCents,
   calculateRevenueMetrics,
@@ -53,6 +54,7 @@ export function PaymentsView({
   initialKpiInvoices,
 }: PaymentsViewProps) {
   const t = useTranslations("payments");
+  const tc = useTranslations("common");
   const locale = useLocale();
 
   const [invoices, setInvoices] = useState<InvoiceRow[]>(initialInvoices);
@@ -185,7 +187,7 @@ export function PaymentsView({
         fetchKpis();
       }
     } catch {
-      alert(t("errors.updateError"));
+      toast.error(t("errors.updateError"));
     }
   }
 
@@ -540,7 +542,7 @@ export function PaymentsView({
         title={confirmAction?.type === "markPaid" ? t("markPaid") : t("cancelInvoice")}
         description={confirmAction?.type === "markPaid" ? t("markPaidConfirm") : t("cancelConfirm")}
         confirmLabel={confirmAction?.type === "markPaid" ? t("markPaid") : t("cancelInvoice")}
-        cancelLabel="Cancelar"
+        cancelLabel={tc("cancel")}
         variant={confirmAction?.type === "markPaid" ? "primary" : "danger"}
         onConfirm={executeConfirmAction}
       />

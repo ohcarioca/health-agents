@@ -5,6 +5,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Instrument_Serif, DM_Sans } from "next/font/google";
 import { ThemeProvider } from "@/contexts/theme-provider";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const instrumentSerif = Instrument_Serif({
@@ -40,7 +41,10 @@ export default async function RootLayout({
     >
       <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            {children}
+            <Toaster position="top-right" richColors closeButton />
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

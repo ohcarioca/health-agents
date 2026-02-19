@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ function formatPrice(cents: number | null): string {
 
 export function ServicesList() {
   const t = useTranslations("settings.services");
+  const tc = useTranslations("common");
 
   const [services, setServices] = useState<ServiceRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,6 +117,7 @@ export function ServicesList() {
         return;
       }
 
+      toast.success(tc("success"));
       setDialogOpen(false);
       setLoading(true);
       fetchList();
@@ -242,7 +245,7 @@ export function ServicesList() {
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)}>
-              {t("name") === "Nome do servi\u00e7o" ? "Cancelar" : "Cancel"}
+              {tc("cancel")}
             </Button>
             <Button type="submit" disabled={saving}>
               {saving ? "..." : editing ? t("edit") : t("add")}
@@ -254,10 +257,10 @@ export function ServicesList() {
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Excluir"
+        title={tc("delete")}
         description={t("deleteConfirm")}
-        confirmLabel="Excluir"
-        cancelLabel="Cancelar"
+        confirmLabel={tc("delete")}
+        cancelLabel={tc("cancel")}
         variant="danger"
         onConfirm={executeDelete}
       />

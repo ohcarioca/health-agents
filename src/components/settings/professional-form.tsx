@@ -2,6 +2,7 @@
 
 import { useState, useRef, useMemo, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ export function ProfessionalForm({
 }: ProfessionalFormProps) {
   const t = useTranslations("settings.professionals");
   const tf = useTranslations("settings.professionalForm");
+  const tc = useTranslations("common");
   const isEditing = !!professional;
 
   // Track the ID of a just-created professional so we stay in the dialog
@@ -121,6 +123,7 @@ export function ProfessionalForm({
         setCreatedId(json.data.id);
         setActiveSubTab(2);
       } else {
+        toast.success(tc("success"));
         onSuccess();
       }
     } catch {
@@ -135,6 +138,7 @@ export function ProfessionalForm({
       const ok = await servicesRef.current.save();
       if (!ok) return;
     }
+    toast.success(tc("success"));
     onSuccess();
   }
 
@@ -200,7 +204,7 @@ export function ProfessionalForm({
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={onCancel}>
-              {t("name") === "Nome" ? "Cancelar" : "Cancel"}
+              {tc("cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
               {loading
@@ -225,10 +229,10 @@ export function ProfessionalForm({
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={onCancel}>
-              {t("name") === "Nome" ? "Cancelar" : "Cancel"}
+              {tc("cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "..." : t("name") === "Nome" ? "Salvar" : "Save"}
+              {loading ? "..." : tc("save")}
             </Button>
           </div>
         </form>
