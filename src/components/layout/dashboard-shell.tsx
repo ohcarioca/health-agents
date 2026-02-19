@@ -20,7 +20,7 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   const [collapsed, setCollapsed] = useState(
-    () => localStorage.getItem("sidebar-collapsed") === "true"
+    () => typeof window !== "undefined" && localStorage.getItem("sidebar-collapsed") === "true"
   );
 
   return (
