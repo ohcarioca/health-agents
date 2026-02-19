@@ -28,7 +28,7 @@ function extractErrorMessage(body: unknown): string {
     "errors" in body &&
     Array.isArray((body as AsaasErrorResponse).errors)
   ) {
-    const errors = (body as AsaasErrorResponse).errors!;
+    const errors = (body as AsaasErrorResponse).errors ?? [];
     return errors.map((e) => e.description).join(", ");
   }
   return "unknown Asaas API error";

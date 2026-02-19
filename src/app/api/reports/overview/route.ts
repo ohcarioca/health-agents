@@ -195,8 +195,8 @@ export async function GET(request: Request) {
   >();
 
   for (const conv of conversations) {
-    const module = (conv.current_module as string) || "support";
-    const entry = moduleStats.get(module) ?? {
+    const convModule = (conv.current_module as string) || "support";
+    const entry = moduleStats.get(convModule) ?? {
       total: 0,
       escalated: 0,
       resolved: 0,
@@ -204,7 +204,7 @@ export async function GET(request: Request) {
     entry.total++;
     if (conv.status === "escalated") entry.escalated++;
     if (conv.status === "resolved") entry.resolved++;
-    moduleStats.set(module, entry);
+    moduleStats.set(convModule, entry);
   }
 
   return NextResponse.json({

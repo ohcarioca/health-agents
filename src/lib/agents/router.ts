@@ -74,10 +74,10 @@ function parseRouterResponse(
       "reason" in parsed
     ) {
       const obj = parsed as { module: string; reason: string };
-      const module = obj.module as ModuleType;
+      const routedModule = obj.module as ModuleType;
 
-      if (activeModules.includes(module)) {
-        return { module, reason: obj.reason };
+      if (activeModules.includes(routedModule)) {
+        return { module: routedModule, reason: obj.reason };
       }
 
       console.warn(

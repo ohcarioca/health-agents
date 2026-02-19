@@ -81,7 +81,6 @@ export function SetupWizard() {
         ]);
 
         let autoStep = 1;
-        let hasWhatsApp = false;
 
         if (clinicRes.ok) {
           const { data: clinic } = await clinicRes.json();
@@ -103,12 +102,6 @@ export function SetupWizard() {
               Object.values(clinic.operating_hours as Record<string, unknown>).some(
                 (day) => Array.isArray(day) && day.length > 0
               );
-            hasWhatsApp = Boolean(
-              clinic.whatsapp_phone_number_id &&
-              clinic.whatsapp_waba_id &&
-              clinic.whatsapp_access_token
-            );
-
             if (hasClinic) autoStep = 2;
             if (autoStep >= 2 && hasHours) autoStep = 3;
           }

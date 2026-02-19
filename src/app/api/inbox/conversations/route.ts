@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
 
   // Fetch last message for each conversation
   const conversationIds = (conversations ?? []).map((c) => c.id);
-  let lastMessages: Record<string, { content: string; role: string; created_at: string }> = {};
+  const lastMessages: Record<string, { content: string; role: string; created_at: string }> = {};
 
   if (conversationIds.length > 0) {
     // Get the most recent message per conversation using a single query

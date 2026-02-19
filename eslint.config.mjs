@@ -23,6 +23,6 @@ export default [
     },
   },
   {
-    ignores: [".next/", "node_modules/", "coverage/"],
+    ignores: [".next/", "node_modules/", "coverage/", ".worktrees/", "eval/"],
   },
 ];

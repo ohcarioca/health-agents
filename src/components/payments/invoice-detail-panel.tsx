@@ -88,6 +88,7 @@ export function InvoiceDetailPanel({ invoice, onClose, onUpdate }: InvoiceDetail
 
   if (!invoice) return null;
 
+  const invoiceId = invoice.id;
   const patient = invoice.patients;
   const isOverdue = invoice.status !== "paid" && invoice.status !== "cancelled" && new Date(invoice.due_date) < new Date();
 
@@ -100,7 +101,7 @@ export function InvoiceDetailPanel({ invoice, onClose, onUpdate }: InvoiceDetail
   async function generatePaymentLink(method: "pix" | "boleto" | "credit_card") {
     setGeneratingMethod(method);
     try {
-      const res = await fetch(`/api/invoices/${invoice!.id}/payment-link`, {
+      const res = await fetch(`/api/invoices/${invoiceId}/payment-link`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ method }),
@@ -134,7 +135,7 @@ export function InvoiceDetailPanel({ invoice, onClose, onUpdate }: InvoiceDetail
     if (!confirmType) return;
     const newStatus = confirmType === "markPaid" ? "paid" : "cancelled";
     try {
-      const res = await fetch(`/api/invoices/${invoice!.id}`, {
+      const res = await fetch(`/api/invoices/${invoiceId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),

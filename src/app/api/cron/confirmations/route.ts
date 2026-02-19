@@ -73,7 +73,6 @@ export async function GET(request: Request) {
 
   let sent = 0;
   let failed = 0;
-  let skipped = 0;
 
   for (const entry of pendingEntries) {
     try {
@@ -205,7 +204,6 @@ export async function GET(request: Request) {
           .from("confirmation_queue")
           .update({ status: "pending" })
           .eq("id", entry.id);
-        skipped++;
         continue;
       }
 
