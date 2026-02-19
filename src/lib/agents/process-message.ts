@@ -287,7 +287,7 @@ export async function processMessage(
 
   const { data: services } = await supabase
     .from("services")
-    .select("id, name, price_cents, duration_minutes")
+    .select("id, name, price_cents, duration_minutes, modality")
     .eq("clinic_id", clinicId);
 
   const { data: professionals } = await supabase
@@ -310,7 +310,13 @@ export async function processMessage(
           const duration = s.duration_minutes
             ? ` (${s.duration_minutes}min)`
             : "";
-          return `${s.name}${duration}${price} [ID: ${s.id}]`;
+          const modalityMap: Record<string, string> = {
+            in_person: "presencial",
+            online: "online",
+            both: "presencial/online",
+          };
+          const modStr = s.modality ? ` [${modalityMap[s.modality as string] ?? s.modality}]` : "";
+          return `${s.name}${duration}${price}${modStr} [ID: ${s.id}]`;
         }),
         professionals: (professionals ?? []).map((p) => ({
           id: p.id as string,
