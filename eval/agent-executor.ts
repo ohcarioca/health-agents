@@ -205,13 +205,16 @@ export async function createEvalConversation(
   clinicId: string,
   patientId: string
 ): Promise<string> {
+  // Use status "resolved" — this is a valid status that falls OUTSIDE the partial
+  // unique index (conversations_one_open_per_patient WHERE status IN ('active', 'escalated')),
+  // so multiple eval conversations can coexist without constraint violations.
   const { data, error } = await supabase
     .from("conversations")
     .insert({
       clinic_id: clinicId,
       patient_id: patientId,
       channel: "whatsapp",
-      status: "active",
+      status: "resolved",
     })
     .select("id")
     .single();
