@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { clinicSettingsSchema } from "@/lib/validations/settings";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 async function getClinicId() {
   const supabase = await createServerSupabaseClient();
@@ -64,6 +65,9 @@ export async function PUT(request: Request) {
   if (!ctx) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const limited = await checkRateLimit(ctx.clinicId);
+  if (limited) return limited;
 
   if (ctx.role !== "owner") {
     return NextResponse.json(

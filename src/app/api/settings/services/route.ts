@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createServiceSchema } from "@/lib/validations/settings";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 async function getClinicId() {
   const supabase = await createServerSupabaseClient();
@@ -62,6 +63,9 @@ export async function POST(request: Request) {
   if (!clinicId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const limited = await checkRateLimit(clinicId);
+  if (limited) return limited;
 
   const admin = createAdminClient();
   const { data: service, error } = await admin

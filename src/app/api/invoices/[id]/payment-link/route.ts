@@ -8,6 +8,7 @@ import {
   getPixQrCode,
   getBoletoIdentificationField,
 } from "@/services/asaas";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 async function getClinicId() {
   const supabase = await createServerSupabaseClient();
@@ -51,6 +52,9 @@ export async function POST(
   if (!clinicId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const limited = await checkRateLimit(clinicId, "strict");
+  if (limited) return limited;
 
   const { id } = await params;
   const admin = createAdminClient();

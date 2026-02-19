@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createPatientSchema } from "@/lib/validations/patients";
 import { phoneLookupVariants } from "@/lib/utils/phone";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const PER_PAGE = 25;
 
@@ -89,6 +90,9 @@ export async function POST(request: Request) {
   if (!clinicId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const limited = await checkRateLimit(clinicId);
+  if (limited) return limited;
 
   const { name, phone, email, date_of_birth, cpf, notes } = parsed.data;
 

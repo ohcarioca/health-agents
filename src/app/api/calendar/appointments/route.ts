@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createAppointmentSchema } from "@/lib/validations/settings";
 import { enqueueConfirmations } from "@/lib/scheduling/enqueue-confirmations";
 import { createEvent } from "@/services/google-calendar";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 async function getClinicId() {
   const supabase = await createServerSupabaseClient();
@@ -90,6 +91,9 @@ export async function POST(request: Request) {
   if (!clinicId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const limited = await checkRateLimit(clinicId);
+  if (limited) return limited;
 
   const admin = createAdminClient();
 

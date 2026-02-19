@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createInvoiceSchema } from "@/lib/validations/billing";
 import { maskCPF } from "@/lib/utils/mask";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 async function getClinicId() {
   const supabase = await createServerSupabaseClient();
@@ -131,6 +132,9 @@ export async function POST(request: Request) {
   if (!clinicId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const limited = await checkRateLimit(clinicId);
+  if (limited) return limited;
 
   const admin = createAdminClient();
   const { data, error } = await admin
