@@ -1,29 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getClinicId } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { availableSlotsQuerySchema } from "@/lib/validations/scheduling";
 import { getAvailableSlots } from "@/lib/scheduling/availability";
 import { getFreeBusy } from "@/services/google-calendar";
 import type { ScheduleGrid } from "@/lib/validations/settings";
-
-async function getClinicId() {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const admin = createAdminClient();
-  const { data: membership } = await admin
-    .from("clinic_users")
-    .select("clinic_id")
-    .eq("user_id", user.id)
-    .limit(1)
-    .single();
-
-  if (!membership) return null;
-  return membership.clinic_id as string;
-}
 
 export async function GET(request: NextRequest) {
   const clinicId = await getClinicId();

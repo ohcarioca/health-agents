@@ -1,29 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getClinicId } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createPatientSchema } from "@/lib/validations/patients";
 import { normalizeBRPhone, phoneLookupVariants } from "@/lib/utils/phone";
 import { checkRateLimit } from "@/lib/rate-limit";
-
-async function getClinicId() {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const admin = createAdminClient();
-  const { data: membership } = await admin
-    .from("clinic_users")
-    .select("clinic_id")
-    .eq("user_id", user.id)
-    .limit(1)
-    .single();
-
-  if (!membership) return null;
-  return membership.clinic_id as string;
-}
 
 const batchRequestSchema = z.object({
   patients: z.array(z.unknown()).min(1).max(500),

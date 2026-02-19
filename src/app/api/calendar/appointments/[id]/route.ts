@@ -1,27 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getClinicId } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { updateAppointmentSchema } from "@/lib/validations/settings";
 import { updateEvent, deleteEvent } from "@/services/google-calendar";
-
-async function getClinicId() {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const admin = createAdminClient();
-  const { data: membership } = await admin
-    .from("clinic_users")
-    .select("clinic_id")
-    .eq("user_id", user.id)
-    .limit(1)
-    .single();
-
-  if (!membership) return null;
-  return membership.clinic_id as string;
-}
 
 export async function PUT(
   request: NextRequest,
