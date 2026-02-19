@@ -1,7 +1,7 @@
 // eval/supabase.ts
 // Direct Supabase admin client for eval — bypasses server-only admin.ts.
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/database.types";
+import type { Database } from "@/types/database";
 
 export type EvalSupabaseClient = ReturnType<typeof createEvalClient>;
 

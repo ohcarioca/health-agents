@@ -13,12 +13,15 @@ const MODULE_TYPES = [
 export async function createTestClinic(
   supabase: EvalSupabaseClient
 ): Promise<string> {
-  const name = `Clínica Eval ${Date.now()}`;
+  const ts = Date.now();
+  const name = `Clínica Eval ${ts}`;
+  const slug = `eval-${ts}`;
 
   const { data: clinic, error } = await supabase
     .from("clinics")
     .insert({
       name,
+      slug,
       phone: "11999998888",
       timezone: "America/Sao_Paulo",
       is_active: true,

@@ -26,8 +26,8 @@ export async function createTestAppointments(
       patient_id: patientId,
       professional_id: professionalId,
       service_id: serviceId,
-      scheduled_at: future.toISOString(),
-      duration_minutes: 60,
+      starts_at: future.toISOString(),
+      ends_at: new Date(future.getTime() + 60 * 60 * 1000).toISOString(),
       status: "scheduled",
     })
     .select("id")
@@ -35,13 +35,12 @@ export async function createTestAppointments(
 
   if (e1 || !apptFuture) throw new Error(`Future appointment: ${e1?.message}`);
 
-  // Enqueue confirmation reminders
+  // Enqueue confirmation reminders (stage = "48h", "24h")
   await supabase.from("confirmation_queue").insert([
     {
       clinic_id: clinicId,
-      patient_id: patientId,
       appointment_id: apptFuture.id as string,
-      reminder_type: "48h",
+      stage: "48h",
       scheduled_at: new Date(
         future.getTime() - 48 * 60 * 60 * 1000
       ).toISOString(),
@@ -49,9 +48,8 @@ export async function createTestAppointments(
     },
     {
       clinic_id: clinicId,
-      patient_id: patientId,
       appointment_id: apptFuture.id as string,
-      reminder_type: "24h",
+      stage: "24h",
       scheduled_at: new Date(
         future.getTime() - 24 * 60 * 60 * 1000
       ).toISOString(),
@@ -68,8 +66,8 @@ export async function createTestAppointments(
       patient_id: patientId,
       professional_id: professionalId,
       service_id: serviceId,
-      scheduled_at: yesterday.toISOString(),
-      duration_minutes: 60,
+      starts_at: yesterday.toISOString(),
+      ends_at: new Date(yesterday.getTime() + 60 * 60 * 1000).toISOString(),
       status: "completed",
     })
     .select("id")
@@ -87,8 +85,8 @@ export async function createTestAppointments(
       patient_id: patientId,
       professional_id: professionalId,
       service_id: serviceId,
-      scheduled_at: oldDate.toISOString(),
-      duration_minutes: 60,
+      starts_at: oldDate.toISOString(),
+      ends_at: new Date(oldDate.getTime() + 60 * 60 * 1000).toISOString(),
       status: "completed",
     })
     .select("id")
@@ -105,7 +103,9 @@ export async function createTestAppointments(
       appointment_id: apptCompleted.id as string,
       amount_cents: 20000,
       status: "pending",
-      description: "Consulta Geral",
+      due_date: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10),
     })
     .select("id")
     .single();

@@ -19,18 +19,25 @@ export interface EvalCase {
   extraCriteria?: string[];
 }
 
+export interface PatientPersona {
+  name: string;
+  description: string;
+  openingMessage: string;
+}
+
 export interface FlowStep {
-  role: "patient" | "system";
-  message?: string;
-  instruction?: string;
-  expectedAgentType?: string;
+  /** Which agent type handles this turn */
+  agentType: string;
+  /** If provided, the patient says exactly this (no LLM simulation) */
+  fixedPatientMessage?: string;
+  /** Optional assertion on what tools the agent should call */
+  expectedToolsCalled?: string[];
 }
 
 export interface EvalFlow {
   id: string;
   name: string;
-  agentTypes: string[];
-  patientPersona: string;
+  persona: PatientPersona;
   steps: FlowStep[];
 }
 

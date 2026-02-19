@@ -17,7 +17,7 @@ export async function teardownFixtures(
     .delete()
     .eq("clinic_id", ctx.clinicId);
 
-  await supabase.from("nps_scores").delete().eq("clinic_id", ctx.clinicId);
+  await supabase.from("nps_responses").delete().eq("clinic_id", ctx.clinicId);
 
   await supabase
     .from("payment_links")
