@@ -83,7 +83,7 @@ export async function GET(
     accent_color: clinic.accent_color,
     social_links: clinic.social_links,
     show_prices: clinic.show_prices,
-    whatsapp_phone: clinic.whatsapp_phone_number_id ? clinic.phone : null,
+    has_whatsapp: !!clinic.whatsapp_phone_number_id,
     services: servicesWithPrices,
   };
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createInvoiceSchema } from "@/lib/validations/billing";
+import { maskCPF } from "@/lib/utils/mask";
 
 async function getClinicId() {
   const supabase = await createServerSupabaseClient();
@@ -57,7 +58,7 @@ export async function GET(request: Request) {
   let query = admin
     .from("invoices")
     .select(
-      "*, patients!inner(id, name, phone, cpf, email, asaas_customer_id), payment_links(*)",
+      "*, patients!inner(id, name, phone, cpf, email), payment_links(*)",
       { count: "exact" },
     )
     .eq("clinic_id", clinicId)
@@ -97,7 +98,17 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ data, count });
+  const sanitized = (data ?? []).map((inv: Record<string, unknown>) => ({
+    ...inv,
+    patients: inv.patients
+      ? {
+          ...(inv.patients as Record<string, unknown>),
+          cpf: maskCPF((inv.patients as Record<string, unknown>).cpf as string),
+        }
+      : null,
+  }));
+
+  return NextResponse.json({ data: sanitized, count });
 }
 
 export async function POST(request: Request) {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { updateInvoiceSchema } from "@/lib/validations/billing";
+import { maskCPF } from "@/lib/utils/mask";
 
 async function getClinicId() {
   const supabase = await createServerSupabaseClient();
@@ -37,7 +38,7 @@ export async function GET(
   const { data, error } = await admin
     .from("invoices")
     .select(
-      "*, patients!inner(id, name, phone, cpf, email, asaas_customer_id), payment_links(*)",
+      "*, patients!inner(id, name, phone, cpf, email), payment_links(*)",
     )
     .eq("id", id)
     .eq("clinic_id", clinicId)
@@ -47,7 +48,17 @@ export async function GET(
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ data });
+  const sanitized = {
+    ...data,
+    patients: data.patients
+      ? {
+          ...(data.patients as Record<string, unknown>),
+          cpf: maskCPF((data.patients as Record<string, unknown>).cpf as string),
+        }
+      : null,
+  };
+
+  return NextResponse.json({ data: sanitized });
 }
 
 export async function PUT(
