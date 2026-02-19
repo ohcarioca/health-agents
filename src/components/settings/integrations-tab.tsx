@@ -15,42 +15,56 @@ interface Professional {
   google_calendar_id: string | null;
 }
 
+interface ClinicCalendar {
+  google_calendar_id: string | null;
+}
+
 export function IntegrationsTab() {
   const t = useTranslations("settings.integrations");
   const [professionals, setProfessionals] = useState<Professional[]>([]);
+  const [clinicCalendar, setClinicCalendar] = useState<ClinicCalendar | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchProfessionals = useCallback(async () => {
     try {
-      const res = await fetch("/api/settings/professionals");
-      if (!res.ok) {
-        console.error(
-          "[integrations] failed to fetch professionals:",
-          res.status
-        );
-        return;
+      const [profRes, clinicRes] = await Promise.all([
+        fetch("/api/settings/professionals"),
+        fetch("/api/settings/clinic"),
+      ]);
+
+      if (profRes.ok) {
+        const json: { data?: unknown[] } = await profRes.json();
+        if (json.data && Array.isArray(json.data)) {
+          setProfessionals(
+            json.data
+              .filter((p): p is Record<string, unknown> =>
+                typeof p === "object" && p !== null
+              )
+              .map((p) => ({
+                id: String(p.id),
+                name: String(p.name),
+                specialty: typeof p.specialty === "string" ? p.specialty : null,
+                google_calendar_id:
+                  typeof p.google_calendar_id === "string"
+                    ? p.google_calendar_id
+                    : null,
+              }))
+          );
+        }
       }
-      const json: { data?: unknown[] } = await res.json();
-      if (json.data && Array.isArray(json.data)) {
-        setProfessionals(
-          json.data
-            .filter((p): p is Record<string, unknown> =>
-              typeof p === "object" && p !== null
-            )
-            .map((p) => ({
-              id: String(p.id),
-              name: String(p.name),
-              specialty: typeof p.specialty === "string" ? p.specialty : null,
-              google_calendar_id:
-                typeof p.google_calendar_id === "string"
-                  ? p.google_calendar_id
-                  : null,
-            }))
-        );
+
+      if (clinicRes.ok) {
+        const { data: clinic } = await clinicRes.json();
+        setClinicCalendar({
+          google_calendar_id:
+            typeof clinic?.google_calendar_id === "string"
+              ? clinic.google_calendar_id
+              : null,
+        });
       }
     } catch (err) {
-      console.error("[integrations] fetch professionals error:", err);
+      console.error("[integrations] fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -59,6 +73,41 @@ export function IntegrationsTab() {
   useEffect(() => {
     fetchProfessionals();
   }, [fetchProfessionals]);
+
+  async function handleConnectClinic() {
+    setActionLoading("__clinic__");
+    try {
+      const res = await fetch("/api/integrations/google-calendar/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: "clinic" }),
+      });
+      if (!res.ok) return;
+      const json: { data?: { url?: string } } = await res.json();
+      if (json.data?.url) window.location.href = json.data.url;
+    } catch (err) {
+      console.error("[integrations] clinic connect error:", err);
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleDisconnectClinic() {
+    setActionLoading("__clinic__");
+    try {
+      const res = await fetch("/api/integrations/google-calendar/disconnect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: "clinic" }),
+      });
+      if (!res.ok) return;
+      await fetchProfessionals();
+    } catch (err) {
+      console.error("[integrations] clinic disconnect error:", err);
+    } finally {
+      setActionLoading(null);
+    }
+  }
 
   async function handleConnect(professionalId: string) {
     setActionLoading(professionalId);
@@ -134,6 +183,50 @@ export function IntegrationsTab() {
 
         <Card>
           <div className="space-y-3">
+            {/* Clinic calendar row */}
+            {clinicCalendar !== null && (
+              <div
+                className="flex items-center gap-3 rounded-lg px-3 py-2"
+                style={{ backgroundColor: "var(--nav-hover-bg)" }}
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                    {t("clinicCalendarLabel")}
+                  </p>
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                    {t("clinicCalendarDescription")}
+                  </p>
+                </div>
+                <Badge variant={clinicCalendar.google_calendar_id ? "success" : "neutral"}>
+                  {clinicCalendar.google_calendar_id ? t("connected") : t("notConnected")}
+                </Badge>
+                {clinicCalendar.google_calendar_id ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={actionLoading === "__clinic__"}
+                    onClick={handleDisconnectClinic}
+                  >
+                    {actionLoading === "__clinic__" ? <Spinner size="sm" /> : t("disconnect")}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={actionLoading === "__clinic__"}
+                    onClick={handleConnectClinic}
+                  >
+                    {actionLoading === "__clinic__" ? <Spinner size="sm" /> : t("connect")}
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Separator between clinic and professional rows */}
+            {clinicCalendar !== null && professionals.length > 0 && (
+              <div className="h-px" style={{ backgroundColor: "var(--border)" }} />
+            )}
+
             {professionals.length === 0 ? (
               <p
                 className="text-sm"
