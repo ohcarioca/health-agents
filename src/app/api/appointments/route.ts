@@ -1,27 +1,8 @@
-import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { after, NextResponse } from "next/server";
+import { getClinicId } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { bookAppointmentSchema } from "@/lib/validations/scheduling";
 import { createEvent } from "@/services/google-calendar";
-
-async function getClinicId() {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const admin = createAdminClient();
-  const { data: membership } = await admin
-    .from("clinic_users")
-    .select("clinic_id")
-    .eq("user_id", user.id)
-    .limit(1)
-    .single();
-
-  if (!membership) return null;
-  return membership.clinic_id as string;
-}
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -87,55 +68,61 @@ export async function POST(request: Request) {
     );
   }
 
-  // Sync to Google Calendar if professional has tokens
-  try {
-    const { data: professional } = await admin
-      .from("professionals")
-      .select("name, google_calendar_id, google_refresh_token")
-      .eq("id", professional_id)
-      .single();
+  // Return immediately
+  const response = NextResponse.json({ data: appointment }, { status: 201 });
 
-    if (
-      professional?.google_refresh_token &&
-      professional?.google_calendar_id
-    ) {
-      const { data: patient } = await admin
-        .from("patients")
-        .select("name")
-        .eq("id", patient_id)
+  // Sync to Google Calendar in the background (non-blocking)
+  after(async () => {
+    try {
+      const bg = createAdminClient();
+      const { data: professional } = await bg
+        .from("professionals")
+        .select("name, google_calendar_id, google_refresh_token")
+        .eq("id", professional_id)
         .single();
 
-      const { data: clinic } = await admin
-        .from("clinics")
-        .select("name, timezone")
-        .eq("id", clinicId)
-        .single();
+      if (
+        professional?.google_refresh_token &&
+        professional?.google_calendar_id
+      ) {
+        const { data: patient } = await bg
+          .from("patients")
+          .select("name")
+          .eq("id", patient_id)
+          .single();
 
-      const patientName = (patient?.name as string) ?? "Patient";
-      const clinicName = (clinic?.name as string) ?? "Clinic";
-      const timezone = (clinic?.timezone as string) || "America/Sao_Paulo";
+        const { data: clinic } = await bg
+          .from("clinics")
+          .select("name, timezone")
+          .eq("id", clinicId)
+          .single();
 
-      const eventResult = await createEvent(
-        professional.google_refresh_token as string,
-        professional.google_calendar_id as string,
-        {
-          summary: `${patientName} — ${clinicName}`,
-          startTime: starts_at,
-          endTime: ends_at,
-          timezone,
-        },
-      );
+        const patientName = (patient?.name as string) ?? "Patient";
+        const clinicName = (clinic?.name as string) ?? "Clinic";
+        const timezone = (clinic?.timezone as string) || "America/Sao_Paulo";
 
-      if (eventResult.success && eventResult.eventId) {
-        await admin
-          .from("appointments")
-          .update({ google_event_id: eventResult.eventId })
-          .eq("id", appointment.id);
+        const eventResult = await createEvent(
+          professional.google_refresh_token as string,
+          professional.google_calendar_id as string,
+          {
+            summary: `${patientName} — ${clinicName}`,
+            startTime: starts_at,
+            endTime: ends_at,
+            timezone,
+          },
+        );
+
+        if (eventResult.success && eventResult.eventId) {
+          await bg
+            .from("appointments")
+            .update({ google_event_id: eventResult.eventId })
+            .eq("id", appointment.id);
+        }
       }
+    } catch (err) {
+      console.error("[appointments] Google Calendar sync failed:", err);
     }
-  } catch (err) {
-    console.error("[appointments] Google Calendar sync failed:", err);
-  }
+  });
 
-  return NextResponse.json({ data: appointment }, { status: 201 });
+  return response;
 }
