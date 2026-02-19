@@ -74,10 +74,10 @@ export async function GET(request: Request) {
         continue;
       }
 
-      // Fetch clinic for timezone and name
+      // Fetch clinic for timezone
       const { data: clinic } = await supabase
         .from("clinics")
-        .select("timezone, name, whatsapp_phone_number_id, whatsapp_access_token, is_active")
+        .select("timezone, whatsapp_phone_number_id, whatsapp_access_token, is_active")
         .eq("id", entry.clinic_id)
         .single();
 
@@ -90,7 +90,6 @@ export async function GET(request: Request) {
       }
 
       const timezone = (clinic?.timezone as string) || "America/Sao_Paulo";
-      const clinicName = (clinic?.name as string) || "a clinica";
 
       // Build WhatsApp credentials
       const credentials: WhatsAppCredentials = {
@@ -138,7 +137,7 @@ export async function GET(request: Request) {
         "cron/recall-send"
       );
 
-      const localBody = `Ola ${patientName}! Faz tempo desde sua ultima visita em ${clinicName}. Gostariam de agendar um retorno? Estamos a disposicao!`;
+      const localBody = `Ola ${patientName}! Faz tempo desde sua ultima visita. Gostariam de agendar um retorno? Estamos a disposicao!`;
 
       const result = await sendOutboundTemplate(supabase, {
         clinicId: entry.clinic_id,
@@ -146,7 +145,7 @@ export async function GET(request: Request) {
         patientPhone,
         templateName: TEMPLATE_NAME,
         templateLanguage: TEMPLATE_LANGUAGE,
-        templateParams: [patientName, clinicName],
+        templateParams: [patientName],
         localBody,
         timezone,
         conversationId,
