@@ -163,25 +163,27 @@ export function IntegrationsTab() {
   return (
     <div className="space-y-6">
       {/* Google Calendar section */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <CalendarDays
-            className="size-5"
-            strokeWidth={1.75}
-            style={{ color: "var(--accent)" }}
-          />
-          <h3
-            className="text-sm font-semibold"
-            style={{ color: "var(--text-primary)" }}
-          >
-            {t("calendarTitle")}
-          </h3>
-        </div>
-        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-          {t("connectDescription")}
-        </p>
+      <Card>
+        <div className="space-y-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <CalendarDays
+                className="size-5"
+                strokeWidth={1.75}
+                style={{ color: "var(--accent)" }}
+              />
+              <h3
+                className="text-sm font-semibold"
+                style={{ color: "var(--text-primary)" }}
+              >
+                {t("calendarTitle")}
+              </h3>
+            </div>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+              {t("connectDescription")}
+            </p>
+          </div>
 
-        <Card>
           <div className="space-y-3">
             {/* Clinic calendar row */}
             {clinicCalendar !== null && (
@@ -281,8 +283,8 @@ export function IntegrationsTab() {
               );
             })}
           </div>
-        </Card>
-      </div>
+        </div>
+      </Card>
 
       {/* Gmail and Pagar.me placeholder sections */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
