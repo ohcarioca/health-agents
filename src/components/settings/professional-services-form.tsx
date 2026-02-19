@@ -19,10 +19,13 @@ interface ProfServiceRow {
 
 interface ProfessionalServicesFormProps {
   professionalId: string;
+  /** When true, pre-select all clinic services with their default prices */
+  preselectAll?: boolean;
 }
 
 export function ProfessionalServicesForm({
   professionalId,
+  preselectAll = false,
 }: ProfessionalServicesFormProps) {
   const t = useTranslations("settings.professionalForm");
 
@@ -43,18 +46,31 @@ export function ProfessionalServicesForm({
           fetch(`/api/settings/professionals/${professionalId}/services`),
         ]);
 
+        let services: ServiceRow[] = [];
         if (svcRes.ok) {
           const svcJson = await svcRes.json();
-          setAllServices(svcJson.data ?? []);
+          services = svcJson.data ?? [];
+          setAllServices(services);
         }
 
         if (profSvcRes.ok) {
           const profSvcJson = await profSvcRes.json();
-          const map = new Map<string, number>();
-          for (const ps of (profSvcJson.data ?? []) as ProfServiceRow[]) {
-            map.set(ps.service_id, ps.price_cents);
+          const existing = (profSvcJson.data ?? []) as ProfServiceRow[];
+
+          if (preselectAll && existing.length === 0 && services.length > 0) {
+            // New professional — pre-select all services with their default prices
+            const map = new Map<string, number>();
+            for (const svc of services) {
+              map.set(svc.id, svc.price_cents ?? 0);
+            }
+            setSelected(map);
+          } else {
+            const map = new Map<string, number>();
+            for (const ps of existing) {
+              map.set(ps.service_id, ps.price_cents);
+            }
+            setSelected(map);
           }
-          setSelected(map);
         }
       } finally {
         setLoading(false);
@@ -62,7 +78,7 @@ export function ProfessionalServicesForm({
     }
 
     fetchData();
-  }, [professionalId]);
+  }, [professionalId, preselectAll]);
 
   function toggleService(serviceId: string, defaultPrice: number | null) {
     setSelected((prev) => {

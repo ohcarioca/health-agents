@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useMemo, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { Combobox } from "@/components/ui/combobox";
 import { Button } from "@/components/ui/button";
 import { CompactScheduleGrid } from "./compact-schedule-grid";
 import { ProfessionalServicesForm } from "./professional-services-form";
 import { createProfessionalSchema } from "@/lib/validations/settings";
 import type { ScheduleGrid } from "@/lib/validations/settings";
+import { getSpecialtySuggestions } from "@/lib/constants/specialties";
 
 const DEFAULT_GRID: ScheduleGrid = {
   monday: [],
@@ -27,6 +29,8 @@ interface ProfessionalFormProps {
     appointment_duration_minutes: number;
     schedule_grid?: Record<string, { start: string; end: string }[]>;
   };
+  clinicType?: string | null;
+  clinicOperatingHours?: Record<string, { start: string; end: string }[]>;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -35,6 +39,8 @@ const SUBTAB_KEYS = ["tabData", "tabSchedule", "tabServices"] as const;
 
 export function ProfessionalForm({
   professional,
+  clinicType,
+  clinicOperatingHours,
   onSuccess,
   onCancel,
 }: ProfessionalFormProps) {
@@ -46,15 +52,24 @@ export function ProfessionalForm({
   const [createdId, setCreatedId] = useState<string | null>(null);
   const effectiveId = professional?.id ?? createdId;
 
+  const specialtySuggestions = useMemo(
+    () => getSpecialtySuggestions(clinicType),
+    [clinicType],
+  );
+
+  // Default schedule: clinic operating_hours for new professionals, own schedule for existing
+  const defaultGrid: ScheduleGrid =
+    (professional?.schedule_grid as ScheduleGrid | undefined) ??
+    (clinicOperatingHours as ScheduleGrid | undefined) ??
+    DEFAULT_GRID;
+
   const [activeSubTab, setActiveSubTab] = useState(0);
   const [name, setName] = useState(professional?.name ?? "");
   const [specialty, setSpecialty] = useState(professional?.specialty ?? "");
   const [duration, setDuration] = useState(
     professional?.appointment_duration_minutes ?? 30,
   );
-  const [scheduleGrid, setScheduleGrid] = useState<ScheduleGrid>(
-    (professional?.schedule_grid as ScheduleGrid | undefined) ?? DEFAULT_GRID,
-  );
+  const [scheduleGrid, setScheduleGrid] = useState<ScheduleGrid>(defaultGrid);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -146,11 +161,13 @@ export function ProfessionalForm({
             onChange={(e) => setName(e.target.value)}
             required
           />
-          <Input
+          <Combobox
             id="specialty"
             label={t("specialty")}
             value={specialty}
-            onChange={(e) => setSpecialty(e.target.value)}
+            onChange={setSpecialty}
+            suggestions={specialtySuggestions}
+            placeholder={tf("specialtyPlaceholder")}
           />
           <Input
             id="duration"
@@ -207,7 +224,7 @@ export function ProfessionalForm({
       {activeSubTab === 2 && (
         effectiveId ? (
           <div className="space-y-4">
-            <ProfessionalServicesForm professionalId={effectiveId} />
+            <ProfessionalServicesForm professionalId={effectiveId} preselectAll={!!createdId} />
             <div className="flex justify-end border-t pt-3" style={{ borderColor: "var(--border)" }}>
               <Button type="button" onClick={onSuccess}>
                 {tf("done")}

@@ -413,7 +413,8 @@
       "noServices": "No services registered. Add services in the Services tab first.",
       "priceRequired": "Set the price for each selected service",
       "saveFirst": "Save the professional first to assign services.",
-      "done": "Done"
+      "done": "Done",
+      "specialtyPlaceholder": "Select or type a specialty"
     },
     "compactGrid": {
       "copyToAll": "Copy Mon to all",

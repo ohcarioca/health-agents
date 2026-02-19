@@ -99,7 +99,7 @@ export default function SettingsPage() {
         ) : (
           <>
             {activeTab === 0 && clinic && <ClinicForm clinic={clinic} />}
-            {activeTab === 1 && <ProfessionalsList />}
+            {activeTab === 1 && <ProfessionalsList clinic={clinic} />}
             {activeTab === 2 && <ServicesList />}
             {activeTab === 3 && <InsurancePlansList />}
             {activeTab === 4 && <IntegrationsTab />}

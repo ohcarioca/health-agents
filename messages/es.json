@@ -413,7 +413,8 @@
       "noServices": "Ningún servicio registrado. Agregue servicios en la pestaña Servicios primero.",
       "priceRequired": "Defina el precio para cada servicio seleccionado",
       "saveFirst": "Guarde el profesional primero para asignar servicios.",
-      "done": "Listo"
+      "done": "Listo",
+      "specialtyPlaceholder": "Seleccione o escriba la especialidad"
     },
     "compactGrid": {
       "copyToAll": "Copiar lun. a todos",

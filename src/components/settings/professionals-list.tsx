@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Dialog } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProfessionalForm } from "./professional-form";
+import type { Clinic } from "@/types";
 
 interface ProfessionalRow {
   id: string;
@@ -21,7 +22,11 @@ interface ProfessionalRow {
   created_at: string;
 }
 
-export function ProfessionalsList() {
+interface ProfessionalsListProps {
+  clinic: Clinic | null;
+}
+
+export function ProfessionalsList({ clinic }: ProfessionalsListProps) {
   const t = useTranslations("settings.professionals");
 
   const [professionals, setProfessionals] = useState<ProfessionalRow[]>([]);
@@ -184,6 +189,8 @@ export function ProfessionalsList() {
       >
         <ProfessionalForm
           professional={editing}
+          clinicType={clinic?.type ?? null}
+          clinicOperatingHours={clinic?.operating_hours as Record<string, { start: string; end: string }[]> | undefined}
           onSuccess={handleFormSuccess}
           onCancel={() => setDialogOpen(false)}
         />
