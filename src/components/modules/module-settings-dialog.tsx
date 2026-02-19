@@ -90,20 +90,29 @@ function RecallSettings({ inactivityDays, onChangeInactivityDays }: RecallSettin
 interface SupportSettingsProps {
   faqItems: FaqItem[];
   onChange: (items: FaqItem[]) => void;
+  pendingQuestion: string;
+  onPendingQuestionChange: (v: string) => void;
+  pendingAnswer: string;
+  onPendingAnswerChange: (v: string) => void;
 }
 
-function SupportSettings({ faqItems, onChange }: SupportSettingsProps) {
+function SupportSettings({
+  faqItems,
+  onChange,
+  pendingQuestion,
+  onPendingQuestionChange,
+  pendingAnswer,
+  onPendingAnswerChange,
+}: SupportSettingsProps) {
   const t = useTranslations("modules");
-  const [newQuestion, setNewQuestion] = useState("");
-  const [newAnswer, setNewAnswer] = useState("");
 
   function handleAdd() {
-    const q = newQuestion.trim();
-    const a = newAnswer.trim();
+    const q = pendingQuestion.trim();
+    const a = pendingAnswer.trim();
     if (!q || !a) return;
     onChange([...faqItems, { question: q, answer: a }]);
-    setNewQuestion("");
-    setNewAnswer("");
+    onPendingQuestionChange("");
+    onPendingAnswerChange("");
   }
 
   function handleDelete(index: number) {
@@ -175,13 +184,13 @@ function SupportSettings({ faqItems, onChange }: SupportSettingsProps) {
         </p>
         <Input
           placeholder={t("support.question")}
-          value={newQuestion}
-          onChange={(e) => setNewQuestion(e.target.value)}
+          value={pendingQuestion}
+          onChange={(e) => onPendingQuestionChange(e.target.value)}
         />
         <textarea
           placeholder={t("support.answer")}
-          value={newAnswer}
-          onChange={(e) => setNewAnswer(e.target.value)}
+          value={pendingAnswer}
+          onChange={(e) => onPendingAnswerChange(e.target.value)}
           rows={3}
           className="w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors resize-none"
           style={{
@@ -194,7 +203,7 @@ function SupportSettings({ faqItems, onChange }: SupportSettingsProps) {
           variant="outline"
           size="sm"
           onClick={handleAdd}
-          disabled={!newQuestion.trim() || !newAnswer.trim()}
+          disabled={!pendingQuestion.trim() || !pendingAnswer.trim()}
         >
           <Plus className="size-4 mr-1.5" strokeWidth={1.75} />
           {t("support.addFaq")}
@@ -241,6 +250,8 @@ export function ModuleSettingsDialog({
       }))
       .filter((item) => item.question && item.answer);
   });
+  const [pendingQuestion, setPendingQuestion] = useState("");
+  const [pendingAnswer, setPendingAnswer] = useState("");
 
   const [saving, setSaving] = useState(false);
 
@@ -250,8 +261,16 @@ export function ModuleSettingsDialog({
         return { auto_billing: autoBilling };
       case "recall":
         return { inactivity_days: inactivityDays };
-      case "support":
-        return { faq_items: faqItems };
+      case "support": {
+        // Auto-include pending input fields so user doesn't need to click "+"
+        const items = [...faqItems];
+        const q = pendingQuestion.trim();
+        const a = pendingAnswer.trim();
+        if (q && a) {
+          items.push({ question: q, answer: a });
+        }
+        return { faq_items: items };
+      }
     }
   }
 
@@ -296,7 +315,14 @@ export function ModuleSettingsDialog({
           />
         )}
         {moduleType === "support" && (
-          <SupportSettings faqItems={faqItems} onChange={setFaqItems} />
+          <SupportSettings
+            faqItems={faqItems}
+            onChange={setFaqItems}
+            pendingQuestion={pendingQuestion}
+            onPendingQuestionChange={setPendingQuestion}
+            pendingAnswer={pendingAnswer}
+            onPendingAnswerChange={setPendingAnswer}
+          />
         )}
 
         {/* Footer */}
