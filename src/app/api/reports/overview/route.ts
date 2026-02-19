@@ -207,16 +207,23 @@ export async function GET(request: Request) {
     moduleStats.set(convModule, entry);
   }
 
-  return NextResponse.json({
-    data: {
-      period,
-      appointmentTrend,
-      appointmentSummary,
-      nps,
-      npsTrend,
-      revenue,
-      revenueTrend,
-      moduleStats: Object.fromEntries(moduleStats),
+  return NextResponse.json(
+    {
+      data: {
+        period,
+        appointmentTrend,
+        appointmentSummary,
+        nps,
+        npsTrend,
+        revenue,
+        revenueTrend,
+        moduleStats: Object.fromEntries(moduleStats),
+      },
     },
-  });
+    {
+      headers: {
+        "Cache-Control": "private, max-age=300",
+      },
+    },
+  );
 }

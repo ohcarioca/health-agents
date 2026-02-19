@@ -159,15 +159,22 @@ export async function GET(request: NextRequest) {
   }));
   const revenue = calculateRevenueMetrics(invoices);
 
-  return NextResponse.json({
-    data: {
-      appointments: appointmentsResult.count ?? 0,
-      noShows: noShowsResult.count ?? 0,
-      confirmations: confirmationsResult.count ?? 0,
-      nps,
-      revenue,
-      escalated: escalatedResult.count ?? 0,
-      period,
+  return NextResponse.json(
+    {
+      data: {
+        appointments: appointmentsResult.count ?? 0,
+        noShows: noShowsResult.count ?? 0,
+        confirmations: confirmationsResult.count ?? 0,
+        nps,
+        revenue,
+        escalated: escalatedResult.count ?? 0,
+        period,
+      },
     },
-  });
+    {
+      headers: {
+        "Cache-Control": "private, max-age=60",
+      },
+    },
+  );
 }

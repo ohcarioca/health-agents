@@ -173,5 +173,12 @@ export async function GET() {
     )
     .slice(0, 20);
 
-  return NextResponse.json({ data: allAlerts });
+  return NextResponse.json(
+    { data: allAlerts },
+    {
+      headers: {
+        "Cache-Control": "private, max-age=30",
+      },
+    },
+  );
 }
