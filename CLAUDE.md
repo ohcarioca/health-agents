@@ -484,7 +484,7 @@ Shared utility for proactive (system-initiated) messages:
 | `GET /api/cron/confirmations` | `*/15 8-19 * * 1-6` | Scans `confirmation_queue`, sends reminders (every 15min Mon-Sat) |
 | `GET /api/cron/nps` | `0 12,16,19 * * *` | Surveys patients after completed appointments (3x/day) |
 | `GET /api/cron/billing` | `0 9,14 * * 1-6` | Drip payment reminders (2x/day Mon-Sat) |
-| `GET /api/cron/recall` | `0 10 * * 1-5` | Enqueue inactive patients (Mon-Fri) |
+| `GET /api/cron/recall` | `0 10 * * 1-5` | Enqueue inactive patients (Mon-Fri) — uses per-clinic `inactivity_days` from `module_configs.settings` (default 90), skips disabled clinics |
 | `GET /api/cron/recall-send` | `30 10,15 * * 1-5` | Send recall messages from queue (2x/day Mon-Fri) |
 | `GET /api/cron/message-retry` | `*/30 8-20 * * 1-6` | Retry failed WhatsApp sends (every 30min Mon-Sat) |
 
@@ -505,7 +505,8 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 | `/api/settings/insurance-plans` | GET, POST | Insurance plans CRUD (list/create) |
 | `/api/settings/insurance-plans/[id]` | DELETE | Insurance plan delete |
 | `/api/settings/public-page` | GET, PUT | Public page config (accent color, links, toggle) |
-| `/api/settings/modules/billing` | GET, PUT | Billing module auto_billing toggle |
+| `/api/settings/modules/billing` | GET, PUT | Billing module auto_billing toggle (legacy) |
+| `/api/settings/modules/[type]` | GET, PUT | Generic module settings: enabled toggle + per-type settings (billing, nps, recall, support) |
 
 ### Public API Routes
 

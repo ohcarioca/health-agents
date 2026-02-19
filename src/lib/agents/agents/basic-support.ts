@@ -125,21 +125,28 @@ async function handleGetClinicInfo(
   context: ToolCallContext
 ): Promise<ToolCallResult> {
   try {
-    const [clinicResult, insuranceResult, servicesResult] = await Promise.all([
-      context.supabase
-        .from("clinics")
-        .select("name, phone, address, timezone, operating_hours")
-        .eq("id", context.clinicId)
-        .single(),
-      context.supabase
-        .from("insurance_plans")
-        .select("name")
-        .eq("clinic_id", context.clinicId),
-      context.supabase
-        .from("services")
-        .select("name, price_cents, duration_minutes")
-        .eq("clinic_id", context.clinicId),
-    ]);
+    const [clinicResult, insuranceResult, servicesResult, supportConfigResult] =
+      await Promise.all([
+        context.supabase
+          .from("clinics")
+          .select("name, phone, address, timezone, operating_hours")
+          .eq("id", context.clinicId)
+          .single(),
+        context.supabase
+          .from("insurance_plans")
+          .select("name")
+          .eq("clinic_id", context.clinicId),
+        context.supabase
+          .from("services")
+          .select("name, price_cents, duration_minutes")
+          .eq("clinic_id", context.clinicId),
+        context.supabase
+          .from("module_configs")
+          .select("settings")
+          .eq("clinic_id", context.clinicId)
+          .eq("module_type", "support")
+          .maybeSingle(),
+      ]);
 
     if (clinicResult.error) {
       return {
@@ -157,6 +164,30 @@ async function handleGetClinicInfo(
       return `${s.name}${duration}${price}`;
     });
 
+    // Extract FAQ items from support module settings
+    const supportSettings =
+      (supportConfigResult.data?.settings ?? {}) as Record<string, unknown>;
+    const rawFaqItems = Array.isArray(supportSettings.faq_items)
+      ? supportSettings.faq_items
+      : [];
+    const faqItems = rawFaqItems
+      .filter(
+        (item): item is Record<string, unknown> =>
+          typeof item === "object" && item !== null
+      )
+      .filter(
+        (item) =>
+          typeof item.question === "string" &&
+          typeof item.answer === "string" &&
+          item.question.trim() &&
+          item.answer.trim()
+      );
+
+    const faqSection =
+      faqItems.length > 0
+        ? `FAQ:\n${faqItems.map((item) => `Q: ${item.question}\nA: ${item.answer}`).join("\n\n")}`
+        : null;
+
     const parts: string[] = [
       `Clinic: ${clinic.name}`,
       clinic.phone ? `Phone: ${clinic.phone}` : null,
@@ -171,6 +202,7 @@ async function handleGetClinicInfo(
       services.length > 0
         ? `Available services: ${services.join(", ")}`
         : "No services registered.",
+      faqSection,
     ].filter((part): part is string => part !== null);
 
     return { result: parts.join("\n") };

@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 // ── Constants ──
 
-const INACTIVE_DAYS = 90;
+const DEFAULT_INACTIVE_DAYS = 90;
 
 // ── GET handler ──
 
@@ -17,10 +17,6 @@ export async function GET(request: Request) {
   }
 
   const supabase = createAdminClient();
-
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - INACTIVE_DAYS);
-  const cutoff = cutoffDate.toISOString();
 
   // Get all active clinics
   const { data: clinics, error: clinicsError } = await supabase
@@ -35,10 +31,36 @@ export async function GET(request: Request) {
     );
   }
 
+  // Batch-fetch all recall module configs to avoid N+1 per clinic
+  const { data: recallConfigs } = await supabase
+    .from("module_configs")
+    .select("clinic_id, enabled, settings")
+    .eq("module_type", "recall");
+
+  const recallConfigMap = new Map(
+    (recallConfigs ?? []).map((c) => [c.clinic_id as string, c])
+  );
+
   let enqueued = 0;
 
   for (const clinic of clinics) {
-    // Get patients whose last visit was more than 90 days ago
+    const recallConfig = recallConfigMap.get(clinic.id);
+
+    // Skip clinics where recall module is explicitly disabled
+    if (recallConfig && recallConfig.enabled === false) continue;
+
+    const settings = (recallConfig?.settings ?? {}) as Record<string, unknown>;
+    const inactiveDays =
+      typeof settings.inactivity_days === "number" &&
+      settings.inactivity_days >= 1
+        ? settings.inactivity_days
+        : DEFAULT_INACTIVE_DAYS;
+
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - inactiveDays);
+    const cutoff = cutoffDate.toISOString();
+
+    // Get patients whose last visit was more than inactiveDays ago
     const { data: patients } = await supabase
       .from("patients")
       .select("id, last_visit_at")
