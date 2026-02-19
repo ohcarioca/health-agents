@@ -32,6 +32,19 @@ function createMockSupabase() {
       };
     }
 
+    // module_configs needs .eq().eq().maybeSingle()
+    if (table === "module_configs") {
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+            }),
+          }),
+        }),
+      };
+    }
+
     // insurance_plans and services return arrays (no .single())
     return {
       select: vi.fn().mockReturnValue({
@@ -225,6 +238,17 @@ describe("basic-support agent", () => {
                     single: vi.fn().mockResolvedValue({
                       data: null,
                       error: { message: "Clinic not found" },
+                    }),
+                  }),
+                }),
+              };
+            }
+            if (table === "module_configs") {
+              return {
+                select: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    eq: vi.fn().mockReturnValue({
+                      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
                     }),
                   }),
                 }),
