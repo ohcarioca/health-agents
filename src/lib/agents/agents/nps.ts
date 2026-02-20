@@ -84,30 +84,46 @@ const INSTRUCTIONS: Record<string, string> = {
   es: "Recopila nota NPS de 0-10 y comentario opcional. Dirige promotores a Google Reviews y registra alertas para detractores.",
 };
 
+// ── Helpers ──
+
+/** Resolve the most recent pending NPS response for a patient in a clinic. */
+async function resolveNpsResponse(
+  context: ToolCallContext
+): Promise<{ appointmentId: string } | null> {
+  const { data } = await context.supabase
+    .from("nps_responses")
+    .select("appointment_id")
+    .eq("clinic_id", context.clinicId)
+    .eq("patient_id", context.recipientId)
+    .is("score", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!data) return null;
+  return { appointmentId: data.appointment_id as string };
+}
+
 // ── Tool Definitions (Stubs) ──
 
 const collectNpsScoreTool = tool(
   async (input) => {
     return JSON.stringify({
       action: "collect_nps_score",
-      appointment_id: input.appointment_id,
       score: input.score,
     });
   },
   {
     name: "collect_nps_score",
     description:
-      "Records the NPS score (0-10) for a patient's appointment. This MUST be the FIRST tool called when the patient provides a rating. Always call this BEFORE collect_nps_comment.",
+      "Records the NPS score (0-10) for the patient's most recent appointment. This MUST be the FIRST tool called when the patient provides a rating. Always call this BEFORE collect_nps_comment. The appointment is resolved automatically.",
     schema: z.object({
-      appointment_id: z
-        .string()
-        .describe("The ID of the appointment being evaluated"),
       score: z
         .number()
         .int()
         .min(0)
         .max(10)
-        .describe("The NPS score from 0 to 10 given by the patient"),
+        .describe("The NPS score from 0 to 10 given by the patient. Round to the nearest integer if the patient gives a decimal."),
     }),
   }
 );
@@ -116,18 +132,14 @@ const collectNpsCommentTool = tool(
   async (input) => {
     return JSON.stringify({
       action: "collect_nps_comment",
-      appointment_id: input.appointment_id,
       comment: input.comment,
     });
   },
   {
     name: "collect_nps_comment",
     description:
-      "Records a comment from the patient about their experience. Call this AFTER collect_nps_score has been called. When the patient provides textual feedback, record it without asking permission.",
+      "Records a comment from the patient about their experience. Call this AFTER collect_nps_score has been called. When the patient provides textual feedback, record it without asking permission. The appointment is resolved automatically.",
     schema: z.object({
-      appointment_id: z
-        .string()
-        .describe("The ID of the appointment being evaluated"),
       comment: z
         .string()
         .describe("The patient's optional feedback comment"),
@@ -136,21 +148,16 @@ const collectNpsCommentTool = tool(
 );
 
 const redirectToGoogleReviewsTool = tool(
-  async (input) => {
+  async () => {
     return JSON.stringify({
       action: "redirect_to_google_reviews",
-      appointment_id: input.appointment_id,
     });
   },
   {
     name: "redirect_to_google_reviews",
     description:
-      "Sends the Google Reviews link to a promoter (score 9-10) so they can leave a public review. Only call this for promoters.",
-    schema: z.object({
-      appointment_id: z
-        .string()
-        .describe("The ID of the appointment being evaluated"),
-    }),
+      "Sends the Google Reviews link to a promoter (score 9-10) so they can leave a public review. Only call this for promoters. The appointment is resolved automatically.",
+    schema: z.object({}),
   }
 );
 
@@ -158,7 +165,6 @@ const alertDetractorTool = tool(
   async (input) => {
     return JSON.stringify({
       action: "alert_detractor",
-      appointment_id: input.appointment_id,
       score: input.score,
       comment: input.comment,
     });
@@ -166,11 +172,8 @@ const alertDetractorTool = tool(
   {
     name: "alert_detractor",
     description:
-      "Creates a detractor alert for the clinic team when a patient gives a low score (0-6). Call this for detractors after collecting their score.",
+      "Creates a detractor alert for the clinic team when a patient gives a low score (0-6). Call this for detractors after collecting their score. The appointment is resolved automatically.",
     schema: z.object({
-      appointment_id: z
-        .string()
-        .describe("The ID of the appointment being evaluated"),
       score: z
         .number()
         .describe("The detractor's NPS score"),
@@ -188,15 +191,22 @@ async function handleCollectNpsScore(
   args: Record<string, unknown>,
   context: ToolCallContext
 ): Promise<ToolCallResult> {
-  const appointmentId =
-    typeof args.appointment_id === "string" ? args.appointment_id : "";
-  const score = typeof args.score === "number" ? args.score : -1;
+  const score = typeof args.score === "number" ? Math.round(args.score) : -1;
+
+  if (score < 0 || score > 10) {
+    return { result: "Invalid score. Please provide a score between 0 and 10." };
+  }
 
   try {
+    const nps = await resolveNpsResponse(context);
+    if (!nps) {
+      return { result: "No pending NPS survey found for this patient. The survey may have already been completed." };
+    }
+
     const { error } = await context.supabase
       .from("nps_responses")
       .update({ score })
-      .eq("appointment_id", appointmentId)
+      .eq("appointment_id", nps.appointmentId)
       .eq("clinic_id", context.clinicId);
 
     if (error) {
@@ -229,16 +239,28 @@ async function handleCollectNpsComment(
   args: Record<string, unknown>,
   context: ToolCallContext
 ): Promise<ToolCallResult> {
-  const appointmentId =
-    typeof args.appointment_id === "string" ? args.appointment_id : "";
   const comment =
     typeof args.comment === "string" ? args.comment : "";
 
   try {
+    // For comment, find the most recent NPS response (with or without score)
+    const { data: npsRow } = await context.supabase
+      .from("nps_responses")
+      .select("appointment_id")
+      .eq("clinic_id", context.clinicId)
+      .eq("patient_id", context.recipientId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!npsRow) {
+      return { result: "No NPS survey found for this patient." };
+    }
+
     const { error } = await context.supabase
       .from("nps_responses")
       .update({ comment })
-      .eq("appointment_id", appointmentId)
+      .eq("appointment_id", npsRow.appointment_id)
       .eq("clinic_id", context.clinicId);
 
     if (error) {
@@ -254,12 +276,9 @@ async function handleCollectNpsComment(
 }
 
 async function handleRedirectToGoogleReviews(
-  args: Record<string, unknown>,
+  _args: Record<string, unknown>,
   context: ToolCallContext
 ): Promise<ToolCallResult> {
-  const appointmentId =
-    typeof args.appointment_id === "string" ? args.appointment_id : "";
-
   try {
     const { data: clinic, error: clinicError } = await context.supabase
       .from("clinics")
@@ -280,11 +299,23 @@ async function handleRedirectToGoogleReviews(
       return { result: "Google Reviews URL not configured for this clinic." };
     }
 
-    await context.supabase
+    // Find most recent NPS response for this patient
+    const { data: npsRow } = await context.supabase
       .from("nps_responses")
-      .update({ review_sent: true })
-      .eq("appointment_id", appointmentId)
-      .eq("clinic_id", context.clinicId);
+      .select("appointment_id")
+      .eq("clinic_id", context.clinicId)
+      .eq("patient_id", context.recipientId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (npsRow) {
+      await context.supabase
+        .from("nps_responses")
+        .update({ review_sent: true })
+        .eq("appointment_id", npsRow.appointment_id)
+        .eq("clinic_id", context.clinicId);
+    }
 
     return {
       result: "Google Reviews link sent to patient.",
@@ -298,18 +329,27 @@ async function handleRedirectToGoogleReviews(
 }
 
 async function handleAlertDetractor(
-  args: Record<string, unknown>,
+  _args: Record<string, unknown>,
   context: ToolCallContext
 ): Promise<ToolCallResult> {
-  const appointmentId =
-    typeof args.appointment_id === "string" ? args.appointment_id : "";
-
   try {
-    await context.supabase
+    // Find most recent NPS response for this patient
+    const { data: npsRow } = await context.supabase
       .from("nps_responses")
-      .update({ alert_sent: true })
-      .eq("appointment_id", appointmentId)
-      .eq("clinic_id", context.clinicId);
+      .select("appointment_id")
+      .eq("clinic_id", context.clinicId)
+      .eq("patient_id", context.recipientId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (npsRow) {
+      await context.supabase
+        .from("nps_responses")
+        .update({ alert_sent: true })
+        .eq("appointment_id", npsRow.appointment_id)
+        .eq("clinic_id", context.clinicId);
+    }
 
     return {
       result: "Detractor alert registered. The clinic team will be notified.",

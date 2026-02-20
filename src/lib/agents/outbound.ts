@@ -159,6 +159,14 @@ export async function sendOutboundMessage(
     return { success: false, skippedReason: "send_failed" };
   }
 
+  // Store in messages table so it appears in conversation history and internal chat
+  await supabase.from("messages").insert({
+    conversation_id: conversationId,
+    clinic_id: clinicId,
+    content: text,
+    role: "assistant",
+  });
+
   return { success: true, messageId: result.messageId };
 }
 
@@ -226,6 +234,14 @@ export async function sendOutboundTemplate(
     console.error("[outbound] template send failed:", result.error);
     return { success: false, skippedReason: "send_failed" };
   }
+
+  // Store in messages table so it appears in conversation history and internal chat
+  await supabase.from("messages").insert({
+    conversation_id: conversationId,
+    clinic_id: clinicId,
+    content: localBody,
+    role: "assistant",
+  });
 
   return { success: true, messageId: result.messageId };
 }

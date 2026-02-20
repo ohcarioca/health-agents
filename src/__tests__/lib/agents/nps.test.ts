@@ -17,55 +17,53 @@ import type { ToolCallContext, ToolCallResult } from "@/lib/agents";
 
 // ── Mock Supabase factory ──
 
-type MockChainable = {
-  select: ReturnType<typeof vi.fn>;
-  insert: ReturnType<typeof vi.fn>;
-  update: ReturnType<typeof vi.fn>;
-  eq: ReturnType<typeof vi.fn>;
-  neq: ReturnType<typeof vi.fn>;
-  in: ReturnType<typeof vi.fn>;
-  lt: ReturnType<typeof vi.fn>;
-  gt: ReturnType<typeof vi.fn>;
-  gte: ReturnType<typeof vi.fn>;
-  lte: ReturnType<typeof vi.fn>;
-  order: ReturnType<typeof vi.fn>;
-  limit: ReturnType<typeof vi.fn>;
-  single: ReturnType<typeof vi.fn>;
-  maybeSingle: ReturnType<typeof vi.fn>;
-};
-
+/**
+ * Creates a chainable Supabase mock where ALL methods return `this`
+ * and terminal methods (single, maybeSingle) resolve to `resolvedValue`.
+ */
 function createChainable(
   resolvedValue: { data: unknown; error: unknown } = {
     data: null,
     error: null,
   }
-): MockChainable {
-  const chainable: MockChainable = {} as MockChainable;
+) {
+  const chainable: Record<string, ReturnType<typeof vi.fn>> = {};
+  const methods = [
+    "select", "insert", "update", "delete",
+    "eq", "neq", "in", "is", "lt", "gt", "gte", "lte",
+    "order", "limit", "filter",
+  ];
 
-  chainable.select = vi.fn().mockReturnValue(chainable);
-  chainable.insert = vi.fn().mockReturnValue(chainable);
-  chainable.update = vi.fn().mockReturnValue(chainable);
-  chainable.eq = vi.fn().mockReturnValue(chainable);
-  chainable.neq = vi.fn().mockReturnValue(chainable);
-  chainable.in = vi.fn().mockReturnValue(chainable);
-  chainable.lt = vi.fn().mockReturnValue(chainable);
-  chainable.gt = vi.fn().mockReturnValue(chainable);
-  chainable.gte = vi.fn().mockReturnValue(chainable);
-  chainable.lte = vi.fn().mockReturnValue(chainable);
-  chainable.order = vi.fn().mockReturnValue(chainable);
-  chainable.limit = vi.fn().mockReturnValue(chainable);
+  for (const method of methods) {
+    chainable[method] = vi.fn().mockReturnValue(chainable);
+  }
+
   chainable.single = vi.fn().mockResolvedValue(resolvedValue);
   chainable.maybeSingle = vi.fn().mockResolvedValue(resolvedValue);
 
   return chainable;
 }
 
+/**
+ * Creates a mock Supabase client with per-table chainable overrides.
+ * For tables called multiple times, pass an array — responses are consumed in order.
+ */
 function createMockSupabase(
-  tableOverrides: Record<string, MockChainable> = {}
+  tableOverrides: Record<string, ReturnType<typeof createChainable> | ReturnType<typeof createChainable>[]> = {}
 ) {
-  const defaultChainable = createChainable();
+  const callCounters: Record<string, number> = {};
+
   const fromMock = vi.fn().mockImplementation((table: string) => {
-    return tableOverrides[table] ?? defaultChainable;
+    const override = tableOverrides[table];
+    if (!override) return createChainable();
+
+    if (Array.isArray(override)) {
+      const idx = callCounters[table] ?? 0;
+      callCounters[table] = idx + 1;
+      return override[idx] ?? createChainable();
+    }
+
+    return override;
   });
 
   return { from: fromMock };
@@ -227,16 +225,16 @@ describe("nps agent", () => {
 
     describe("collect_nps_score", () => {
       it("records a promoter score (10) and hints to redirect to Google Reviews", async () => {
-        // .update().eq("appointment_id").eq("clinic_id") — second eq resolves
-        const secondEq = vi.fn().mockResolvedValue({
-          data: null,
+        // 1st call: resolveNpsResponse → returns pending NPS row
+        const resolveChainable = createChainable({
+          data: { appointment_id: "appt-123" },
           error: null,
         });
-        const npsChainable = createChainable();
-        npsChainable.eq = vi.fn().mockReturnValue({ eq: secondEq });
+        // 2nd call: update score
+        const updateChainable = createChainable();
 
         const mockSupabase = createMockSupabase({
-          nps_responses: npsChainable,
+          nps_responses: [resolveChainable, updateChainable],
         });
 
         const context = createToolCallContext({
@@ -244,29 +242,23 @@ describe("nps agent", () => {
         });
 
         const result: ToolCallResult = await config.handleToolCall(
-          {
-            name: "collect_nps_score",
-            args: {
-              appointment_id: "appt-123",
-              score: 10,
-            },
-          },
+          { name: "collect_nps_score", args: { score: 10 } },
           context
         );
 
         expect(result.result).toBeDefined();
+        expect(result.result).toContain("promoter");
       });
 
       it("records a detractor score (3) and hints to alert", async () => {
-        const secondEq = vi.fn().mockResolvedValue({
-          data: null,
+        const resolveChainable = createChainable({
+          data: { appointment_id: "appt-123" },
           error: null,
         });
-        const npsChainable = createChainable();
-        npsChainable.eq = vi.fn().mockReturnValue({ eq: secondEq });
+        const updateChainable = createChainable();
 
         const mockSupabase = createMockSupabase({
-          nps_responses: npsChainable,
+          nps_responses: [resolveChainable, updateChainable],
         });
 
         const context = createToolCallContext({
@@ -274,32 +266,98 @@ describe("nps agent", () => {
         });
 
         const result: ToolCallResult = await config.handleToolCall(
-          {
-            name: "collect_nps_score",
-            args: {
-              appointment_id: "appt-123",
-              score: 3,
-            },
-          },
+          { name: "collect_nps_score", args: { score: 3 } },
           context
         );
 
         expect(result.result).toBeDefined();
+        expect(result.result).toContain("detractor");
+      });
+
+      it("records a neutral score (7)", async () => {
+        const resolveChainable = createChainable({
+          data: { appointment_id: "appt-123" },
+          error: null,
+        });
+        const updateChainable = createChainable();
+
+        const mockSupabase = createMockSupabase({
+          nps_responses: [resolveChainable, updateChainable],
+        });
+
+        const context = createToolCallContext({
+          supabase: mockSupabase as unknown as ToolCallContext["supabase"],
+        });
+
+        const result: ToolCallResult = await config.handleToolCall(
+          { name: "collect_nps_score", args: { score: 7 } },
+          context
+        );
+
+        expect(result.result).toBeDefined();
+        expect(result.result).toContain("neutral");
+      });
+
+      it("rounds decimal scores to nearest integer", async () => {
+        const resolveChainable = createChainable({
+          data: { appointment_id: "appt-123" },
+          error: null,
+        });
+        const updateChainable = createChainable();
+
+        const mockSupabase = createMockSupabase({
+          nps_responses: [resolveChainable, updateChainable],
+        });
+
+        const context = createToolCallContext({
+          supabase: mockSupabase as unknown as ToolCallContext["supabase"],
+        });
+
+        const result: ToolCallResult = await config.handleToolCall(
+          { name: "collect_nps_score", args: { score: 9.5 } },
+          context
+        );
+
+        expect(result.result).toBeDefined();
+        expect(result.result).toContain("promoter");
+      });
+
+      it("returns error when no pending NPS survey exists", async () => {
+        const resolveChainable = createChainable({
+          data: null,
+          error: null,
+        });
+
+        const mockSupabase = createMockSupabase({
+          nps_responses: [resolveChainable],
+        });
+
+        const context = createToolCallContext({
+          supabase: mockSupabase as unknown as ToolCallContext["supabase"],
+        });
+
+        const result: ToolCallResult = await config.handleToolCall(
+          { name: "collect_nps_score", args: { score: 8 } },
+          context
+        );
+
+        expect(result.result).toBeDefined();
+        expect(result.result).toContain("No pending NPS survey");
       });
     });
 
     describe("collect_nps_comment", () => {
       it("records the comment and returns confirmation", async () => {
-        // .update().eq("appointment_id").eq("clinic_id") — second eq resolves
-        const secondEq = vi.fn().mockResolvedValue({
-          data: null,
+        // 1st call: find most recent NPS response
+        const findChainable = createChainable({
+          data: { appointment_id: "appt-123" },
           error: null,
         });
-        const npsChainable = createChainable();
-        npsChainable.eq = vi.fn().mockReturnValue({ eq: secondEq });
+        // 2nd call: update comment
+        const updateChainable = createChainable();
 
         const mockSupabase = createMockSupabase({
-          nps_responses: npsChainable,
+          nps_responses: [findChainable, updateChainable],
         });
 
         const context = createToolCallContext({
@@ -309,10 +367,7 @@ describe("nps agent", () => {
         const result: ToolCallResult = await config.handleToolCall(
           {
             name: "collect_nps_comment",
-            args: {
-              appointment_id: "appt-123",
-              comment: "Great experience!",
-            },
+            args: { comment: "Great experience!" },
           },
           context
         );
@@ -328,36 +383,23 @@ describe("nps agent", () => {
           data: { google_reviews_url: "https://g.page/r/example/review" },
           error: null,
         });
-
-        // .update().eq("appointment_id").eq("clinic_id") — second eq resolves
-        const secondEq = vi.fn().mockResolvedValue({
-          data: null,
+        const npsResolveChainable = createChainable({
+          data: { appointment_id: "appt-123" },
           error: null,
         });
-        const npsChainable = createChainable();
-        npsChainable.eq = vi.fn().mockReturnValue({ eq: secondEq });
+        const npsUpdateChainable = createChainable();
 
-        const mockFromFn = vi
-          .fn()
-          .mockImplementation((table: string) => {
-            if (table === "clinics") return clinicChainable;
-            if (table === "nps_responses") return npsChainable;
-            return createChainable();
-          });
-
-        const mockSupabase = { from: mockFromFn };
+        const mockSupabase = createMockSupabase({
+          clinics: clinicChainable,
+          nps_responses: [npsResolveChainable, npsUpdateChainable],
+        });
 
         const context = createToolCallContext({
           supabase: mockSupabase as unknown as ToolCallContext["supabase"],
         });
 
         const result: ToolCallResult = await config.handleToolCall(
-          {
-            name: "redirect_to_google_reviews",
-            args: {
-              appointment_id: "appt-123",
-            },
-          },
+          { name: "redirect_to_google_reviews", args: {} },
           context
         );
 
@@ -382,12 +424,7 @@ describe("nps agent", () => {
         });
 
         const result: ToolCallResult = await config.handleToolCall(
-          {
-            name: "redirect_to_google_reviews",
-            args: {
-              appointment_id: "appt-123",
-            },
-          },
+          { name: "redirect_to_google_reviews", args: {} },
           context
         );
 
@@ -398,16 +435,14 @@ describe("nps agent", () => {
 
     describe("alert_detractor", () => {
       it("registers the detractor alert", async () => {
-        // .update().eq("appointment_id").eq("clinic_id") — second eq resolves
-        const secondEq = vi.fn().mockResolvedValue({
-          data: null,
+        const npsResolveChainable = createChainable({
+          data: { appointment_id: "appt-123" },
           error: null,
         });
-        const npsChainable = createChainable();
-        npsChainable.eq = vi.fn().mockReturnValue({ eq: secondEq });
+        const npsUpdateChainable = createChainable();
 
         const mockSupabase = createMockSupabase({
-          nps_responses: npsChainable,
+          nps_responses: [npsResolveChainable, npsUpdateChainable],
         });
 
         const context = createToolCallContext({
@@ -417,11 +452,7 @@ describe("nps agent", () => {
         const result: ToolCallResult = await config.handleToolCall(
           {
             name: "alert_detractor",
-            args: {
-              appointment_id: "appt-123",
-              score: 3,
-              comment: "Poor service",
-            },
+            args: { score: 3, comment: "Poor service" },
           },
           context
         );
