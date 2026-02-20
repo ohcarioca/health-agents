@@ -262,27 +262,25 @@ export async function processMessage(
     agentConfig_.auto_billing = true;
   }
 
-  // Extract FAQ items for support agent
+  // Extract FAQ items — available to ALL agents so any module can answer FAQ questions
   let faqItems: Array<{ question: string; answer: string }> | undefined;
-  if (moduleType === "support") {
-    const supportSettings = relevantModuleConfigs?.find(
-      (c) => c.module_type === "support"
-    )?.settings as Record<string, unknown> | null;
-    const raw = Array.isArray(supportSettings?.faq_items)
-      ? supportSettings.faq_items
-      : [];
-    const parsed = raw.filter(
-      (item: unknown): item is { question: string; answer: string } =>
-        typeof item === "object" &&
-        item !== null &&
-        typeof (item as Record<string, unknown>).question === "string" &&
-        typeof (item as Record<string, unknown>).answer === "string" &&
-        ((item as Record<string, unknown>).question as string).trim() !== "" &&
-        ((item as Record<string, unknown>).answer as string).trim() !== ""
-    );
-    if (parsed.length > 0) {
-      faqItems = parsed;
-    }
+  const supportSettings = relevantModuleConfigs?.find(
+    (c) => c.module_type === "support"
+  )?.settings as Record<string, unknown> | null;
+  const rawFaq = Array.isArray(supportSettings?.faq_items)
+    ? supportSettings.faq_items
+    : [];
+  const parsedFaq = rawFaq.filter(
+    (item: unknown): item is { question: string; answer: string } =>
+      typeof item === "object" &&
+      item !== null &&
+      typeof (item as Record<string, unknown>).question === "string" &&
+      typeof (item as Record<string, unknown>).answer === "string" &&
+      ((item as Record<string, unknown>).question as string).trim() !== "" &&
+      ((item as Record<string, unknown>).answer as string).trim() !== ""
+  );
+  if (parsedFaq.length > 0) {
+    faqItems = parsedFaq;
   }
 
   // 9. Build system prompt
