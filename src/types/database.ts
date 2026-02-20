@@ -1014,12 +1014,111 @@ export type Database = {
           },
         ]
       }
+      patient_custom_fields: {
+        Row: {
+          id: string
+          clinic_id: string
+          name: string
+          type: string
+          options: Json
+          required: boolean
+          display_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          name: string
+          type: string
+          options?: Json
+          required?: boolean
+          display_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          name?: string
+          type?: string
+          options?: Json
+          required?: boolean
+          display_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_custom_fields_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_files: {
+        Row: {
+          id: string
+          clinic_id: string
+          patient_id: string
+          file_name: string
+          file_size: number
+          mime_type: string
+          storage_path: string
+          uploaded_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          patient_id: string
+          file_name: string
+          file_size: number
+          mime_type: string
+          storage_path: string
+          uploaded_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          patient_id?: string
+          file_name?: string
+          file_size?: number
+          mime_type?: string
+          storage_path?: string
+          uploaded_by?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_files_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_files_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       get_user_clinic_ids: { Args: never; Returns: string[] }
+      remove_custom_field_from_patients: {
+        Args: { p_clinic_id: string; p_field_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

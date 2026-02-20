@@ -3,10 +3,12 @@
 import { useState, useEffect, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createPatientSchema } from "@/lib/validations/patients";
+import type { CustomFieldDefinition } from "@/types";
 
 interface PatientFormDialogProps {
   open: boolean;
@@ -19,8 +21,11 @@ interface PatientFormDialogProps {
     cpf: string | null;
     date_of_birth: string | null;
     notes: string | null;
+    custom_fields?: Record<string, string>;
   };
+  customFields?: CustomFieldDefinition[];
   onSuccess: () => void;
+  onCustomFieldCreated?: (field: CustomFieldDefinition) => void;
 }
 
 function formatPhone(digits: string): string {
@@ -43,7 +48,9 @@ export function PatientFormDialog({
   open,
   onOpenChange,
   patient,
+  customFields,
   onSuccess,
+  onCustomFieldCreated,
 }: PatientFormDialogProps) {
   const t = useTranslations("patients");
   const tc = useTranslations("common");
@@ -55,8 +62,15 @@ export function PatientFormDialog({
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [cpf, setCpf] = useState("");
   const [notes, setNotes] = useState("");
+  const [customValues, setCustomValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Inline custom field creation
+  const [addingField, setAddingField] = useState(false);
+  const [newFieldName, setNewFieldName] = useState("");
+  const [newFieldType, setNewFieldType] = useState<"text" | "select">("text");
+  const [creatingField, setCreatingField] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -66,8 +80,12 @@ export function PatientFormDialog({
       setDateOfBirth(patient?.date_of_birth ?? "");
       setCpf(patient?.cpf ? formatCpf(patient.cpf) : "");
       setNotes(patient?.notes ?? "");
+      setCustomValues(patient?.custom_fields ?? {});
       setSaving(false);
       setFieldErrors({});
+      setAddingField(false);
+      setNewFieldName("");
+      setNewFieldType("text");
     }
   }, [open, patient]);
 
@@ -81,9 +99,58 @@ export function PatientFormDialog({
     setCpf(formatCpf(digits));
   }
 
+  function handleCustomFieldChange(fieldId: string, value: string) {
+    setCustomValues((prev) => ({ ...prev, [fieldId]: value }));
+  }
+
+  async function handleCreateField() {
+    if (!newFieldName.trim()) return;
+    setCreatingField(true);
+    try {
+      const res = await fetch("/api/settings/custom-fields", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newFieldName.trim(),
+          type: newFieldType,
+          options: [],
+          required: false,
+          display_order: customFields?.length ?? 0,
+        }),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        onCustomFieldCreated?.(json.data);
+        setAddingField(false);
+        setNewFieldName("");
+        setNewFieldType("text");
+        toast.success(t("fieldCreated"));
+      } else if (res.status === 409) {
+        toast.error(t("fieldNameExists"));
+      } else {
+        toast.error(t("saveError"));
+      }
+    } catch {
+      toast.error(t("saveError"));
+    } finally {
+      setCreatingField(false);
+    }
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setFieldErrors({});
+
+    // Validate required custom fields
+    const errors: Record<string, string> = {};
+    if (customFields) {
+      for (const field of customFields) {
+        if (field.required && !customValues[field.id]?.trim()) {
+          errors[`cf_${field.id}`] = t("detail.noValue");
+        }
+      }
+    }
 
     const data = {
       name,
@@ -92,17 +159,20 @@ export function PatientFormDialog({
       date_of_birth: dateOfBirth || "",
       cpf: cpf.replace(/\D/g, "") || "",
       notes: notes || "",
+      custom_fields: customValues,
     };
 
     const parsed = createPatientSchema.safeParse(data);
     if (!parsed.success) {
       const flat = parsed.error.flatten();
-      const errors: Record<string, string> = {};
       for (const [field, messages] of Object.entries(flat.fieldErrors)) {
         if (messages && messages.length > 0) {
           errors[field] = messages[0];
         }
       }
+    }
+
+    if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
     }
@@ -116,7 +186,7 @@ export function PatientFormDialog({
       const res = await fetch(url, {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data),
+        body: JSON.stringify(parsed!.data),
       });
 
       if (!res.ok) {
@@ -137,6 +207,10 @@ export function PatientFormDialog({
       setSaving(false);
     }
   }
+
+  const sortedCustomFields = customFields
+    ? [...customFields].sort((a, b) => a.display_order - b.display_order)
+    : [];
 
   return (
     <Dialog
@@ -220,6 +294,135 @@ export function PatientFormDialog({
             <p className="mt-1 text-xs" style={{ color: "var(--danger)" }}>
               {fieldErrors.notes}
             </p>
+          )}
+        </div>
+
+        {/* Custom fields */}
+        {sortedCustomFields.length > 0 && (
+          <div
+            className="space-y-4 border-t pt-4"
+            style={{ borderColor: "var(--border)" }}
+          >
+            {sortedCustomFields.map((field) => (
+              <div key={field.id}>
+                {field.type === "text" ? (
+                  <Input
+                    id={`cf_${field.id}`}
+                    label={`${field.name}${field.required ? " *" : ""}`}
+                    value={customValues[field.id] ?? ""}
+                    onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
+                    error={fieldErrors[`cf_${field.id}`]}
+                  />
+                ) : (
+                  <div>
+                    <label
+                      htmlFor={`cf_${field.id}`}
+                      className="block text-sm font-medium"
+                      style={{ color: "var(--text-primary)" }}
+                    >
+                      {field.name}{field.required ? " *" : ""}
+                    </label>
+                    <select
+                      id={`cf_${field.id}`}
+                      value={customValues[field.id] ?? ""}
+                      onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
+                      className="mt-1 block w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-ring)]"
+                      style={{
+                        backgroundColor: "var(--surface)",
+                        borderColor: fieldErrors[`cf_${field.id}`] ? "var(--danger)" : "var(--border)",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      <option value="">—</option>
+                      {(field.options ?? []).map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                    {fieldErrors[`cf_${field.id}`] && (
+                      <p className="mt-1 text-xs" style={{ color: "var(--danger)" }}>
+                        {fieldErrors[`cf_${field.id}`]}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Inline custom field creation */}
+        <div
+          className="border-t pt-3"
+          style={{ borderColor: "var(--border)" }}
+        >
+          {addingField ? (
+            <div className="space-y-3">
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <Input
+                    id="newFieldName"
+                    label={t("fieldName")}
+                    value={newFieldName}
+                    onChange={(e) => setNewFieldName(e.target.value)}
+                    placeholder={t("fieldNamePlaceholder")}
+                  />
+                </div>
+                <div className="w-32">
+                  <label
+                    htmlFor="newFieldType"
+                    className="block text-sm font-medium"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    {t("fieldType")}
+                  </label>
+                  <select
+                    id="newFieldType"
+                    value={newFieldType}
+                    onChange={(e) => setNewFieldType(e.target.value as "text" | "select")}
+                    className="mt-1 block w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-ring)]"
+                    style={{
+                      backgroundColor: "var(--surface)",
+                      borderColor: "var(--border)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    <option value="text">{t("fieldTypeText")}</option>
+                    <option value="select">{t("fieldTypeSelect")}</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleCreateField}
+                  loading={creatingField}
+                  disabled={!newFieldName.trim()}
+                >
+                  {t("createField")}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setAddingField(false)}
+                >
+                  {tc("cancel")}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAddingField(true)}
+              className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-[var(--nav-hover-bg)]"
+              style={{ color: "var(--accent)" }}
+            >
+              <Plus className="size-4" />
+              {t("addCustomField")}
+            </button>
           )}
         </div>
 

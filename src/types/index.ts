@@ -28,6 +28,32 @@ export type ModuleConfig = Tables["module_configs"]["Row"];
 export type InsurancePlan = Tables["insurance_plans"]["Row"];
 export type Service = Tables["services"]["Row"];
 
+// Custom field definition (clinic-level schema)
+export interface CustomFieldDefinition {
+  id: string;
+  clinic_id: string;
+  name: string;
+  type: "text" | "select";
+  options: string[];
+  required: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Patient file attachment metadata
+export interface PatientFile {
+  id: string;
+  clinic_id: string;
+  patient_id: string;
+  file_name: string;
+  file_size: number;
+  mime_type: string;
+  storage_path: string;
+  uploaded_by: string | null;
+  created_at: string;
+}
+
 // Role type
 export type ClinicRole = "owner" | "reception";
 

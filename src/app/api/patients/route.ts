@@ -75,7 +75,7 @@ export async function POST(request: Request) {
   const limited = await checkRateLimit(clinicId);
   if (limited) return limited;
 
-  const { name, phone, email, date_of_birth, cpf, notes } = parsed.data;
+  const { name, phone, email, date_of_birth, cpf, notes, custom_fields } = parsed.data;
 
   const admin = createAdminClient();
   const { data: patient, error } = await admin
@@ -88,6 +88,9 @@ export async function POST(request: Request) {
       date_of_birth: date_of_birth || null,
       cpf: cpf || null,
       notes: notes || null,
+      ...(custom_fields && Object.keys(custom_fields).length > 0
+        ? { custom_fields }
+        : {}),
     })
     .select()
     .single();

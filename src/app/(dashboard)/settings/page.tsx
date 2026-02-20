@@ -13,6 +13,7 @@ import { InsurancePlansList } from "@/components/settings/insurance-plans-list";
 import { IntegrationsTab } from "@/components/settings/integrations-tab";
 import { WhatsAppConfig } from "@/components/settings/whatsapp-placeholder";
 import { TeamContent } from "@/components/team/team-content";
+import { CustomFieldsList } from "@/components/settings/custom-fields-list";
 import type { Clinic } from "@/types";
 
 const TAB_KEYS = [
@@ -20,6 +21,7 @@ const TAB_KEYS = [
   "tabs.professionals",
   "tabs.services",
   "tabs.insurancePlans",
+  "tabs.customFields",
   "tabs.integrations",
   "tabs.whatsapp",
   "tabs.team",
@@ -30,9 +32,10 @@ const TAB_PARAM_MAP: Record<string, number> = {
   professionals: 1,
   services: 2,
   "insurance-plans": 3,
-  integrations: 4,
-  whatsapp: 5,
-  team: 6,
+  "custom-fields": 4,
+  integrations: 5,
+  whatsapp: 6,
+  team: 7,
 };
 
 export default function SettingsPage() {
@@ -102,11 +105,12 @@ export default function SettingsPage() {
             {activeTab === 1 && <ProfessionalsList clinic={clinic} />}
             {activeTab === 2 && <ServicesList />}
             {activeTab === 3 && <InsurancePlansList />}
-            {activeTab === 4 && <IntegrationsTab />}
-            {activeTab === 5 && <WhatsAppConfig />}
+            {activeTab === 4 && <CustomFieldsList />}
+            {activeTab === 5 && <IntegrationsTab />}
+            {activeTab === 6 && <WhatsAppConfig />}
           </>
         )}
-        {activeTab === 6 && <TeamContent />}
+        {activeTab === 7 && <TeamContent />}
       </div>
     </PageContainer>
   );

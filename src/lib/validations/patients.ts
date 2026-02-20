@@ -38,6 +38,7 @@ export const createPatientSchema = z.object({
     .optional()
     .or(z.literal("")),
   notes: z.string().max(1000).optional().or(z.literal("")),
+  custom_fields: z.record(z.string(), z.string()).optional(),
 });
 
 export const updatePatientSchema = createPatientSchema.partial();

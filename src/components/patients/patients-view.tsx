@@ -6,6 +6,7 @@ import {
   Search,
   Plus,
   Upload,
+  Eye,
   Pencil,
   Trash2,
   ChevronLeft,
@@ -16,7 +17,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { PatientFormDialog } from "@/components/patients/patient-form-dialog";
 import { PatientImportDialog } from "@/components/patients/patient-import-dialog";
+import { PatientDetailModal } from "@/components/patients/patient-detail-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import type { CustomFieldDefinition } from "@/types";
 
 interface PatientRow {
   id: string;
@@ -71,6 +74,12 @@ export function PatientsView({
   const [deletingPatient, setDeletingPatient] = useState<PatientRow | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  // Custom fields
+  const [customFields, setCustomFields] = useState<CustomFieldDefinition[]>([]);
+
+  // Detail modal
+  const [detailPatientId, setDetailPatientId] = useState<string | null>(null);
+
   const totalPages = Math.ceil(count / PER_PAGE);
 
   const fetchPatients = useCallback(async (p: number, q: string) => {
@@ -87,6 +96,22 @@ export function PatientsView({
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Fetch custom fields on mount
+  useEffect(() => {
+    async function fetchCustomFields() {
+      try {
+        const res = await fetch("/api/settings/custom-fields");
+        if (res.ok) {
+          const json = await res.json();
+          setCustomFields(json.data ?? []);
+        }
+      } catch {
+        // Non-critical, silently ignore
+      }
+    }
+    fetchCustomFields();
   }, []);
 
   // Debounced search — resets to page 1
@@ -112,12 +137,14 @@ export function PatientsView({
     setFormOpen(true);
   }
 
-  function handleEdit(patient: PatientRow) {
+  function handleEdit(e: React.MouseEvent, patient: PatientRow) {
+    e.stopPropagation();
     setEditing(patient);
     setFormOpen(true);
   }
 
-  function handleDelete(patient: PatientRow) {
+  function handleDelete(e: React.MouseEvent, patient: PatientRow) {
+    e.stopPropagation();
     setDeletingPatient(patient);
     setConfirmOpen(true);
   }
@@ -156,6 +183,18 @@ export function PatientsView({
     setImportOpen(false);
     setPage(1);
     fetchPatients(1, search);
+  }
+
+  function handleRowClick(patient: PatientRow) {
+    setDetailPatientId(patient.id);
+  }
+
+  function handlePatientUpdated() {
+    fetchPatients(page, search);
+  }
+
+  function handleCustomFieldCreated(field: CustomFieldDefinition) {
+    setCustomFields((prev) => [...prev, field]);
   }
 
   return (
@@ -297,7 +336,8 @@ export function PatientsView({
                   {patients.map((patient) => (
                     <tr
                       key={patient.id}
-                      className="border-b transition-colors hover:bg-[var(--nav-hover-bg)]"
+                      onClick={() => handleRowClick(patient)}
+                      className="cursor-pointer border-b transition-colors hover:bg-[var(--nav-hover-bg)]"
                       style={{ borderColor: "var(--border)" }}
                     >
                       <td
@@ -336,7 +376,19 @@ export function PatientsView({
                         <div className="flex gap-1">
                           <button
                             type="button"
-                            onClick={() => handleEdit(patient)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRowClick(patient);
+                            }}
+                            className="rounded-lg p-1.5 transition-colors hover:bg-[var(--nav-hover-bg)]"
+                            style={{ color: "var(--text-muted)" }}
+                            title={t("detail.title")}
+                          >
+                            <Eye className="size-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => handleEdit(e, patient)}
                             className="rounded-lg p-1.5 transition-colors hover:bg-[var(--nav-hover-bg)]"
                             style={{ color: "var(--text-muted)" }}
                             title={t("edit")}
@@ -345,7 +397,7 @@ export function PatientsView({
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDelete(patient)}
+                            onClick={(e) => handleDelete(e, patient)}
                             className="rounded-lg p-1.5 transition-colors hover:bg-[var(--nav-hover-bg)]"
                             style={{ color: "var(--text-muted)" }}
                             onMouseEnter={(e) =>
@@ -403,12 +455,26 @@ export function PatientsView({
         open={formOpen}
         onOpenChange={setFormOpen}
         patient={editing}
+        customFields={customFields}
         onSuccess={handleFormSuccess}
+        onCustomFieldCreated={handleCustomFieldCreated}
       />
       <PatientImportDialog
         open={importOpen}
         onOpenChange={setImportOpen}
         onSuccess={handleImportSuccess}
+        customFields={customFields}
+        onCustomFieldCreated={handleCustomFieldCreated}
+      />
+
+      <PatientDetailModal
+        open={detailPatientId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDetailPatientId(null);
+        }}
+        patientId={detailPatientId}
+        onPatientUpdated={handlePatientUpdated}
+        onCustomFieldCreated={handleCustomFieldCreated}
       />
 
       <ConfirmDialog

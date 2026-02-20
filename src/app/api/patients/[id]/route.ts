@@ -3,6 +3,45 @@ import { getClinicId } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { updatePatientSchema } from "@/lib/validations/patients";
 
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+
+  const clinicId = await getClinicId();
+  if (!clinicId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const admin = createAdminClient();
+
+  const [patientResult, fieldsResult] = await Promise.all([
+    admin
+      .from("patients")
+      .select("*")
+      .eq("id", id)
+      .eq("clinic_id", clinicId)
+      .single(),
+    admin
+      .from("patient_custom_fields")
+      .select("id, name, type, options, required, display_order")
+      .eq("clinic_id", clinicId)
+      .order("display_order", { ascending: true }),
+  ]);
+
+  if (patientResult.error) {
+    return NextResponse.json({ error: patientResult.error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({
+    data: {
+      patient: patientResult.data,
+      customFieldDefinitions: fieldsResult.data ?? [],
+    },
+  });
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -39,6 +78,8 @@ export async function PUT(
   if (parsed.data.cpf !== undefined) updateData.cpf = parsed.data.cpf || null;
   if (parsed.data.notes !== undefined)
     updateData.notes = parsed.data.notes || null;
+  if (parsed.data.custom_fields !== undefined)
+    updateData.custom_fields = parsed.data.custom_fields;
 
   const admin = createAdminClient();
   const { data: patient, error } = await admin

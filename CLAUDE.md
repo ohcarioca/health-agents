@@ -158,6 +158,9 @@ return NextResponse.json({ status: "ok" });
 - `clinics.assistant_name` (text, nullable): unified AI assistant name across all modules. When set, overrides per-agent `agents.name` in system prompts. Priority: `clinic.assistant_name` > `agent.name` > module type fallback.
 - `payment_links.method`: `'pix'`, `'boleto'`, `'credit_card'`, or `'link'` (universal). Default `'link'` uses Asaas `UNDEFINED` billingType — patient chooses method on checkout page.
 - `module_configs.settings.auto_billing` (boolean): opt-in flag for automatic invoice creation on booking. Stored in billing module's settings JSONB.
+- `patient_custom_fields`: clinic-level schema definitions for dynamic patient fields. Types: `text`, `select` (with `options` JSONB array). Unique constraint on `(clinic_id, name)`. RPC `remove_custom_field_from_patients()` cleans up values on field deletion.
+- `patients.custom_fields` (JSONB): stores custom field values keyed by `patient_custom_fields.id`. Schema defined at clinic level, values per patient.
+- `patient_files`: metadata for patient file attachments. Actual files stored in Supabase Storage bucket `patient-files` (private). Storage path: `{clinic_id}/{patient_id}/{uuid}.{ext}`. Max 20 files per patient, 10MB each, PDF/JPG/PNG only.
 
 ---
 
@@ -510,6 +513,8 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 | `/api/settings/public-page` | GET, PUT | Public page config (accent color, links, toggle) |
 | `/api/settings/modules/billing` | GET, PUT | Billing module auto_billing toggle (legacy) |
 | `/api/settings/modules/[type]` | GET, PUT | Generic module settings: enabled toggle + per-type settings (billing, nps, recall, support) |
+| `/api/settings/custom-fields` | GET, POST | Custom field definitions CRUD (list/create) |
+| `/api/settings/custom-fields/[id]` | PUT, DELETE | Custom field definition update/delete (delete cleans up patient values via RPC) |
 
 ### Public API Routes
 
@@ -541,9 +546,14 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 |-------|--------|---------|
 | `/api/patients` | GET | List patients (paginated, searchable) |
 | `/api/patients` | POST | Create single patient |
-| `/api/patients/[id]` | PUT | Update patient |
+| `/api/patients/[id]` | GET | Patient detail + custom field definitions |
+| `/api/patients/[id]` | PUT | Update patient (including custom_fields) |
 | `/api/patients/[id]` | DELETE | Delete patient (if no appointments) |
-| `/api/patients/batch` | POST | Bulk create (max 500, skip duplicates) |
+| `/api/patients/[id]/files` | GET, POST | Patient files list/upload (multipart, max 10MB, PDF/JPG/PNG) |
+| `/api/patients/[id]/files/[fileId]` | GET, DELETE | Signed download URL (5min) / delete file |
+| `/api/patients/[id]/appointments` | GET | Patient appointment history (limit 50) |
+| `/api/patients/[id]/invoices` | GET | Patient invoice history (limit 50) |
+| `/api/patients/batch` | POST | Bulk create (max 500, skip duplicates, supports custom_fields) |
 
 ### Payments API Routes
 

@@ -2,16 +2,21 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Upload, CheckCircle, AlertTriangle, XCircle, Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Upload, CheckCircle, AlertTriangle, XCircle, Download, Plus } from "lucide-react";
+import type { CustomFieldDefinition } from "@/types";
 
 interface PatientImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  customFields?: CustomFieldDefinition[];
+  onCustomFieldCreated?: (field: CustomFieldDefinition) => void;
 }
 
 interface ImportResults {
@@ -76,6 +81,8 @@ export function PatientImportDialog({
   open,
   onOpenChange,
   onSuccess,
+  customFields,
+  onCustomFieldCreated,
 }: PatientImportDialogProps) {
   const t = useTranslations("patients");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -87,6 +94,11 @@ export function PatientImportDialog({
   const [importing, setImporting] = useState(false);
   const [results, setResults] = useState<ImportResults | null>(null);
   const [fileError, setFileError] = useState("");
+
+  // Inline custom field creation for a specific column
+  const [creatingFieldForHeader, setCreatingFieldForHeader] = useState<string | null>(null);
+  const [newFieldName, setNewFieldName] = useState("");
+  const [creatingField, setCreatingField] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -190,7 +202,52 @@ export function PatientImportDialog({
   }
 
   function handleColumnMapChange(header: string, value: string) {
+    if (value === "__create__") {
+      setCreatingFieldForHeader(header);
+      setNewFieldName(header);
+      return;
+    }
     setColumnMap((prev) => ({ ...prev, [header]: value }));
+  }
+
+  async function handleCreateFieldForColumn() {
+    if (!newFieldName.trim() || !creatingFieldForHeader) return;
+    setCreatingField(true);
+    try {
+      const res = await fetch("/api/settings/custom-fields", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newFieldName.trim(),
+          type: "text",
+          options: [],
+          required: false,
+          display_order: customFields?.length ?? 0,
+        }),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        const newField = json.data as CustomFieldDefinition;
+        onCustomFieldCreated?.(newField);
+        // Auto-map this column to the newly created field
+        setColumnMap((prev) => ({
+          ...prev,
+          [creatingFieldForHeader!]: `cf_${newField.id}`,
+        }));
+        setCreatingFieldForHeader(null);
+        setNewFieldName("");
+        toast.success(t("fieldCreated"));
+      } else if (res.status === 409) {
+        toast.error(t("fieldNameExists"));
+      } else {
+        toast.error(t("saveError"));
+      }
+    } catch {
+      toast.error(t("saveError"));
+    } finally {
+      setCreatingField(false);
+    }
   }
 
   const isMappingComplete =
@@ -201,12 +258,24 @@ export function PatientImportDialog({
     setImporting(true);
 
     const transformedRows = rows.map((row) => {
-      const patient: Record<string, string> = {};
+      const patient: Record<string, unknown> = {};
+      const cfValues: Record<string, string> = {};
+
       for (const [header, field] of Object.entries(columnMap)) {
-        if (field && row[header] !== undefined) {
+        if (!field || row[header] === undefined) continue;
+
+        if (field.startsWith("cf_")) {
+          const fieldId = field.slice(3);
+          cfValues[fieldId] = row[header];
+        } else {
           patient[field] = row[header];
         }
       }
+
+      if (Object.keys(cfValues).length > 0) {
+        patient.custom_fields = cfValues;
+      }
+
       return patient;
     });
 
@@ -281,6 +350,10 @@ export function PatientImportDialog({
         ? t("importMapping")
         : t("importResults");
 
+  const sortedCustomFields = customFields
+    ? [...customFields].sort((a, b) => a.display_order - b.display_order)
+    : [];
+
   return (
     <Dialog
       open={open}
@@ -339,31 +412,71 @@ export function PatientImportDialog({
           {/* Column mapping */}
           <div className="space-y-3">
             {headers.map((header) => (
-              <div key={header} className="flex items-center gap-3">
-                <span
-                  className="w-40 shrink-0 truncate text-sm font-medium"
-                  style={{ color: "var(--text-primary)" }}
-                  title={header}
-                >
-                  {header}
-                </span>
-                <select
-                  value={columnMap[header] ?? ""}
-                  onChange={(e) => handleColumnMapChange(header, e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-ring)]"
-                  style={{
-                    backgroundColor: "var(--surface)",
-                    borderColor: "var(--border)",
-                    color: "var(--text-primary)",
-                  }}
-                >
-                  <option value="">{t("importIgnore")}</option>
-                  {PATIENT_FIELDS.map((field) => (
-                    <option key={field.key} value={field.key}>
-                      {getFieldLabel(field.key, t)}
-                    </option>
-                  ))}
-                </select>
+              <div key={header}>
+                <div className="flex items-center gap-3">
+                  <span
+                    className="w-40 shrink-0 truncate text-sm font-medium"
+                    style={{ color: "var(--text-primary)" }}
+                    title={header}
+                  >
+                    {header}
+                  </span>
+                  {creatingFieldForHeader === header ? (
+                    <div className="flex flex-1 items-center gap-2">
+                      <Input
+                        id={`newField_${header}`}
+                        value={newFieldName}
+                        onChange={(e) => setNewFieldName(e.target.value)}
+                        placeholder={t("fieldNamePlaceholder")}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleCreateFieldForColumn}
+                        loading={creatingField}
+                        disabled={!newFieldName.trim()}
+                      >
+                        <Plus className="size-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setCreatingFieldForHeader(null)}
+                      >
+                        &times;
+                      </Button>
+                    </div>
+                  ) : (
+                    <select
+                      value={columnMap[header] ?? ""}
+                      onChange={(e) => handleColumnMapChange(header, e.target.value)}
+                      className="w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-ring)]"
+                      style={{
+                        backgroundColor: "var(--surface)",
+                        borderColor: "var(--border)",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      <option value="">{t("importIgnore")}</option>
+                      {PATIENT_FIELDS.map((field) => (
+                        <option key={field.key} value={field.key}>
+                          {getFieldLabel(field.key, t)}
+                        </option>
+                      ))}
+                      {sortedCustomFields.length > 0 && (
+                        <optgroup label="───">
+                          {sortedCustomFields.map((cf) => (
+                            <option key={cf.id} value={`cf_${cf.id}`}>
+                              {t("importCustomField", { name: cf.name })}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                      <option value="__create__">+ {t("createField")}</option>
+                    </select>
+                  )}
+                </div>
               </div>
             ))}
           </div>

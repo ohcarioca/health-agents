@@ -109,6 +109,7 @@ export async function POST(request: Request) {
     date_of_birth: string | null;
     cpf: string | null;
     notes: string | null;
+    custom_fields?: Record<string, string>;
   }> = [];
 
   for (const row of normalizedRows) {
@@ -133,6 +134,9 @@ export async function POST(request: Request) {
       date_of_birth: row.date_of_birth || null,
       cpf: row.cpf || null,
       notes: row.notes || null,
+      ...(row.custom_fields && Object.keys(row.custom_fields).length > 0
+        ? { custom_fields: row.custom_fields }
+        : {}),
     });
   }
 
