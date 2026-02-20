@@ -25,6 +25,7 @@ export type TimeSlot = z.infer<typeof timeSlotSchema>;
 
 export const clinicSettingsSchema = z.object({
   name: z.string().min(2).max(100).optional(),
+  assistant_name: z.string().min(2).max(50).optional().or(z.literal("")),
   type: z.string().max(50).optional().or(z.literal("")),
   description: z.string().max(500).optional().or(z.literal("")),
   phone: z.string().transform((v) => v.replace(/\D/g, "")).pipe(z.string().max(20)).optional().or(z.literal("")),

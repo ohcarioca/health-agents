@@ -16,7 +16,8 @@
       "Bash(npx vitest:*)",
       "Bash(git worktree:*)",
       "Bash(xargs cat:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(claude:*)"
     ]
   }
 }

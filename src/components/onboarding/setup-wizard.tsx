@@ -39,6 +39,7 @@ export function SetupWizard() {
 
   // Step 1 state — Clinic
   const [clinicName, setClinicName] = useState("");
+  const [assistantName, setAssistantName] = useState("");
   const [clinicType, setClinicType] = useState("");
   const [clinicDescription, setClinicDescription] = useState("");
   const [phone, setPhone] = useState("");
@@ -86,6 +87,7 @@ export function SetupWizard() {
           const { data: clinic } = await clinicRes.json();
           if (clinic) {
             if (clinic.name) setClinicName(clinic.name);
+            if (clinic.assistant_name) setAssistantName(clinic.assistant_name);
             if (clinic.type) setClinicType(clinic.type);
             if (clinic.description) setClinicDescription(clinic.description);
             if (clinic.phone) setPhone(clinic.phone);
@@ -183,6 +185,7 @@ export function SetupWizard() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: clinicName.trim(),
+        assistant_name: assistantName.trim() || "",
         type: clinicType || "",
         description: clinicDescription || "",
         phone: phone.trim(),
@@ -357,6 +360,8 @@ export function SetupWizard() {
           <StepClinic
             clinicName={clinicName}
             onClinicNameChange={setClinicName}
+            assistantName={assistantName}
+            onAssistantNameChange={setAssistantName}
             clinicType={clinicType}
             onClinicTypeChange={setClinicType}
             clinicDescription={clinicDescription}

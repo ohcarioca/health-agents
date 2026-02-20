@@ -8,6 +8,8 @@ import { CLINIC_TYPES } from "@/lib/onboarding/clinic-templates";
 interface StepClinicProps {
   clinicName: string;
   onClinicNameChange: (value: string) => void;
+  assistantName: string;
+  onAssistantNameChange: (value: string) => void;
   clinicType: string;
   onClinicTypeChange: (value: string) => void;
   clinicDescription: string;
@@ -21,6 +23,8 @@ interface StepClinicProps {
 export function StepClinic({
   clinicName,
   onClinicNameChange,
+  assistantName,
+  onAssistantNameChange,
   clinicType,
   onClinicTypeChange,
   clinicDescription,
@@ -53,6 +57,22 @@ export function StepClinic({
         onChange={(e) => onClinicNameChange(e.target.value)}
         required
       />
+
+      <div>
+        <Input
+          id="assistantName"
+          label={t("step1.assistantName")}
+          placeholder={t("step1.assistantNamePlaceholder")}
+          value={assistantName}
+          onChange={(e) => onAssistantNameChange(e.target.value)}
+        />
+        <p
+          className="mt-1 text-xs"
+          style={{ color: "var(--text-muted)" }}
+        >
+          {t("step1.assistantNameHelp")}
+        </p>
+      </div>
 
       <div>
         <label

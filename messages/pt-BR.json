@@ -314,6 +314,9 @@
     },
     "clinic": {
       "name": "Nome da clínica",
+      "assistantName": "Nome do assistente",
+      "assistantNamePlaceholder": "Ex: Sofia, Ana, Lia...",
+      "assistantNameHelp": "Nome único usado em todas as conversas. Se vazio, cada módulo usa seu próprio nome.",
       "phone": "Telefone",
       "email": "Email",
       "address": "Endereço",
@@ -486,6 +489,9 @@
       "clinicType": "Tipo de Clínica",
       "clinicTypePlaceholder": "Selecione o tipo...",
       "clinicDescription": "Descrição",
+      "assistantName": "Nome do assistente virtual",
+      "assistantNamePlaceholder": "Ex: Sofia, Ana, Lia...",
+      "assistantNameHelp": "Dê um nome ao seu assistente — será usado em todas as conversas com pacientes.",
       "phone": "Telefone",
       "address": "Endereço",
       "timezone": "Fuso Horário"

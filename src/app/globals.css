@@ -3,7 +3,7 @@
 @theme inline {
   --font-sans: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
-  --font-display: var(--font-instrument-serif), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-dm-sans), var(--font-sans);
   --font-landing: var(--font-dm-sans), var(--font-sans);
 }
 
@@ -184,7 +184,7 @@ body {
   --lp-accent-fg: #ffffff;
 
   /* Landing typography scale */
-  --lp-hero-size: clamp(2.75rem, 6vw, 5rem);
+  --lp-hero-size: clamp(2.25rem, 5vw, 3.5rem);
   --lp-section-title-size: clamp(1.75rem, 3.5vw, 2.75rem);
 
   background-color: #ffffff;

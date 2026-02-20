@@ -260,7 +260,7 @@ export async function processMessage(
     .eq("active", true)
     .maybeSingle();
 
-  const agentName = agentRow?.name ?? moduleType;
+  const perAgentName = agentRow?.name ?? moduleType;
   const agentConfig_ = (agentRow?.config ?? {}) as Record<string, unknown>;
 
   // Check auto_billing + support FAQ from module_configs
@@ -313,9 +313,11 @@ export async function processMessage(
   // Load business context
   const { data: clinic } = await supabase
     .from("clinics")
-    .select("name, phone, address, timezone, whatsapp_phone_number_id, whatsapp_access_token")
+    .select("name, assistant_name, phone, address, timezone, whatsapp_phone_number_id, whatsapp_access_token")
     .eq("id", clinicId)
     .single();
+
+  const agentName = (clinic?.assistant_name as string | null) ?? perAgentName;
 
   const { data: insurancePlans } = await supabase
     .from("insurance_plans")

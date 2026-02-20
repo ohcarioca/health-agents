@@ -155,6 +155,7 @@ return NextResponse.json({ status: "ok" });
 - `clinics.accent_color` (text, default `#0EA5E9`): hex color for public page branding.
 - `clinics.social_links` (JSONB, default `[]`): array of `{ type, url, label }` for Linktree-style links.
 - `clinics.show_prices` (boolean, default true): toggles service price display on public page.
+- `clinics.assistant_name` (text, nullable): unified AI assistant name across all modules. When set, overrides per-agent `agents.name` in system prompts. Priority: `clinic.assistant_name` > `agent.name` > module type fallback.
 - `payment_links.method`: `'pix'`, `'boleto'`, `'credit_card'`, or `'link'` (universal). Default `'link'` uses Asaas `UNDEFINED` billingType — patient chooses method on checkout page.
 - `module_configs.settings.auto_billing` (boolean): opt-in flag for automatic invoice creation on booking. Stored in billing module's settings JSONB.
 

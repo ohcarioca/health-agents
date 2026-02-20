@@ -314,6 +314,9 @@
     },
     "clinic": {
       "name": "Clinic name",
+      "assistantName": "Assistant name",
+      "assistantNamePlaceholder": "e.g., Sofia, Ana, Lia...",
+      "assistantNameHelp": "Single name used across all conversations. If empty, each module uses its own name.",
       "phone": "Phone",
       "email": "Email",
       "address": "Address",
@@ -486,6 +489,9 @@
       "clinicType": "Clinic Type",
       "clinicTypePlaceholder": "Select type...",
       "clinicDescription": "Description",
+      "assistantName": "Virtual assistant name",
+      "assistantNamePlaceholder": "e.g., Sofia, Ana, Lia...",
+      "assistantNameHelp": "Give your assistant a name — it will be used in all patient conversations.",
       "phone": "Phone",
       "address": "Address",
       "timezone": "Timezone"

@@ -30,6 +30,7 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
   const t = useTranslations("settings.clinic");
 
   const [name, setName] = useState(clinic.name);
+  const [assistantName, setAssistantName] = useState(clinic.assistant_name ?? "");
   const [phone, setPhone] = useState(clinic.phone ?? "");
   const [email, setEmail] = useState(clinic.email ?? "");
   const [address, setAddress] = useState(clinic.address ?? "");
@@ -63,6 +64,7 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
 
     const data = {
       name,
+      assistant_name: assistantName,
       phone,
       email,
       address,
@@ -120,6 +122,22 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
           error={fieldErrors.name}
           required
         />
+        <div>
+          <Input
+            id="assistantName"
+            label={t("assistantName")}
+            placeholder={t("assistantNamePlaceholder")}
+            value={assistantName}
+            onChange={(e) => setAssistantName(e.target.value)}
+            error={fieldErrors.assistant_name}
+          />
+          <p
+            className="mt-1 text-xs"
+            style={{ color: "var(--text-muted)" }}
+          >
+            {t("assistantNameHelp")}
+          </p>
+        </div>
         <PhoneInputField
           id="phone"
           label={t("phone")}
