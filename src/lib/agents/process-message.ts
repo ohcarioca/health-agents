@@ -197,7 +197,18 @@ export async function processMessage(
 
   const isModuleEnabled = (type: string) => !disabledModules.has(type);
 
-  if (currentModule && getAgentType(currentModule) && isModuleEnabled(currentModule)) {
+  // Narrow/transactional modules: re-route through the LLM router
+  // so off-topic messages (e.g. FAQ questions during confirmation) go to support.
+  // Broad modules (support, scheduling, billing) stay sticky.
+  const TRANSACTIONAL_MODULES = new Set(["confirmation", "nps", "recall"]);
+
+  const isCurrentModuleSticky =
+    currentModule &&
+    getAgentType(currentModule) &&
+    isModuleEnabled(currentModule) &&
+    !TRANSACTIONAL_MODULES.has(currentModule);
+
+  if (isCurrentModuleSticky) {
     moduleType = currentModule as ModuleType;
   } else if (isNewPatient && getAgentType("support")) {
     moduleType = "support" as ModuleType;
@@ -217,9 +228,13 @@ export async function processMessage(
       // Single registered agent — use directly, skip router
       moduleType = registeredModules[0];
     } else if (registeredModules.length > 1) {
-      // Multiple registered agents — use router to classify
+      // Multiple registered agents — use router to classify.
+      // Pass current module as context so the router can prefer it for on-topic messages.
       const routerResult = await routeMessage({
         message,
+        patientContext: currentModule
+          ? `Current conversation module: ${currentModule}. Keep this module if the message matches its purpose, otherwise reclassify.`
+          : undefined,
         activeModules: registeredModules,
       });
       moduleType = routerResult.module;
