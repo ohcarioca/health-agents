@@ -55,6 +55,16 @@ export function buildSystemPrompt(
     sections.push(formatBusinessContext(params.businessContext));
   }
 
+  // 7b. FAQ items (injected so the agent always has them)
+  if (params.faqItems && params.faqItems.length > 0) {
+    const faqLines = params.faqItems
+      .map((item) => `Q: ${item.question}\nA: ${item.answer}`)
+      .join("\n\n");
+    sections.push(
+      `FAQ — Use these answers when the patient asks a matching question:\n${faqLines}`
+    );
+  }
+
   // 8. Recipient context (always last)
   if (recipient) {
     sections.push(formatRecipientContext(recipient));

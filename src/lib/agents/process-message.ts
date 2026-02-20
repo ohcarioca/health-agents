@@ -248,17 +248,41 @@ export async function processMessage(
   const agentName = agentRow?.name ?? moduleType;
   const agentConfig_ = (agentRow?.config ?? {}) as Record<string, unknown>;
 
-  // Check auto_billing from module_configs
-  const { data: billingModuleConfig } = await supabase
+  // Check auto_billing + support FAQ from module_configs
+  const { data: relevantModuleConfigs } = await supabase
     .from("module_configs")
-    .select("settings")
+    .select("module_type, settings")
     .eq("clinic_id", clinicId)
-    .eq("module_type", "billing")
-    .single();
+    .in("module_type", ["billing", "support"]);
 
-  const autoBilling = (billingModuleConfig?.settings as Record<string, unknown> | null)?.auto_billing === true;
-  if (autoBilling) {
+  const billingSettings = relevantModuleConfigs?.find(
+    (c) => c.module_type === "billing"
+  )?.settings as Record<string, unknown> | null;
+  if (billingSettings?.auto_billing === true) {
     agentConfig_.auto_billing = true;
+  }
+
+  // Extract FAQ items for support agent
+  let faqItems: Array<{ question: string; answer: string }> | undefined;
+  if (moduleType === "support") {
+    const supportSettings = relevantModuleConfigs?.find(
+      (c) => c.module_type === "support"
+    )?.settings as Record<string, unknown> | null;
+    const raw = Array.isArray(supportSettings?.faq_items)
+      ? supportSettings.faq_items
+      : [];
+    const parsed = raw.filter(
+      (item: unknown): item is { question: string; answer: string } =>
+        typeof item === "object" &&
+        item !== null &&
+        typeof (item as Record<string, unknown>).question === "string" &&
+        typeof (item as Record<string, unknown>).answer === "string" &&
+        ((item as Record<string, unknown>).question as string).trim() !== "" &&
+        ((item as Record<string, unknown>).answer as string).trim() !== ""
+    );
+    if (parsed.length > 0) {
+      faqItems = parsed;
+    }
   }
 
   // 9. Build system prompt
@@ -337,6 +361,7 @@ export async function processMessage(
     customInstructions: agentRow?.instructions ?? undefined,
     successCriteria: (agentConfig_.success_criteria as string) ?? undefined,
     businessContext,
+    faqItems,
     tone: (agentConfig_.tone as "professional" | "friendly" | "casual") ?? "professional",
     locale: (agentConfig_.locale as "pt-BR" | "en" | "es") ?? "pt-BR",
     agentDbConfig: agentConfig_,

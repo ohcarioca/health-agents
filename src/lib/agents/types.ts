@@ -68,6 +68,7 @@ export interface SystemPromptParams {
   customInstructions?: string;
   successCriteria?: string;
   businessContext?: BusinessContext;
+  faqItems?: Array<{ question: string; answer: string }>;
   tone: "professional" | "friendly" | "casual";
   locale: "pt-BR" | "en" | "es";
   agentDbConfig?: Record<string, unknown>;
