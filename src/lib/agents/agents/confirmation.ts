@@ -115,18 +115,25 @@ const markNoShowTool = tool(
 
 // ── Appointment Lookup Helper ──
 
+interface ConfirmationAppointment {
+  id: string;
+  startsAt: string;
+  professionalId: string | null;
+  professionalName: string | null;
+}
+
 /**
  * Finds the active confirmation appointment for the current patient.
- * Looks up confirmation_queue entries with status "sent" that link to
- * appointments belonging to this patient in this clinic.
+ * Prioritizes the NEAREST upcoming appointment that has a "sent"
+ * confirmation_queue entry, rather than the most recently created entry.
  */
 async function findActiveConfirmationAppointment(
   context: ToolCallContext
-): Promise<string | null> {
-  // Find scheduled appointments for this patient
+): Promise<ConfirmationAppointment | null> {
+  // Find scheduled appointments for this patient, nearest first
   const { data: appointments } = await context.supabase
     .from("appointments")
-    .select("id")
+    .select("id, starts_at, professional_id")
     .eq("patient_id", context.recipientId)
     .eq("clinic_id", context.clinicId)
     .in("status", ["scheduled", "confirmed"])
@@ -134,20 +141,40 @@ async function findActiveConfirmationAppointment(
 
   if (!appointments || appointments.length === 0) return null;
 
-  // Find which one has a sent confirmation
-  const { data: queueEntry } = await context.supabase
+  // Find which appointments have sent confirmations
+  const { data: queueEntries } = await context.supabase
     .from("confirmation_queue")
     .select("appointment_id")
     .in(
       "appointment_id",
       appointments.map((a) => a.id)
     )
-    .eq("status", "sent")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .eq("status", "sent");
 
-  return queueEntry?.appointment_id ?? appointments[0].id;
+  const sentIds = new Set(
+    (queueEntries ?? []).map((e) => e.appointment_id as string)
+  );
+
+  // Pick the nearest appointment with a sent confirmation, fallback to nearest overall
+  const target = appointments.find((a) => sentIds.has(a.id)) ?? appointments[0];
+
+  // Fetch professional name
+  let professionalName: string | null = null;
+  if (target.professional_id) {
+    const { data: prof } = await context.supabase
+      .from("professionals")
+      .select("name")
+      .eq("id", target.professional_id)
+      .single();
+    professionalName = prof?.name ?? null;
+  }
+
+  return {
+    id: target.id,
+    startsAt: target.starts_at as string,
+    professionalId: target.professional_id as string | null,
+    professionalName,
+  };
 }
 
 // ── Tool Handlers ──
@@ -157,16 +184,16 @@ async function handleConfirmAttendance(
   context: ToolCallContext
 ): Promise<ToolCallResult> {
   try {
-    const appointmentId = await findActiveConfirmationAppointment(context);
+    const target = await findActiveConfirmationAppointment(context);
 
-    if (!appointmentId) {
+    if (!target) {
       return { result: "No pending appointment found for this patient." };
     }
 
     const { data: appointment, error: appointmentError } = await context.supabase
       .from("appointments")
       .update({ status: "confirmed" })
-      .eq("id", appointmentId)
+      .eq("id", target.id)
       .select("id")
       .single();
 
@@ -179,8 +206,32 @@ async function handleConfirmAttendance(
     await context.supabase
       .from("confirmation_queue")
       .update({ status: "responded", response: "confirmed" })
-      .eq("appointment_id", appointmentId)
+      .eq("appointment_id", target.id)
       .eq("status", "sent");
+
+    // Format appointment details for the LLM result
+    const { data: clinic } = await context.supabase
+      .from("clinics")
+      .select("timezone")
+      .eq("id", context.clinicId)
+      .single();
+    const tz = (clinic?.timezone as string) ?? "America/Sao_Paulo";
+    const dt = new Date(target.startsAt);
+    const dateStr = new Intl.DateTimeFormat("pt-BR", {
+      timeZone: tz,
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(dt);
+    const timeStr = new Intl.DateTimeFormat("pt-BR", {
+      timeZone: tz,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(dt);
+    const profStr = target.professionalName
+      ? ` com ${target.professionalName}`
+      : "";
 
     // --- Payment reminder if auto-billing enabled ---
     let paymentAppendix = "";
@@ -286,7 +337,7 @@ async function handleConfirmAttendance(
     }
 
     return {
-      result: "Appointment confirmed successfully. The patient will attend.",
+      result: `Appointment confirmed: ${dateStr} as ${timeStr}${profStr}. Use EXACTLY these details when informing the patient.`,
       appendToResponse: paymentAppendix || undefined,
     };
   } catch (error) {
@@ -304,9 +355,9 @@ async function handleRescheduleFromConfirmation(
     typeof args.reason === "string" ? args.reason : "No reason provided";
 
   try {
-    const appointmentId = await findActiveConfirmationAppointment(context);
+    const target = await findActiveConfirmationAppointment(context);
 
-    if (!appointmentId) {
+    if (!target) {
       return { result: "No pending appointment found for this patient." };
     }
 
@@ -314,20 +365,20 @@ async function handleRescheduleFromConfirmation(
     const { data: appointment } = await context.supabase
       .from("appointments")
       .select("id, professional_id, google_event_id")
-      .eq("id", appointmentId)
+      .eq("id", target.id)
       .single();
 
     // Cancel the current appointment
     await context.supabase
       .from("appointments")
       .update({ status: "cancelled", cancellation_reason: reason })
-      .eq("id", appointmentId);
+      .eq("id", target.id);
 
     // Mark confirmation queue entries as responded
     await context.supabase
       .from("confirmation_queue")
       .update({ status: "responded", response: "rescheduled" })
-      .eq("appointment_id", appointmentId)
+      .eq("appointment_id", target.id)
       .eq("status", "sent");
 
     // Delete Google Calendar event if it exists
@@ -361,7 +412,7 @@ async function handleRescheduleFromConfirmation(
     const { data: linkedInvoice } = await context.supabase
       .from("invoices")
       .select("id, status")
-      .eq("appointment_id", appointmentId)
+      .eq("appointment_id", target.id)
       .in("status", ["pending", "overdue"])
       .single();
 
@@ -397,16 +448,16 @@ async function handleMarkNoShow(
   context: ToolCallContext
 ): Promise<ToolCallResult> {
   try {
-    const appointmentId = await findActiveConfirmationAppointment(context);
+    const target = await findActiveConfirmationAppointment(context);
 
-    if (!appointmentId) {
+    if (!target) {
       return { result: "No pending appointment found for this patient." };
     }
 
     const { error } = await context.supabase
       .from("appointments")
       .update({ status: "no_show" })
-      .eq("id", appointmentId);
+      .eq("id", target.id);
 
     if (error) {
       return {
@@ -417,7 +468,7 @@ async function handleMarkNoShow(
     await context.supabase
       .from("confirmation_queue")
       .update({ status: "responded", response: "no_show" })
-      .eq("appointment_id", appointmentId)
+      .eq("appointment_id", target.id)
       .eq("status", "sent");
 
     return { result: "Appointment marked as no-show." };
