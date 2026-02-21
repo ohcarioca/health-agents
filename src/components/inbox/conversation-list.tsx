@@ -53,10 +53,11 @@ export function ConversationList({
       : conversations.filter((c) => c.status === filter);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3">
-      <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
+    <div className="flex min-h-0 flex-1 flex-col gap-2 sm:gap-3">
+      {/* Filters — horizontally scrollable on mobile, no wrapping */}
+      <div className="flex flex-shrink-0 items-center gap-2 overflow-x-auto pb-1">
         {filters.map((f) => (
-          <button key={f} type="button" onClick={() => setFilter(f)}>
+          <button key={f} type="button" onClick={() => setFilter(f)} className="shrink-0">
             <Badge variant={filter === f ? "accent" : "neutral"}>
               {t(`filters.${f}`)}
             </Badge>
@@ -64,7 +65,7 @@ export function ConversationList({
         ))}
       </div>
 
-      <div className="flex-1 space-y-2 overflow-y-auto">
+      <div className="flex-1 space-y-1.5 overflow-y-auto sm:space-y-2">
         {filtered.length === 0 ? (
           <div className="flex min-h-[200px] items-center justify-center">
             <p
@@ -78,10 +79,11 @@ export function ConversationList({
           filtered.map((conversation) => {
             const isSelected = conversation.id === selectedId;
             return (
-              <div
+              <button
+                type="button"
                 key={conversation.id}
                 onClick={() => onSelect(conversation.id)}
-                className={`rounded-lg border p-3 cursor-pointer transition-colors hover:bg-[var(--nav-hover-bg)] ${
+                className={`w-full rounded-lg border p-3 text-left transition-colors active:scale-[0.98] hover:bg-[var(--nav-hover-bg)] sm:p-3 ${
                   isSelected ? "border-l-2 border-l-[var(--accent)]" : ""
                 }`}
                 style={{
@@ -99,7 +101,7 @@ export function ConversationList({
                     </p>
                     {conversation.last_message && (
                       <p
-                        className="mt-1 text-xs"
+                        className="mt-0.5 truncate text-xs"
                         style={{ color: "var(--text-muted)" }}
                       >
                         {truncate(conversation.last_message.content, 60)}
@@ -122,7 +124,7 @@ export function ConversationList({
                     )}
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })
         )}

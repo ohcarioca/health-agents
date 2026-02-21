@@ -118,6 +118,7 @@
       "resolved": "Resolved"
     },
     "actions": {
+      "back": "Back",
       "takeOver": "Take over",
       "handBack": "Hand back to agent",
       "send": "Send"

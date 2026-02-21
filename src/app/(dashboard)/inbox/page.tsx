@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
@@ -121,12 +120,24 @@ export default function InboxPage() {
     }
   }, [fetchConversations, fetchDetail, selectedId]);
 
+  // On mobile: selecting a conversation shows detail view; back returns to list
+  const mobileShowDetail = selectedId !== null;
+
+  function handleBack() {
+    setSelectedId(null);
+    setDetail(null);
+  }
+
   return (
-    <PageContainer>
-      <PageHeader title={t("title")} />
-      <div className="mt-6 grid h-[calc(100vh-11rem)] grid-cols-1 gap-6 overflow-hidden lg:grid-cols-3">
-        {/* Left panel: conversation list */}
-        <div className="flex min-h-0 flex-col overflow-hidden">
+    <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6">
+      {/* Header — hidden on mobile when viewing a conversation */}
+      <div className={mobileShowDetail ? "hidden lg:block" : ""}>
+        <PageHeader title={t("title")} />
+      </div>
+
+      <div className="mt-2 grid h-[calc(100dvh-8rem)] grid-cols-1 gap-0 overflow-hidden sm:mt-6 sm:gap-6 lg:h-[calc(100vh-11rem)] lg:grid-cols-3">
+        {/* Left panel: conversation list — hidden on mobile when detail is open */}
+        <div className={`flex min-h-0 flex-col overflow-hidden ${mobileShowDetail ? "hidden lg:flex" : "flex"}`}>
           {listLoading ? (
             <div className="flex h-full items-center justify-center">
               <Spinner size="lg" />
@@ -140,8 +151,8 @@ export default function InboxPage() {
           )}
         </div>
 
-        {/* Right panel: conversation detail */}
-        <div className="flex min-h-0 flex-col lg:col-span-2">
+        {/* Right panel: conversation detail — hidden on mobile when no selection */}
+        <div className={`flex min-h-0 flex-col lg:col-span-2 ${mobileShowDetail ? "flex" : "hidden lg:flex"}`}>
           {detailLoading && !detail ? (
             <Card className="h-full">
               <div className="flex h-full items-center justify-center">
@@ -152,6 +163,7 @@ export default function InboxPage() {
             <ConversationDetail
               conversation={detail}
               onRefresh={handleRefresh}
+              onBack={handleBack}
             />
           ) : (
             <Card className="h-full">
@@ -167,6 +179,6 @@ export default function InboxPage() {
           )}
         </div>
       </div>
-    </PageContainer>
+    </div>
   );
 }

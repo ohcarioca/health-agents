@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
+import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -30,6 +31,7 @@ interface ConversationData {
 interface ConversationDetailProps {
   conversation: ConversationData;
   onRefresh: () => void;
+  onBack?: () => void;
 }
 
 const STATUS_BADGE_VARIANT: Record<
@@ -44,6 +46,7 @@ const STATUS_BADGE_VARIANT: Record<
 export function ConversationDetail({
   conversation,
   onRefresh,
+  onBack,
 }: ConversationDetailProps) {
   const t = useTranslations("inbox");
   const [actionLoading, setActionLoading] = useState(false);
@@ -123,13 +126,26 @@ export function ConversationDetail({
     >
       {/* Header */}
       <div
-        className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4"
+        className="flex items-center gap-2 border-b px-3 py-3 sm:px-5 sm:py-4"
         style={{ borderColor: "var(--border)" }}
       >
-        <div className="min-w-0">
+        {/* Back button — mobile only */}
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex shrink-0 items-center justify-center rounded-lg p-2 transition-colors hover:bg-[var(--nav-hover-bg)] lg:hidden"
+            style={{ color: "var(--text-secondary)" }}
+            aria-label={t("actions.back")}
+          >
+            <ArrowLeft className="size-5" />
+          </button>
+        )}
+
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h2
-              className="truncate text-base font-semibold"
+              className="truncate text-sm font-semibold sm:text-base"
               style={{ color: "var(--text-primary)" }}
             >
               {conversation.patient?.name ?? t("unknownPatient")}
@@ -138,18 +154,18 @@ export function ConversationDetail({
               {t(`status.${conversation.status}`)}
             </Badge>
           </div>
-          <div className="mt-1 flex flex-wrap items-center gap-3 text-xs" style={{ color: "var(--text-muted)" }}>
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
             {conversation.patient?.phone && (
-              <span>{t("phone")}: {conversation.patient.phone}</span>
+              <span>{conversation.patient.phone}</span>
             )}
             {conversation.current_module && (
-              <span>{t("module")}: {conversation.current_module}</span>
+              <span>{conversation.current_module}</span>
             )}
-            <span>{t("channel")}: {conversation.channel}</span>
+            <span className="hidden sm:inline">{t("channel")}: {conversation.channel}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {actionLoading && <Spinner size="sm" />}
           {conversation.status === "active" && (
             <Button
@@ -175,7 +191,7 @@ export function ConversationDetail({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
         {conversation.messages.length === 0 ? (
           <div className="flex min-h-[200px] items-center justify-center">
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -202,7 +218,7 @@ export function ConversationDetail({
       {conversation.status === "escalated" && (
         <form
           onSubmit={handleSend}
-          className="flex items-center gap-2 border-t px-5 py-3"
+          className="flex items-center gap-2 border-t px-3 py-2 sm:px-5 sm:py-3"
           style={{ borderColor: "var(--border)" }}
         >
           <input

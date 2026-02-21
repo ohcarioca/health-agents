@@ -118,6 +118,7 @@
       "resolved": "Resolvida"
     },
     "actions": {
+      "back": "Voltar",
       "takeOver": "Assumir",
       "handBack": "Devolver ao agente",
       "send": "Enviar"

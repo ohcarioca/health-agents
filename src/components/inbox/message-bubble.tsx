@@ -20,7 +20,7 @@ export function MessageBubble({
     return (
       <div className="flex justify-center py-2">
         <span
-          className="inline-block max-w-md rounded-full px-4 py-1.5 text-xs"
+          className="inline-block max-w-[90%] rounded-full px-3 py-1.5 text-xs sm:max-w-md sm:px-4"
           style={{
             backgroundColor: "var(--nav-hover-bg)",
             color: "var(--text-muted)",
@@ -39,7 +39,7 @@ export function MessageBubble({
       className={`flex ${isUser ? "justify-start" : "justify-end"} py-1`}
     >
       <div
-        className="relative max-w-[75%] rounded-2xl px-4 py-2.5"
+        className="relative max-w-[85%] rounded-2xl px-3 py-2 sm:max-w-[75%] sm:px-4 sm:py-2.5"
         style={
           isUser
             ? {
