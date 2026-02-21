@@ -162,6 +162,8 @@ return NextResponse.json({ status: "ok" });
 - `patient_custom_fields`: clinic-level schema definitions for dynamic patient fields. Types: `text`, `select` (with `options` JSONB array). Unique constraint on `(clinic_id, name)`. RPC `remove_custom_field_from_patients()` cleans up values on field deletion.
 - `patients.custom_fields` (JSONB): stores custom field values keyed by `patient_custom_fields.id`. Schema defined at clinic level, values per patient.
 - `patient_files`: metadata for patient file attachments. Actual files stored in Supabase Storage bucket `patient-files` (private). Storage path: `{clinic_id}/{patient_id}/{uuid}.{ext}`. Max 20 files per patient, 10MB each, PDF/JPG/PNG only.
+- `clinics.cnpj` (text, nullable): optional CNPJ for the clinic (14 digits, stored digits-only).
+- `professionals.registration_number` (text, nullable): optional professional registration (e.g., CRM 12345/SP, CRO).
 - `plans`: platform subscription plans. Columns: `id`, `name`, `slug`, `price_cents`, `max_professionals`, `max_messages_month`, `description`, `display_order`, `is_active`. Seeded with Starter/Pro/Enterprise. RLS: public read for active plans.
 - `subscriptions`: one per clinic (unique constraint on `clinic_id`). Columns: `clinic_id` (FK), `plan_id` (FK), `status` (`trialing`/`active`/`past_due`/`cancelled`/`expired`), `asaas_subscription_id` (nullable, links to Asaas recurring charge), `trial_ends_at`, `current_period_start`, `current_period_end`, `cancelled_at`. Signup creates a `trialing` subscription with 30-day trial. RLS: clinic owner only.
 - `clinics.messages_used_month` (integer, default 0): monthly WhatsApp message counter. Reset to 0 by `subscription-check` cron on the 1st of each month.
