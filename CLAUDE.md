@@ -131,6 +131,7 @@ return NextResponse.json({ status: "ok" });
 - Fire-and-forget async calls must `.catch()` and log — never leave unhandled promises.
 - Queue tables follow the pattern: `pending` → `processing` → `sent`/`failed`, with max 3 attempts.
 - Never throw from a service that sends messages (email/WhatsApp). Return a result type instead.
+- Asaas subscription functions (`src/services/asaas.ts`): `createSubscription()`, `updateSubscription()`, `cancelSubscription()`, `getSubscriptionStatus()`, `tokenizeCreditCard()`, `getSubscriptionPayments()`. Uses existing `ASAAS_API_KEY` env var — no new env vars needed.
 
 ---
 
@@ -161,6 +162,17 @@ return NextResponse.json({ status: "ok" });
 - `patient_custom_fields`: clinic-level schema definitions for dynamic patient fields. Types: `text`, `select` (with `options` JSONB array). Unique constraint on `(clinic_id, name)`. RPC `remove_custom_field_from_patients()` cleans up values on field deletion.
 - `patients.custom_fields` (JSONB): stores custom field values keyed by `patient_custom_fields.id`. Schema defined at clinic level, values per patient.
 - `patient_files`: metadata for patient file attachments. Actual files stored in Supabase Storage bucket `patient-files` (private). Storage path: `{clinic_id}/{patient_id}/{uuid}.{ext}`. Max 20 files per patient, 10MB each, PDF/JPG/PNG only.
+- `plans`: platform subscription plans. Columns: `id`, `name`, `slug`, `price_cents`, `max_professionals`, `max_messages_month`, `description`, `display_order`, `is_active`. Seeded with Starter/Pro/Enterprise. RLS: public read for active plans.
+- `subscriptions`: one per clinic (unique constraint on `clinic_id`). Columns: `clinic_id` (FK), `plan_id` (FK), `status` (`trialing`/`active`/`past_due`/`cancelled`/`expired`), `asaas_subscription_id` (nullable, links to Asaas recurring charge), `trial_ends_at`, `current_period_start`, `current_period_end`, `cancelled_at`. Signup creates a `trialing` subscription with 30-day trial. RLS: clinic owner only.
+- `clinics.messages_used_month` (integer, default 0): monthly WhatsApp message counter. Reset to 0 by `subscription-check` cron on the 1st of each month.
+
+### Subscription Status Flow
+
+```
+signup → trialing (30 days) → active (subscribed) ←→ past_due (payment failure, 7-day grace) → expired
+trialing → expired (didn't subscribe)
+active → cancelled (user cancelled, access until period end)
+```
 
 ---
 
@@ -493,6 +505,7 @@ Shared utility for proactive (system-initiated) messages:
 | `GET /api/cron/recall` | `0 10 * * 1-5` | Enqueue inactive patients (Mon-Fri) — uses per-clinic `inactivity_days` from `module_configs.settings` (default 90), skips disabled clinics |
 | `GET /api/cron/recall-send` | `30 10,15 * * 1-5` | Send recall messages from queue (2x/day Mon-Fri) |
 | `GET /api/cron/message-retry` | `*/30 8-20 * * 1-6` | Retry failed WhatsApp sends (every 30min Mon-Sat) |
+| `GET /api/cron/subscription-check` | `0 3 * * *` | Daily at 3am UTC: expire ended trials, expire 7-day past_due subscriptions, reset `clinics.messages_used_month` on 1st of month |
 
 Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqual()`). Shared auth helper: `src/lib/cron/auth.ts`.
 
@@ -515,6 +528,10 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 | `/api/settings/modules/[type]` | GET, PUT | Generic module settings: enabled toggle + per-type settings (billing, nps, recall, support) |
 | `/api/settings/custom-fields` | GET, POST | Custom field definitions CRUD (list/create) |
 | `/api/settings/custom-fields/[id]` | PUT, DELETE | Custom field definition update/delete (delete cleans up patient values via RPC) |
+
+### Settings UI
+
+9 tabs: Clinica | Profissionais | Servicos | Convenios | Campos | Integracoes | WhatsApp | Equipe | Assinatura
 
 ### Public API Routes
 
@@ -565,6 +582,18 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 | `/api/invoices/[id]` | PUT | Update invoice (status, amount, notes) |
 | `/api/invoices/[id]/payment-link` | POST | Generate Asaas payment link (Pix/boleto/card) |
 
+### Subscriptions & Plans API Routes
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/plans` | GET | List available plans (public, no auth) |
+| `/api/subscriptions` | GET | Current subscription + plan + usage |
+| `/api/subscriptions` | POST | Create subscription (plan + card data via Asaas tokenization) |
+| `/api/subscriptions/upgrade` | PUT | Change plan (upgrade/downgrade) |
+| `/api/subscriptions/cancel` | POST | Cancel subscription (access until period end) |
+| `/api/subscriptions/update-card` | PUT | Update credit card (tokenization) |
+| `/api/subscriptions/invoices` | GET | Platform invoice history from Asaas |
+
 ### Dashboard & Reports API Routes
 
 | Route | Method | Purpose |
@@ -601,6 +630,16 @@ Auth: `Authorization: Bearer {CRON_SECRET}` (verified with `crypto.timingSafeEqu
 - Security headers (HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) configured in `next.config.ts`.
 - Never expose CPF unmasked in API responses — use `maskCPF()` from `src/lib/utils/mask.ts`.
 - Never expose internal provider IDs (asaas_customer_id, whatsapp_phone_number_id) in public API responses.
+
+---
+
+## Subscription Enforcement
+
+- `proxy.ts` gates POST/PUT/DELETE on `/api/*` when subscription status is `expired` or `cancelled` (returns `403`). Exempt routes: auth, subscriptions, plans, webhooks, cron.
+- **Professional limit**: hard block via `canAddProfessional()` check in `POST /api/settings/professionals`. Compares current count against `plans.max_professionals`.
+- **Message counter**: soft limit via `incrementMessageCount()` in `outbound.ts` and WhatsApp webhook. Increments `clinics.messages_used_month` and warns when approaching `plans.max_messages_month`.
+- **WhatsApp agents**: do not respond when clinic subscription status is not `trialing`, `active`, or `past_due`.
+- **Crons**: skip clinics without active subscriptions via `getSubscribedClinicIds()` shared helper.
 
 ---
 
