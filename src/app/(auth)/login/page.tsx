@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -33,6 +34,7 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
+    setGoogleLoading(true);
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -124,6 +126,7 @@ export default function LoginPage() {
           type="button"
           variant="outline"
           onClick={handleGoogleLogin}
+          loading={googleLoading}
           className="w-full"
           size="lg"
         >
