@@ -62,7 +62,7 @@ export async function POST(request: Request) {
   const parsed = createSubscriptionSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Validation failed", details: parsed.error.flatten() },
+      { error: "Invalid input" },
       { status: 400 },
     );
   }
@@ -140,8 +140,9 @@ export async function POST(request: Request) {
     });
 
     if (!customerResult.success || !customerResult.customerId) {
+      console.error("[subscriptions] Customer creation failed:", customerResult.error);
       return NextResponse.json(
-        { error: `Failed to create payment customer: ${customerResult.error}` },
+        { error: "Failed to process payment" },
         { status: 502 },
       );
     }
@@ -166,8 +167,9 @@ export async function POST(request: Request) {
   });
 
   if (!subResult.success || !subResult.subscriptionId) {
+    console.error("[subscriptions] Subscription creation failed:", subResult.error);
     return NextResponse.json(
-      { error: `Failed to create subscription: ${subResult.error}` },
+      { error: "Failed to process payment" },
       { status: 502 },
     );
   }
@@ -193,7 +195,7 @@ export async function POST(request: Request) {
   if (updateError) {
     console.error("[subscriptions] Failed to update local subscription:", updateError);
     return NextResponse.json(
-      { error: "Subscription created but failed to update local record" },
+      { error: "Failed to process subscription" },
       { status: 500 },
     );
   }

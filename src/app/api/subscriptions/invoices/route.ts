@@ -38,7 +38,7 @@ export async function GET() {
 
   if (!result.success) {
     return NextResponse.json(
-      { error: `Failed to fetch invoices: ${result.error}` },
+      { error: "Failed to fetch invoices" },
       { status: 502 },
     );
   }

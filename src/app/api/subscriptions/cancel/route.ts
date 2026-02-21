@@ -49,8 +49,9 @@ export async function POST() {
   const result = await cancelSubscription(subscription.asaas_subscription_id);
 
   if (!result.success) {
+    console.error("[subscriptions] Cancel failed:", result.error);
     return NextResponse.json(
-      { error: `Failed to cancel subscription: ${result.error}` },
+      { error: "Failed to cancel subscription" },
       { status: 502 },
     );
   }
@@ -68,7 +69,7 @@ export async function POST() {
   if (updateError) {
     console.error("[subscriptions] Failed to update cancellation locally:", updateError);
     return NextResponse.json(
-      { error: "Subscription cancelled in provider but failed to update locally" },
+      { error: "Failed to cancel subscription" },
       { status: 500 },
     );
   }

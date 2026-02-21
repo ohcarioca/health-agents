@@ -13,7 +13,8 @@ export async function GET() {
     .order("display_order", { ascending: true });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[plans] Failed to fetch plans:", error.message);
+    return NextResponse.json({ error: "Failed to fetch plans" }, { status: 500 });
   }
 
   return NextResponse.json({ data });

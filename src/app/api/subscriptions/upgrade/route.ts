@@ -18,7 +18,7 @@ export async function PUT(request: Request) {
   const parsed = upgradeSubscriptionSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Validation failed", details: parsed.error.flatten() },
+      { error: "Invalid input" },
       { status: 400 },
     );
   }
@@ -83,8 +83,9 @@ export async function PUT(request: Request) {
   });
 
   if (!result.success) {
+    console.error("[subscriptions] Upgrade failed:", result.error);
     return NextResponse.json(
-      { error: `Failed to update subscription: ${result.error}` },
+      { error: "Failed to update subscription" },
       { status: 502 },
     );
   }
@@ -98,7 +99,7 @@ export async function PUT(request: Request) {
   if (updateError) {
     console.error("[subscriptions] Failed to update local plan:", updateError);
     return NextResponse.json(
-      { error: "Plan updated in payment provider but failed locally" },
+      { error: "Failed to update subscription" },
       { status: 500 },
     );
   }

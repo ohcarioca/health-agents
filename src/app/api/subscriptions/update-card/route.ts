@@ -18,7 +18,7 @@ export async function PUT(request: Request) {
   const parsed = updateCardSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Validation failed", details: parsed.error.flatten() },
+      { error: "Invalid input" },
       { status: 400 },
     );
   }
@@ -62,8 +62,9 @@ export async function PUT(request: Request) {
   });
 
   if (!result.success) {
+    console.error("[subscriptions] Card update failed:", result.error);
     return NextResponse.json(
-      { error: `Failed to update card: ${result.error}` },
+      { error: "Failed to update card" },
       { status: 502 },
     );
   }

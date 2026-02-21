@@ -11,11 +11,11 @@ const creditCardSchema = z.object({
 const creditCardHolderInfoSchema = z.object({
   name: z.string().min(3).max(100),
   email: z.string().email(),
-  cpfCnpj: z.string().min(11).max(18),
+  cpfCnpj: z.string().regex(/^\d{11}(\d{3})?$/, "CPF (11 digits) or CNPJ (14 digits)"),
   postalCode: z.string().regex(/^\d{8}$/, "8 digits, no dash"),
   addressNumber: z.string().min(1).max(10),
-  phone: z.string().optional(),
-  mobilePhone: z.string().optional(),
+  phone: z.string().regex(/^\d{10,11}$/).optional(),
+  mobilePhone: z.string().regex(/^\d{10,11}$/).optional(),
   addressComplement: z.string().max(100).optional(),
 });
 

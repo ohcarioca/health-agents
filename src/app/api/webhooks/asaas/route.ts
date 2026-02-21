@@ -142,9 +142,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ status: "ok", invoiceId, event });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("[asaas-webhook] error:", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[asaas-webhook] error:", error instanceof Error ? error.message : error);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
 
@@ -169,15 +168,23 @@ async function handleSubscriptionWebhook(
   }
 
   if (PAID_EVENTS.has(event)) {
+    // Idempotency: if already active and period_end is in the future, skip
+    const now = new Date();
+    const currentEnd = sub.current_period_end ? new Date(sub.current_period_end) : null;
+    if (sub.status === "active" && currentEnd && currentEnd > now) {
+      console.log(`[asaas-webhook] Subscription ${sub.id} already active until ${currentEnd.toISOString()}, skipping`);
+      return NextResponse.json({ status: "already_processed", subscriptionId: sub.id, event });
+    }
+
     // Renew period
-    const newPeriodEnd = new Date(sub.current_period_end ?? new Date());
+    const newPeriodEnd = new Date(currentEnd ?? now);
     newPeriodEnd.setMonth(newPeriodEnd.getMonth() + 1);
 
     await supabase
       .from("subscriptions")
       .update({
         status: "active",
-        current_period_start: paymentDate ?? new Date().toISOString(),
+        current_period_start: paymentDate ?? now.toISOString(),
         current_period_end: newPeriodEnd.toISOString(),
       })
       .eq("id", sub.id);
