@@ -14,6 +14,7 @@ import { IntegrationsTab } from "@/components/settings/integrations-tab";
 import { WhatsAppConfig } from "@/components/settings/whatsapp-placeholder";
 import { TeamContent } from "@/components/team/team-content";
 import { CustomFieldsList } from "@/components/settings/custom-fields-list";
+import { SubscriptionManager } from "@/components/subscription/subscription-manager";
 import type { Clinic } from "@/types";
 
 const TAB_KEYS = [
@@ -25,6 +26,7 @@ const TAB_KEYS = [
   "tabs.integrations",
   "tabs.whatsapp",
   "tabs.team",
+  "tabs.subscription",
 ] as const;
 
 const TAB_PARAM_MAP: Record<string, number> = {
@@ -36,6 +38,7 @@ const TAB_PARAM_MAP: Record<string, number> = {
   integrations: 5,
   whatsapp: 6,
   team: 7,
+  subscription: 8,
 };
 
 export default function SettingsPage() {
@@ -111,6 +114,7 @@ export default function SettingsPage() {
           </>
         )}
         {activeTab === 7 && <TeamContent />}
+        {activeTab === 8 && <SubscriptionManager />}
       </div>
     </PageContainer>
   );
