@@ -110,6 +110,21 @@ export async function POST(request: Request) {
           return;
         }
 
+        // Check subscription status
+        const { data: subscription } = await supabase
+          .from("subscriptions")
+          .select("status")
+          .eq("clinic_id", clinic.id)
+          .single();
+
+        const subStatus = subscription?.status;
+        if (subStatus !== "trialing" && subStatus !== "active" && subStatus !== "past_due") {
+          console.log(
+            `[webhook/whatsapp] ignoring message: clinic ${clinic.id} subscription ${subStatus}`
+          );
+          return;
+        }
+
         await processMessage({
           phone: senderPhone,
           message: messageBody,
