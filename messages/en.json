@@ -864,6 +864,7 @@
       "dataNotice": "Your data is safe — nothing has been deleted."
     },
     "limitReached": {
+      "professionalsTitle": "Professional limit reached",
       "professionals": "Professional limit reached ({current}/{limit}). Upgrade to add more.",
       "messages": "Message limit reached ({current}/{limit})."
     }

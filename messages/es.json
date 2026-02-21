@@ -864,6 +864,7 @@
       "dataNotice": "Tus datos están seguros — nada fue eliminado."
     },
     "limitReached": {
+      "professionalsTitle": "Límite de profesionales alcanzado",
       "professionals": "Límite de profesionales alcanzado ({current}/{limit}). Mejora tu plan para agregar más.",
       "messages": "Límite de mensajes alcanzado ({current}/{limit})."
     }

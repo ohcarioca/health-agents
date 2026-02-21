@@ -1055,6 +1055,7 @@
       "dataNotice": "Seus dados estão seguros — nada foi apagado."
     },
     "limitReached": {
+      "professionalsTitle": "Limite de profissionais atingido",
       "professionals": "Limite de profissionais atingido ({current}/{limit}). Faça upgrade para adicionar mais.",
       "messages": "Limite de mensagens atingido ({current}/{limit})."
     }
