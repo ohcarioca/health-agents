@@ -305,6 +305,7 @@
     "title": "Configuración",
     "tabs": {
       "clinic": "Clínica",
+      "operatingHours": "Horarios",
       "professionals": "Profesionales",
       "services": "Servicios",
       "insurancePlans": "Convenios",
@@ -349,6 +350,11 @@
       "saving": "Guardando...",
       "saveSuccess": "Configuración guardada",
       "saveError": "Error al guardar configuración"
+    },
+    "operatingHours": {
+      "description": "Configure los días y horarios de funcionamiento de la clínica. Esto afecta la programación en línea y los horarios disponibles.",
+      "saveSuccess": "Horarios guardados",
+      "saveError": "Error al guardar horarios"
     },
     "professionals": {
       "add": "Agregar profesional",

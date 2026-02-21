@@ -5,9 +5,7 @@ import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PhoneInputField } from "@/components/ui/phone-input-field";
-import { CompactScheduleGrid } from "./compact-schedule-grid";
 import { clinicSettingsSchema } from "@/lib/validations/settings";
-import type { ScheduleGrid } from "@/lib/validations/settings";
 import type { Clinic } from "@/types";
 
 interface ClinicFormProps {
@@ -57,12 +55,6 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
   const [googleReviewsUrl, setGoogleReviewsUrl] = useState(
     clinic.google_reviews_url ?? "",
   );
-  const [operatingHours, setOperatingHours] = useState<ScheduleGrid>(
-    (clinic.operating_hours as ScheduleGrid | undefined) ?? {
-      monday: [], tuesday: [], wednesday: [], thursday: [],
-      friday: [], saturday: [], sunday: [],
-    },
-  );
 
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{
@@ -88,7 +80,6 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
       cnpj: cnpj.replace(/\D/g, "") || "",
       timezone,
       google_reviews_url: googleReviewsUrl,
-      operating_hours: operatingHours,
     };
 
     const parsed = clinicSettingsSchema.safeParse(data);
@@ -241,17 +232,6 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
             ))}
           </select>
         </div>
-      </div>
-
-      {/* Operating Hours */}
-      <div className="space-y-2">
-        <h3
-          className="text-sm font-medium"
-          style={{ color: "var(--text-primary)" }}
-        >
-          {t("operatingHours")}
-        </h3>
-        <CompactScheduleGrid value={operatingHours} onChange={setOperatingHours} />
       </div>
 
       {feedback && (

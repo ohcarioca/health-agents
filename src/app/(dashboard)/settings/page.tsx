@@ -14,11 +14,13 @@ import { IntegrationsTab } from "@/components/settings/integrations-tab";
 import { WhatsAppConfig } from "@/components/settings/whatsapp-placeholder";
 import { TeamContent } from "@/components/team/team-content";
 import { CustomFieldsList } from "@/components/settings/custom-fields-list";
+import { OperatingHoursTab } from "@/components/settings/operating-hours-tab";
 import { SubscriptionManager } from "@/components/subscription/subscription-manager";
 import type { Clinic } from "@/types";
 
 const TAB_KEYS = [
   "tabs.clinic",
+  "tabs.operatingHours",
   "tabs.professionals",
   "tabs.services",
   "tabs.insurancePlans",
@@ -31,14 +33,15 @@ const TAB_KEYS = [
 
 const TAB_PARAM_MAP: Record<string, number> = {
   clinic: 0,
-  professionals: 1,
-  services: 2,
-  "insurance-plans": 3,
-  "custom-fields": 4,
-  integrations: 5,
-  whatsapp: 6,
-  team: 7,
-  subscription: 8,
+  "operating-hours": 1,
+  professionals: 2,
+  services: 3,
+  "insurance-plans": 4,
+  "custom-fields": 5,
+  integrations: 6,
+  whatsapp: 7,
+  team: 8,
+  subscription: 9,
 };
 
 export default function SettingsPage() {
@@ -105,16 +108,17 @@ export default function SettingsPage() {
         ) : (
           <>
             {activeTab === 0 && clinic && <ClinicForm clinic={clinic} />}
-            {activeTab === 1 && <ProfessionalsList clinic={clinic} />}
-            {activeTab === 2 && <ServicesList />}
-            {activeTab === 3 && <InsurancePlansList />}
-            {activeTab === 4 && <CustomFieldsList />}
-            {activeTab === 5 && <IntegrationsTab />}
-            {activeTab === 6 && <WhatsAppConfig />}
+            {activeTab === 1 && <OperatingHoursTab />}
+            {activeTab === 2 && <ProfessionalsList clinic={clinic} />}
+            {activeTab === 3 && <ServicesList />}
+            {activeTab === 4 && <InsurancePlansList />}
+            {activeTab === 5 && <CustomFieldsList />}
+            {activeTab === 6 && <IntegrationsTab />}
+            {activeTab === 7 && <WhatsAppConfig />}
           </>
         )}
-        {activeTab === 7 && <TeamContent />}
-        {activeTab === 8 && <SubscriptionManager />}
+        {activeTab === 8 && <TeamContent />}
+        {activeTab === 9 && <SubscriptionManager />}
       </div>
     </PageContainer>
   );

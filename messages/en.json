@@ -305,6 +305,7 @@
     "title": "Settings",
     "tabs": {
       "clinic": "Clinic",
+      "operatingHours": "Hours",
       "professionals": "Professionals",
       "services": "Services",
       "insurancePlans": "Insurance Plans",
@@ -349,6 +350,11 @@
       "saving": "Saving...",
       "saveSuccess": "Settings saved",
       "saveError": "Failed to save settings"
+    },
+    "operatingHours": {
+      "description": "Set the clinic's days and hours of operation. This affects online scheduling and available time slots.",
+      "saveSuccess": "Hours saved",
+      "saveError": "Failed to save hours"
     },
     "professionals": {
       "add": "Add professional",
