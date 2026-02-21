@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
 import { Button } from "@/components/ui/button";
-import { CompactScheduleGrid } from "./compact-schedule-grid";
+import { SchedulePicker } from "@/components/onboarding/schedule-picker";
 import {
   ProfessionalServicesForm,
   type ProfessionalServicesFormHandle,
@@ -225,7 +225,7 @@ export function ProfessionalForm({
 
       {activeSubTab === 1 && (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <CompactScheduleGrid value={scheduleGrid} onChange={setScheduleGrid} />
+          <SchedulePicker value={scheduleGrid} onChange={setScheduleGrid} />
 
           {error && (
             <p className="text-sm" style={{ color: "var(--danger)" }}>
