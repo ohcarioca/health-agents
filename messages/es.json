@@ -377,7 +377,10 @@
       "add": "Agregar",
       "placeholder": "Nombre del convenio",
       "empty": "Ningún convenio agregado",
-      "deleteConfirm": "¿Está seguro que desea eliminar este convenio?"
+      "deleteConfirm": "¿Está seguro que desea eliminar este convenio?",
+      "commonTitle": "Planes populares",
+      "customTitle": "Otros planes",
+      "customPlaceholder": "Agregar otro plan"
     },
     "integrations": {
       "title": "Integraciones",

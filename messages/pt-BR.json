@@ -377,7 +377,10 @@
       "add": "Adicionar",
       "placeholder": "Nome do convênio",
       "empty": "Nenhum convênio adicionado",
-      "deleteConfirm": "Tem certeza que deseja excluir este convênio?"
+      "deleteConfirm": "Tem certeza que deseja excluir este convênio?",
+      "commonTitle": "Convênios populares",
+      "customTitle": "Outros convênios",
+      "customPlaceholder": "Adicionar outro convênio"
     },
     "integrations": {
       "title": "Integrações",
