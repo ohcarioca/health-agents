@@ -15,9 +15,15 @@ interface Plan {
   description: string | null;
 }
 
+export interface SelectedPlan {
+  slug: string;
+  name: string;
+  price_cents: number;
+}
+
 interface PlanSelectorProps {
   currentPlanSlug?: string;
-  onSelectPlan: (planSlug: string) => void;
+  onSelectPlan: (plan: SelectedPlan) => void;
 }
 
 function formatPrice(cents: number): string {
@@ -182,7 +188,7 @@ export function PlanSelector({ currentPlanSlug, onSelectPlan }: PlanSelectorProp
                 {!isCurrent && (
                   <button
                     type="button"
-                    onClick={() => onSelectPlan(plan.slug)}
+                    onClick={() => onSelectPlan({ slug: plan.slug, name: plan.name, price_cents: plan.price_cents })}
                     className="w-full rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
                     style={{ backgroundColor: "var(--accent)" }}
                   >

@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { PlanSelector } from "./plan-selector";
+import { PlanSelector, type SelectedPlan } from "./plan-selector";
 import { CreditCardForm } from "./credit-card-form";
 import { formatCents } from "@/lib/analytics/kpis";
 
@@ -171,7 +171,7 @@ export function SubscriptionManager() {
   const [showPlanSelector, setShowPlanSelector] = useState(false);
   const [showCardForm, setShowCardForm] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [selectedPlanSlug, setSelectedPlanSlug] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState<SelectedPlan | null>(null);
   const [cardFormMode, setCardFormMode] = useState<"subscribe" | "update-card">(
     "subscribe"
   );
@@ -224,8 +224,8 @@ export function SubscriptionManager() {
   }, [subscription, fetchInvoices]);
 
   // Handlers
-  function handleSelectPlan(planSlug: string) {
-    setSelectedPlanSlug(planSlug);
+  function handleSelectPlan(plan: SelectedPlan) {
+    setSelectedPlan(plan);
     setCardFormMode("subscribe");
     setShowCardForm(true);
     setShowPlanSelector(false);
@@ -238,7 +238,7 @@ export function SubscriptionManager() {
 
   function handleCardFormSuccess() {
     setShowCardForm(false);
-    setSelectedPlanSlug("");
+    setSelectedPlan(null);
     fetchSubscription();
     fetchInvoices();
   }
@@ -280,9 +280,13 @@ export function SubscriptionManager() {
   const showPlanSelectorDirectly =
     isTrialingWithoutPlan || status === "expired";
 
-  // Card form plan info
-  const cardPlanName = plan?.name ?? "";
-  const cardPlanPrice = plan ? formatPrice(plan.price_cents) : "";
+  // Card form plan info — prefer selected plan (from PlanSelector), fall back to current plan
+  const cardPlanName = selectedPlan?.name ?? plan?.name ?? "";
+  const cardPlanPrice = selectedPlan
+    ? formatPrice(selectedPlan.price_cents)
+    : plan
+      ? formatPrice(plan.price_cents)
+      : "";
 
   return (
     <div className="space-y-8">
@@ -700,7 +704,7 @@ export function SubscriptionManager() {
         planName={cardPlanName}
         planPrice={cardPlanPrice}
         mode={cardFormMode}
-        planSlug={selectedPlanSlug || undefined}
+        planSlug={selectedPlan?.slug || undefined}
         onSuccess={handleCardFormSuccess}
       />
 

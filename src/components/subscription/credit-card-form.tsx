@@ -232,28 +232,6 @@ export function CreditCardForm({
       title={dialogTitle}
       size="lg"
     >
-      {/* Plan summary */}
-      <div
-        className="mb-6 rounded-lg border px-4 py-3"
-        style={{
-          backgroundColor: "var(--accent-muted)",
-          borderColor: "var(--border)",
-        }}
-      >
-        <p
-          className="text-sm font-medium"
-          style={{ color: "var(--text-primary)" }}
-        >
-          {planName}
-        </p>
-        <p
-          className="text-sm"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          {planPrice}
-        </p>
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Section: Holder info */}
         <div className="space-y-4">
