@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createProfessionalSchema } from "@/lib/validations/settings";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { canAddProfessional } from "@/lib/subscriptions";
 
 async function getClinicId() {
   const supabase = await createServerSupabaseClient();
@@ -68,6 +69,19 @@ export async function POST(request: Request) {
 
   const limited = await checkRateLimit(clinicId);
   if (limited) return limited;
+
+  // Check professional limit based on subscription plan
+  const profCheck = await canAddProfessional(clinicId);
+  if (!profCheck.allowed) {
+    return NextResponse.json(
+      {
+        error: "professional_limit_reached",
+        limit: profCheck.limit,
+        current: profCheck.current,
+      },
+      { status: 403 },
+    );
+  }
 
   const { name, specialty, appointment_duration_minutes, schedule_grid } =
     parsed.data;
