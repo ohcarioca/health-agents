@@ -130,6 +130,96 @@ interface GetBoletoIdentificationFieldResult {
   error?: string;
 }
 
+interface CreditCardData {
+  holderName: string;
+  number: string;
+  expiryMonth: string;
+  expiryYear: string;
+  ccv: string;
+}
+
+interface CreditCardHolderInfo {
+  name: string;
+  email: string;
+  cpfCnpj: string;
+  postalCode: string;
+  addressNumber: string;
+  phone?: string;
+  mobilePhone?: string;
+  addressComplement?: string;
+}
+
+interface CreateSubscriptionParams {
+  customerId: string;
+  valueCents: number;
+  nextDueDate: string; // YYYY-MM-DD
+  description?: string;
+  externalReference?: string;
+  creditCard: CreditCardData;
+  creditCardHolderInfo: CreditCardHolderInfo;
+}
+
+interface CreateSubscriptionResult {
+  success: boolean;
+  subscriptionId?: string;
+  status?: string;
+  error?: string;
+}
+
+interface UpdateSubscriptionParams {
+  subscriptionId: string;
+  valueCents?: number;
+  nextDueDate?: string;
+  status?: string;
+}
+
+interface UpdateSubscriptionResult {
+  success: boolean;
+  error?: string;
+}
+
+interface CancelSubscriptionResult {
+  success: boolean;
+  error?: string;
+}
+
+interface GetSubscriptionResult {
+  success: boolean;
+  status?: string;
+  nextDueDate?: string;
+  valueCents?: number;
+  error?: string;
+}
+
+interface TokenizeCreditCardParams {
+  customerId: string;
+  creditCard: CreditCardData;
+  creditCardHolderInfo: CreditCardHolderInfo;
+}
+
+interface TokenizeCreditCardResult {
+  success: boolean;
+  creditCardToken?: string;
+  creditCardNumber?: string;
+  creditCardBrand?: string;
+  error?: string;
+}
+
+interface SubscriptionPayment {
+  id: string;
+  value: number;
+  dueDate: string;
+  status: string;
+  paymentDate?: string;
+  invoiceUrl?: string;
+}
+
+interface GetSubscriptionPaymentsResult {
+  success: boolean;
+  payments?: SubscriptionPayment[];
+  error?: string;
+}
+
 // --- API response shapes ---
 
 interface AsaasCustomerResponse {
@@ -159,6 +249,32 @@ interface AsaasBoletoIdentificationFieldResponse {
   identificationField: string;
   nossoNumero: string;
   barCode: string;
+}
+
+interface AsaasSubscriptionResponse {
+  id: string;
+  status: string;
+  nextDueDate?: string;
+  value?: number;
+}
+
+interface AsaasTokenizeResponse {
+  creditCardToken: string;
+  creditCardNumber: string;
+  creditCardBrand: string;
+}
+
+interface AsaasSubscriptionPaymentResponse {
+  id: string;
+  value: number;
+  dueDate: string;
+  status: string;
+  paymentDate?: string;
+  invoiceUrl?: string;
+}
+
+interface AsaasSubscriptionPaymentsListResponse {
+  data: AsaasSubscriptionPaymentResponse[];
 }
 
 // --- Public Functions ---
@@ -279,6 +395,155 @@ export async function getBoletoIdentificationField(
   };
 }
 
+export async function createSubscription(
+  params: CreateSubscriptionParams
+): Promise<CreateSubscriptionResult> {
+  const valueBrl = params.valueCents / 100;
+
+  const body: Record<string, unknown> = {
+    customer: params.customerId,
+    billingType: "CREDIT_CARD",
+    cycle: "MONTHLY",
+    value: valueBrl,
+    nextDueDate: params.nextDueDate,
+    creditCard: params.creditCard,
+    creditCardHolderInfo: params.creditCardHolderInfo,
+  };
+
+  if (params.description) body.description = params.description;
+  if (params.externalReference)
+    body.externalReference = params.externalReference;
+
+  const result = await asaasFetch<AsaasSubscriptionResponse>("/subscriptions", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+
+  if (!result.ok) {
+    return { success: false, error: result.error };
+  }
+
+  return {
+    success: true,
+    subscriptionId: result.data.id,
+    status: result.data.status,
+  };
+}
+
+export async function updateSubscription(
+  params: UpdateSubscriptionParams
+): Promise<UpdateSubscriptionResult> {
+  const body: Record<string, unknown> = {};
+
+  if (params.valueCents !== undefined) {
+    body.value = params.valueCents / 100;
+  }
+  if (params.nextDueDate) body.nextDueDate = params.nextDueDate;
+  if (params.status) body.status = params.status;
+
+  const result = await asaasFetch<AsaasSubscriptionResponse>(
+    `/subscriptions/${params.subscriptionId}`,
+    {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }
+  );
+
+  if (!result.ok) {
+    return { success: false, error: result.error };
+  }
+
+  return { success: true };
+}
+
+export async function cancelSubscription(
+  subscriptionId: string
+): Promise<CancelSubscriptionResult> {
+  const result = await asaasFetch<AsaasSubscriptionResponse>(
+    `/subscriptions/${subscriptionId}`,
+    { method: "DELETE" }
+  );
+
+  if (!result.ok) {
+    return { success: false, error: result.error };
+  }
+
+  return { success: true };
+}
+
+export async function getSubscriptionStatus(
+  subscriptionId: string
+): Promise<GetSubscriptionResult> {
+  const result = await asaasFetch<AsaasSubscriptionResponse>(
+    `/subscriptions/${subscriptionId}`
+  );
+
+  if (!result.ok) {
+    return { success: false, error: result.error };
+  }
+
+  return {
+    success: true,
+    status: result.data.status,
+    nextDueDate: result.data.nextDueDate,
+    valueCents: result.data.value !== undefined
+      ? Math.round(result.data.value * 100)
+      : undefined,
+  };
+}
+
+export async function tokenizeCreditCard(
+  params: TokenizeCreditCardParams
+): Promise<TokenizeCreditCardResult> {
+  const body: Record<string, unknown> = {
+    customer: params.customerId,
+    creditCard: params.creditCard,
+    creditCardHolderInfo: params.creditCardHolderInfo,
+  };
+
+  const result = await asaasFetch<AsaasTokenizeResponse>(
+    "/creditCard/tokenize",
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    }
+  );
+
+  if (!result.ok) {
+    return { success: false, error: result.error };
+  }
+
+  return {
+    success: true,
+    creditCardToken: result.data.creditCardToken,
+    creditCardNumber: result.data.creditCardNumber,
+    creditCardBrand: result.data.creditCardBrand,
+  };
+}
+
+export async function getSubscriptionPayments(
+  subscriptionId: string
+): Promise<GetSubscriptionPaymentsResult> {
+  const result = await asaasFetch<AsaasSubscriptionPaymentsListResponse>(
+    `/subscriptions/${subscriptionId}/payments`
+  );
+
+  if (!result.ok) {
+    return { success: false, error: result.error };
+  }
+
+  const payments: SubscriptionPayment[] = result.data.data.map((p) => ({
+    id: p.id,
+    value: Math.round(p.value * 100),
+    dueDate: p.dueDate,
+    status: p.status,
+    paymentDate: p.paymentDate,
+    invoiceUrl: p.invoiceUrl,
+  }));
+
+  return { success: true, payments };
+}
+
 export function verifyWebhookToken(receivedToken: string): boolean {
   const expectedToken = process.env.ASAAS_WEBHOOK_TOKEN;
   if (!expectedToken) {
@@ -304,4 +569,16 @@ export type {
   GetChargeStatusResult,
   GetPixQrCodeResult,
   GetBoletoIdentificationFieldResult,
+  CreditCardData,
+  CreditCardHolderInfo,
+  CreateSubscriptionParams,
+  CreateSubscriptionResult,
+  UpdateSubscriptionParams,
+  UpdateSubscriptionResult,
+  CancelSubscriptionResult,
+  GetSubscriptionResult,
+  TokenizeCreditCardParams,
+  TokenizeCreditCardResult,
+  SubscriptionPayment,
+  GetSubscriptionPaymentsResult,
 };
