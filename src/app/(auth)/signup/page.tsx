@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
 
 export default function SignupPage() {
   const t = useTranslations("auth");
@@ -140,14 +141,14 @@ export default function SignupPage() {
           </p>
         )}
 
-        <button
+        <Button
           type="submit"
-          disabled={loading}
-          className="w-full rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-70"
-          style={{ backgroundColor: "var(--accent)" }}
+          loading={loading}
+          className="w-full"
+          size="lg"
         >
-          {loading ? t("signup.loading") : t("signup.submit")}
-        </button>
+          {t("signup.submit")}
+        </Button>
       </form>
 
       <p
