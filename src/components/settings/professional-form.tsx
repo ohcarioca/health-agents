@@ -30,6 +30,7 @@ interface ProfessionalFormProps {
     id: string;
     name: string;
     specialty: string | null;
+    registration_number: string | null;
     appointment_duration_minutes: number;
     schedule_grid?: Record<string, { start: string; end: string }[]>;
   };
@@ -73,6 +74,7 @@ export function ProfessionalForm({
   const [activeSubTab, setActiveSubTab] = useState(0);
   const [name, setName] = useState(professional?.name ?? "");
   const [specialty, setSpecialty] = useState(professional?.specialty ?? "");
+  const [registrationNumber, setRegistrationNumber] = useState(professional?.registration_number ?? "");
   const [duration, setDuration] = useState(
     professional?.appointment_duration_minutes ?? 30,
   );
@@ -87,6 +89,7 @@ export function ProfessionalForm({
     const data = {
       name,
       specialty,
+      registration_number: registrationNumber || "",
       appointment_duration_minutes: duration,
       schedule_grid: scheduleGrid,
     };
@@ -185,6 +188,13 @@ export function ProfessionalForm({
             onChange={setSpecialty}
             suggestions={specialtySuggestions}
             placeholder={tf("specialtyPlaceholder")}
+          />
+          <Input
+            id="registration_number"
+            label={tf("registrationNumber")}
+            value={registrationNumber}
+            onChange={(e) => setRegistrationNumber(e.target.value)}
+            placeholder={tf("registrationNumberPlaceholder")}
           />
           <Input
             id="duration"

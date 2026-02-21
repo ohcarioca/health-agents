@@ -34,7 +34,7 @@ export async function GET() {
   const { data: professionals, error } = await admin
     .from("professionals")
     .select(
-      "id, name, specialty, appointment_duration_minutes, schedule_grid, google_calendar_id, active, created_at",
+      "id, name, specialty, registration_number, appointment_duration_minutes, schedule_grid, google_calendar_id, active, created_at",
     )
     .eq("clinic_id", clinicId)
     .order("created_at", { ascending: true });
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { name, specialty, appointment_duration_minutes, schedule_grid } =
+  const { name, specialty, registration_number, appointment_duration_minutes, schedule_grid } =
     parsed.data;
 
   const admin = createAdminClient();
@@ -93,6 +93,7 @@ export async function POST(request: Request) {
       clinic_id: clinicId,
       name,
       specialty: specialty || null,
+      registration_number: registration_number || null,
       appointment_duration_minutes,
       schedule_grid: schedule_grid ?? {},
     })

@@ -344,6 +344,7 @@
       "timezone": "Fuso horário",
       "googleReviewsUrl": "Link do Google Reviews",
       "operatingHours": "Horário de funcionamento",
+      "cnpj": "CNPJ",
       "save": "Salvar alterações",
       "saving": "Salvando...",
       "saveSuccess": "Configurações salvas",
@@ -437,7 +438,9 @@
       "priceRequired": "Defina o preço para cada serviço selecionado",
       "saveFirst": "Salve o profissional primeiro para atribuir serviços.",
       "done": "Concluir",
-      "specialtyPlaceholder": "Selecione ou digite a especialidade"
+      "specialtyPlaceholder": "Selecione ou digite a especialidade",
+      "registrationNumber": "Registro profissional",
+      "registrationNumberPlaceholder": "Ex: CRM 12345/SP"
     },
     "compactGrid": {
       "copyToAll": "Copiar seg. para todos",

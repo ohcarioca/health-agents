@@ -26,6 +26,19 @@ const TIMEZONE_OPTIONS = [
   "America/Noronha",
 ];
 
+function formatCnpj(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 14);
+  if (digits.length > 12)
+    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`;
+  if (digits.length > 8)
+    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`;
+  if (digits.length > 5)
+    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`;
+  if (digits.length > 2)
+    return `${digits.slice(0, 2)}.${digits.slice(2)}`;
+  return digits;
+}
+
 export function ClinicForm({ clinic }: ClinicFormProps) {
   const t = useTranslations("settings.clinic");
 
@@ -36,6 +49,7 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
   const [address, setAddress] = useState(clinic.address ?? "");
   const [city, setCity] = useState(clinic.city ?? "");
   const [state, setState] = useState(clinic.state ?? "");
+  const [cnpj, setCnpj] = useState(formatCnpj(clinic.cnpj ?? ""));
   const [zipCode, setZipCode] = useState(clinic.zip_code ?? "");
   const [timezone, setTimezone] = useState(
     clinic.timezone ?? "America/Sao_Paulo",
@@ -71,6 +85,7 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
       city,
       state,
       zip_code: zipCode,
+      cnpj: cnpj.replace(/\D/g, "") || "",
       timezone,
       google_reviews_url: googleReviewsUrl,
       operating_hours: operatingHours,
@@ -144,6 +159,15 @@ export function ClinicForm({ clinic }: ClinicFormProps) {
           value={phone}
           onChange={setPhone}
           error={fieldErrors.phone}
+        />
+        <Input
+          id="cnpj"
+          label={t("cnpj")}
+          value={cnpj}
+          onChange={(e) => setCnpj(formatCnpj(e.target.value))}
+          placeholder="00.000.000/0000-00"
+          inputMode="numeric"
+          error={fieldErrors.cnpj}
         />
         <Input
           id="email"

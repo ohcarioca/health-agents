@@ -40,6 +40,7 @@ export const clinicSettingsSchema = z.object({
   whatsapp_waba_id: z.string().max(50).optional().or(z.literal("")),
   whatsapp_access_token: z.string().max(500).optional().or(z.literal("")),
   google_reviews_url: z.string().url().optional().or(z.literal("")).or(z.null()),
+  cnpj: z.string().regex(/^\d{14}$/, "CNPJ must be 14 digits").optional().or(z.literal("")),
   operating_hours: scheduleGridSchema.optional(),
 });
 
@@ -50,6 +51,7 @@ export type ClinicSettingsInput = z.infer<typeof clinicSettingsSchema>;
 export const createProfessionalSchema = z.object({
   name: z.string().min(2).max(100),
   specialty: z.string().max(100).optional().or(z.literal("")),
+  registration_number: z.string().max(30).optional().or(z.literal("")),
   appointment_duration_minutes: z.number().int().min(5).max(480).default(30),
   schedule_grid: scheduleGridSchema.optional(),
 });
@@ -57,6 +59,7 @@ export const createProfessionalSchema = z.object({
 export const updateProfessionalSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   specialty: z.string().max(100).optional().or(z.literal("")),
+  registration_number: z.string().max(30).optional().or(z.literal("")),
   appointment_duration_minutes: z.number().int().min(5).max(480).optional(),
   active: z.boolean().optional(),
   schedule_grid: scheduleGridSchema.optional(),

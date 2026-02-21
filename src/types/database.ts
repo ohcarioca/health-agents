@@ -208,6 +208,7 @@ export type Database = {
           address: string | null
           assistant_name: string | null
           city: string | null
+          cnpj: string | null
           created_at: string
           description: string | null
           email: string | null
@@ -239,6 +240,7 @@ export type Database = {
           address?: string | null
           assistant_name?: string | null
           city?: string | null
+          cnpj?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -270,6 +272,7 @@ export type Database = {
           address?: string | null
           assistant_name?: string | null
           city?: string | null
+          cnpj?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -852,6 +855,7 @@ export type Database = {
           google_refresh_token: string | null
           id: string
           name: string
+          registration_number: string | null
           schedule_grid: Json
           specialty: string | null
           updated_at: string
@@ -865,6 +869,7 @@ export type Database = {
           google_refresh_token?: string | null
           id?: string
           name: string
+          registration_number?: string | null
           schedule_grid?: Json
           specialty?: string | null
           updated_at?: string
@@ -878,6 +883,7 @@ export type Database = {
           google_refresh_token?: string | null
           id?: string
           name?: string
+          registration_number?: string | null
           schedule_grid?: Json
           specialty?: string | null
           updated_at?: string

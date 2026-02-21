@@ -344,6 +344,7 @@
       "timezone": "Timezone",
       "googleReviewsUrl": "Google Reviews link",
       "operatingHours": "Operating hours",
+      "cnpj": "Tax ID (CNPJ)",
       "save": "Save changes",
       "saving": "Saving...",
       "saveSuccess": "Settings saved",
@@ -437,7 +438,9 @@
       "priceRequired": "Set the price for each selected service",
       "saveFirst": "Save the professional first to assign services.",
       "done": "Done",
-      "specialtyPlaceholder": "Select or type a specialty"
+      "specialtyPlaceholder": "Select or type a specialty",
+      "registrationNumber": "Professional registration",
+      "registrationNumberPlaceholder": "e.g., CRM 12345/SP"
     },
     "compactGrid": {
       "copyToAll": "Copy Mon to all",
