@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { AlertsList } from "@/components/dashboard/alerts-list";
 import { UpcomingAppointments } from "@/components/dashboard/upcoming-appointments";
+import { SubscriptionBanner } from "@/components/subscription/subscription-banner";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getClinicId } from "@/lib/supabase/server";
 import { calculateNPS, formatCents, calculateRevenueMetrics } from "@/lib/analytics/kpis";
@@ -106,6 +107,7 @@ export default async function DashboardPage() {
     <PageContainer>
       <PageHeader title={t("title")} />
       <div className="mt-6 space-y-6">
+        <SubscriptionBanner />
         {/* Row 1: Primary KPI cards — 3 columns */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <KpiCard

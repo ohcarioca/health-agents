@@ -311,7 +311,8 @@
       "integrations": "Integrations",
       "whatsapp": "WhatsApp",
       "customFields": "Fields",
-      "team": "Team"
+      "team": "Team",
+      "subscription": "Subscription"
     },
     "customFields": {
       "add": "Add field",
@@ -782,6 +783,92 @@
       "poweredBy": "Powered by",
       "notFound": "Page not found",
       "notFoundDescription": "This clinic does not have an active public page."
+    }
+  },
+  "subscription": {
+    "title": "Subscription",
+    "trial": {
+      "banner": "Your free 30-day trial has started! {days} days remaining.",
+      "expired": "Your trial has expired",
+      "cta": "Choose a plan"
+    },
+    "active": {
+      "banner": "{plan} plan — Next billing: {date}",
+      "label": "Active"
+    },
+    "pastDue": {
+      "banner": "Payment failed — {amount} pending",
+      "cta": "Update card"
+    },
+    "expired": {
+      "label": "Expired"
+    },
+    "cancelled": {
+      "label": "Cancelled",
+      "accessUntil": "Access until {date}"
+    },
+    "usage": {
+      "professionals": "{current} / {limit} professionals",
+      "messages": "{current} / {limit} messages",
+      "unlimited": "Unlimited"
+    },
+    "plans": {
+      "title": "Choose your plan",
+      "month": "/month",
+      "professionals": "{count} professionals",
+      "professionalsUnlimited": "Unlimited professionals",
+      "messages": "{count} messages/month",
+      "messagesUnlimited": "Unlimited messages",
+      "current": "Current plan",
+      "subscribe": "Subscribe",
+      "changePlan": "Change plan"
+    },
+    "card": {
+      "title": "Card details",
+      "holderName": "Name on card",
+      "number": "Card number",
+      "expiry": "Expiry (MM/YY)",
+      "cvv": "CVV"
+    },
+    "holder": {
+      "title": "Cardholder details",
+      "name": "Full name",
+      "cpfCnpj": "CPF/CNPJ",
+      "email": "Email",
+      "phone": "Phone",
+      "postalCode": "ZIP code",
+      "addressNumber": "Number"
+    },
+    "periodStart": "Period start",
+    "nextBilling": "Next billing",
+    "actions": {
+      "subscribe": "Subscribe — {price}/month",
+      "upgrade": "Change plan",
+      "updateCard": "Update card",
+      "cancel": "Cancel subscription",
+      "confirmCancel": "Are you sure you want to cancel?",
+      "cancelConfirm": "Yes, cancel",
+      "cancelDismiss": "No, keep it"
+    },
+    "invoices": {
+      "title": "Invoice History",
+      "date": "Date",
+      "amount": "Amount",
+      "status": "Status",
+      "receipt": "Receipt",
+      "paid": "Paid",
+      "pending": "Pending",
+      "overdue": "Overdue"
+    },
+    "readOnly": {
+      "title": "Features locked",
+      "description": "Subscribe to regain access to scheduling, messaging, and all features.",
+      "dataNotice": "Your data is safe — nothing has been deleted."
+    },
+    "limitReached": {
+      "professionalsTitle": "Professional limit reached",
+      "professionals": "Professional limit reached ({current}/{limit}). Upgrade to add more.",
+      "messages": "Message limit reached ({current}/{limit})."
     }
   }
 }

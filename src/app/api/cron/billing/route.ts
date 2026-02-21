@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isAuthorizedCron } from "@/lib/cron";
+import { isAuthorizedCron, getSubscribedClinicIds } from "@/lib/cron";
 import {
   sendOutboundMessage,
   isWithinBusinessHours,
@@ -41,11 +41,14 @@ export async function GET(request: Request) {
   const today = new Date().toISOString().split("T")[0];
 
   // Build a set of clinic IDs where the billing module is disabled
-  const { data: disabledBillingModules } = await supabase
-    .from("module_configs")
-    .select("clinic_id")
-    .eq("module_type", "billing")
-    .eq("enabled", false);
+  const [{ data: disabledBillingModules }, subscribedClinicIds] = await Promise.all([
+    supabase
+      .from("module_configs")
+      .select("clinic_id")
+      .eq("module_type", "billing")
+      .eq("enabled", false),
+    getSubscribedClinicIds(supabase),
+  ]);
   const billingDisabledClinicIds = new Set(
     (disabledBillingModules ?? []).map((m) => m.clinic_id as string)
   );
@@ -76,6 +79,15 @@ export async function GET(request: Request) {
     if (!patient) continue;
 
     if (billingDisabledClinicIds.has(invoice.clinic_id)) {
+      skipped++;
+      continue;
+    }
+
+    // Skip clinics without active subscription
+    if (!subscribedClinicIds.has(invoice.clinic_id)) {
+      console.log(
+        `[cron/billing] skipping invoice ${invoice.id}: clinic ${invoice.clinic_id} has no active subscription`
+      );
       skipped++;
       continue;
     }

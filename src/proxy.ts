@@ -19,6 +19,28 @@ function isAuthRoute(pathname: string): boolean {
   );
 }
 
+async function getSubscriptionStatus(
+  supabase: ReturnType<typeof createServerClient>,
+  userId: string
+): Promise<string | null> {
+  const { data: clinicUser } = await supabase
+    .from("clinic_users")
+    .select("clinic_id")
+    .eq("user_id", userId)
+    .limit(1)
+    .single();
+
+  if (!clinicUser) return null;
+
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("status")
+    .eq("clinic_id", clinicUser.clinic_id)
+    .single();
+
+  return sub?.status ?? null;
+}
+
 export async function proxy(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -52,7 +74,8 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Unauthenticated user trying to access protected route → redirect to login
-  if (!user && !isPublicRoute(pathname)) {
+  // API routes handle their own auth — skip redirect for them
+  if (!user && !isPublicRoute(pathname) && !pathname.startsWith("/api/")) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
@@ -63,11 +86,28 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(dashboardUrl);
   }
 
+  // Subscription gating: block API mutations when expired/cancelled
+  if (user && pathname.startsWith("/api/") && request.method !== "GET") {
+    // Exempt routes that must work regardless of subscription
+    const exemptPrefixes = ["/api/auth", "/api/subscriptions", "/api/plans", "/api/webhooks", "/api/cron"];
+    const isExempt = exemptPrefixes.some((prefix) => pathname.startsWith(prefix));
+
+    if (!isExempt) {
+      const subStatus = await getSubscriptionStatus(supabase, user.id);
+      if (subStatus === "expired" || subStatus === "cancelled") {
+        return NextResponse.json(
+          { error: "subscription_required" },
+          { status: 403 }
+        );
+      }
+    }
+  }
+
   return response;
 }
 
 export const config = {
   matcher: [
-    "/((?!api|c/|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    "/((?!c/|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
   ],
 };

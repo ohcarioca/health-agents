@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isAuthorizedCron, findOrCreateConversation } from "@/lib/cron";
+import { isAuthorizedCron, findOrCreateConversation, getSubscribedClinicIds } from "@/lib/cron";
 import {
   sendOutboundTemplate,
   isWithinBusinessHours,
@@ -30,15 +30,18 @@ export async function GET(request: Request) {
 
   const supabase = createAdminClient();
 
-  // Fetch pending recall entries with patient data
-  const { data: entries, error } = await supabase
-    .from("recall_queue")
-    .select(`
-      id, clinic_id, patient_id, attempts, last_visit_at,
-      patients!inner ( id, name, phone )
-    `)
-    .eq("status", "pending")
-    .limit(50);
+  // Fetch pending recall entries with patient data and subscribed clinic IDs in parallel
+  const [{ data: entries, error }, subscribedClinicIds] = await Promise.all([
+    supabase
+      .from("recall_queue")
+      .select(`
+        id, clinic_id, patient_id, attempts, last_visit_at,
+        patients!inner ( id, name, phone )
+      `)
+      .eq("status", "pending")
+      .limit(50),
+    getSubscribedClinicIds(supabase),
+  ]);
 
   if (error) {
     console.error("[cron/recall-send] query error:", error);
@@ -84,6 +87,15 @@ export async function GET(request: Request) {
       if (clinic && !clinic.is_active) {
         console.log(
           `[cron/recall-send] skipping entry ${entry.id}: clinic is not active`
+        );
+        skipped++;
+        continue;
+      }
+
+      // Skip clinics without active subscription
+      if (!subscribedClinicIds.has(entry.clinic_id)) {
+        console.log(
+          `[cron/recall-send] skipping entry ${entry.id}: clinic ${entry.clinic_id} has no active subscription`
         );
         skipped++;
         continue;

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isAuthorizedCron } from "@/lib/cron";
+import { isAuthorizedCron, getSubscribedClinicIds } from "@/lib/cron";
 import { sendTextMessage } from "@/services/whatsapp";
 import type { WhatsAppCredentials } from "@/services/whatsapp";
 
@@ -21,16 +21,19 @@ export async function GET(request: Request) {
 
   const supabase = createAdminClient();
 
-  // Fetch failed messages that haven't exceeded max attempts
-  const { data: failedMessages, error } = await supabase
-    .from("message_queue")
-    .select(
-      "id, clinic_id, patient_id, conversation_id, channel, content, attempts"
-    )
-    .eq("status", "failed")
-    .lt("attempts", MAX_ATTEMPTS)
-    .order("created_at", { ascending: true })
-    .limit(BATCH_SIZE);
+  // Fetch failed messages and subscribed clinic IDs in parallel
+  const [{ data: failedMessages, error }, subscribedClinicIds] = await Promise.all([
+    supabase
+      .from("message_queue")
+      .select(
+        "id, clinic_id, patient_id, conversation_id, channel, content, attempts"
+      )
+      .eq("status", "failed")
+      .lt("attempts", MAX_ATTEMPTS)
+      .order("created_at", { ascending: true })
+      .limit(BATCH_SIZE),
+    getSubscribedClinicIds(supabase),
+  ]);
 
   if (error) {
     console.error("[cron/message-retry] query error:", error.message);
@@ -58,6 +61,15 @@ export async function GET(request: Request) {
         .single();
 
       if (!clinic?.is_active) {
+        failedCount++;
+        continue;
+      }
+
+      // Skip clinics without active subscription
+      if (!subscribedClinicIds.has(msg.clinic_id)) {
+        console.log(
+          `[cron/message-retry] skipping message ${msg.id}: clinic ${msg.clinic_id} has no active subscription`
+        );
         failedCount++;
         continue;
       }

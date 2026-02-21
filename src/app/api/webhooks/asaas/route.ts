@@ -47,6 +47,13 @@ export async function POST(request: Request) {
     });
   }
 
+  // Detect platform subscription charges by externalReference prefix
+  const isSubscriptionCharge = invoiceId.startsWith("sub:");
+
+  if (isSubscriptionCharge) {
+    return handleSubscriptionWebhook(event, invoiceId.replace("sub:", ""), paymentDate);
+  }
+
   const supabase = createAdminClient();
 
   try {
@@ -135,10 +142,65 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ status: "ok", invoiceId, event });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("[asaas-webhook] error:", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[asaas-webhook] error:", error instanceof Error ? error.message : error);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
+}
+
+// ── Platform subscription webhook handler ──
+
+async function handleSubscriptionWebhook(
+  event: string,
+  subscriptionLocalId: string,
+  paymentDate: string | null
+): Promise<NextResponse> {
+  const supabase = createAdminClient();
+
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("id, status, current_period_end")
+    .eq("id", subscriptionLocalId)
+    .single();
+
+  if (!sub) {
+    console.warn(`[asaas-webhook] Subscription ${subscriptionLocalId} not found`);
+    return NextResponse.json({ status: "skipped", reason: "subscription_not_found" });
+  }
+
+  if (PAID_EVENTS.has(event)) {
+    // Idempotency: if already active and period_end is in the future, skip
+    const now = new Date();
+    const currentEnd = sub.current_period_end ? new Date(sub.current_period_end) : null;
+    if (sub.status === "active" && currentEnd && currentEnd > now) {
+      console.log(`[asaas-webhook] Subscription ${sub.id} already active until ${currentEnd.toISOString()}, skipping`);
+      return NextResponse.json({ status: "already_processed", subscriptionId: sub.id, event });
+    }
+
+    // Renew period
+    const newPeriodEnd = new Date(currentEnd ?? now);
+    newPeriodEnd.setMonth(newPeriodEnd.getMonth() + 1);
+
+    await supabase
+      .from("subscriptions")
+      .update({
+        status: "active",
+        current_period_start: paymentDate ?? now.toISOString(),
+        current_period_end: newPeriodEnd.toISOString(),
+      })
+      .eq("id", sub.id);
+
+    console.log(`[asaas-webhook] Subscription ${sub.id} renewed until ${newPeriodEnd.toISOString()}`);
+  } else if (OVERDUE_EVENTS.has(event)) {
+    if (sub.status !== "past_due") {
+      await supabase
+        .from("subscriptions")
+        .update({ status: "past_due" })
+        .eq("id", sub.id);
+      console.log(`[asaas-webhook] Subscription ${sub.id} marked past_due`);
+    }
+  }
+
+  return NextResponse.json({ status: "ok", subscriptionId: sub.id, event });
 }
 
 // ── Payment confirmation via WhatsApp ──
