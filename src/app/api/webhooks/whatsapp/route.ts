@@ -5,6 +5,7 @@ import { verifySignature } from "@/services/whatsapp";
 import { whatsappWebhookSchema } from "@/lib/validations/webhook";
 import { processMessage } from "@/lib/agents";
 import { normalizeBRPhone } from "@/lib/utils/phone";
+import { incrementMessageCount } from "@/lib/subscriptions";
 
 // GET — Meta webhook verification handshake
 export async function GET(request: Request) {
@@ -116,6 +117,9 @@ export async function POST(request: Request) {
           clinicId: clinic.id,
           contactName: contactName ?? undefined,
         });
+
+        // Track monthly message usage against plan limits
+        await incrementMessageCount(clinic.id);
       } catch (err) {
         console.error("[webhook/whatsapp] processing error:", err);
       }

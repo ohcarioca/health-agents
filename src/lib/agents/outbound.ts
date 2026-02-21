@@ -6,6 +6,7 @@ import {
   sendTemplateMessage,
   type WhatsAppCredentials,
 } from "@/services/whatsapp";
+import { incrementMessageCount } from "@/lib/subscriptions";
 
 // ── Constants ──
 
@@ -159,6 +160,15 @@ export async function sendOutboundMessage(
     return { success: false, skippedReason: "send_failed" };
   }
 
+  // Track monthly message usage against plan limits
+  const msgStats = await incrementMessageCount(clinicId);
+  if (msgStats.warningThreshold && !msgStats.overLimit) {
+    console.log(`[outbound] Clinic ${clinicId} at ${msgStats.count}/${msgStats.limit} messages (warning threshold)`);
+  }
+  if (msgStats.overLimit) {
+    console.warn(`[outbound] Clinic ${clinicId} over message limit: ${msgStats.count}/${msgStats.limit}`);
+  }
+
   // Store in messages table so it appears in conversation history and internal chat
   await supabase.from("messages").insert({
     conversation_id: conversationId,
@@ -233,6 +243,15 @@ export async function sendOutboundTemplate(
   if (!result.success) {
     console.error("[outbound] template send failed:", result.error);
     return { success: false, skippedReason: "send_failed" };
+  }
+
+  // Track monthly message usage against plan limits
+  const msgStats = await incrementMessageCount(clinicId);
+  if (msgStats.warningThreshold && !msgStats.overLimit) {
+    console.log(`[outbound] Clinic ${clinicId} at ${msgStats.count}/${msgStats.limit} messages (warning threshold)`);
+  }
+  if (msgStats.overLimit) {
+    console.warn(`[outbound] Clinic ${clinicId} over message limit: ${msgStats.count}/${msgStats.limit}`);
   }
 
   // Store in messages table so it appears in conversation history and internal chat
