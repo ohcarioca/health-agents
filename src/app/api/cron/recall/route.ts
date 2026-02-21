@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isAuthorizedCron } from "@/lib/cron";
+import { isAuthorizedCron, getSubscribedClinicIds } from "@/lib/cron";
 
 export const dynamic = "force-dynamic";
 
@@ -18,16 +18,28 @@ export async function GET(request: Request) {
 
   const supabase = createAdminClient();
 
-  // Get all active clinics
-  const { data: clinics, error: clinicsError } = await supabase
-    .from("clinics")
-    .select("id")
-    .eq("is_active", true);
+  // Get all active clinics and subscribed clinic IDs in parallel
+  const [{ data: clinics, error: clinicsError }, subscribedClinicIds] = await Promise.all([
+    supabase
+      .from("clinics")
+      .select("id")
+      .eq("is_active", true),
+    getSubscribedClinicIds(supabase),
+  ]);
 
   if (clinicsError || !clinics) {
     return NextResponse.json(
       { error: clinicsError?.message ?? "no clinics found" },
       { status: 500 }
+    );
+  }
+
+  // Filter out clinics without active subscription
+  const subscribedClinics = clinics.filter((c) => subscribedClinicIds.has(c.id));
+  const skippedCount = clinics.length - subscribedClinics.length;
+  if (skippedCount > 0) {
+    console.log(
+      `[cron/recall] skipping ${skippedCount} clinic(s) without active subscription`
     );
   }
 
@@ -43,7 +55,7 @@ export async function GET(request: Request) {
 
   let enqueued = 0;
 
-  for (const clinic of clinics) {
+  for (const clinic of subscribedClinics) {
     const recallConfig = recallConfigMap.get(clinic.id);
 
     // Skip clinics where recall module is explicitly disabled

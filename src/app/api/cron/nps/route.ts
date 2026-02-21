@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isAuthorizedCron, findOrCreateConversation } from "@/lib/cron";
+import { isAuthorizedCron, findOrCreateConversation, getSubscribedClinicIds } from "@/lib/cron";
 import {
   sendOutboundMessage,
   isWithinBusinessHours,
@@ -30,11 +30,14 @@ export async function GET(request: Request) {
   const supabase = createAdminClient();
 
   // Build a set of clinic IDs where the NPS module is disabled
-  const { data: disabledNpsModules } = await supabase
-    .from("module_configs")
-    .select("clinic_id")
-    .eq("module_type", "nps")
-    .eq("enabled", false);
+  const [{ data: disabledNpsModules }, subscribedClinicIds] = await Promise.all([
+    supabase
+      .from("module_configs")
+      .select("clinic_id")
+      .eq("module_type", "nps")
+      .eq("enabled", false),
+    getSubscribedClinicIds(supabase),
+  ]);
   const npsDisabledClinicIds = new Set(
     (disabledNpsModules ?? []).map((m) => m.clinic_id as string)
   );
@@ -69,6 +72,15 @@ export async function GET(request: Request) {
     try {
       // Skip if NPS module is disabled for this clinic
       if (npsDisabledClinicIds.has(appointment.clinic_id)) {
+        skipped++;
+        continue;
+      }
+
+      // Skip clinics without active subscription
+      if (!subscribedClinicIds.has(appointment.clinic_id)) {
+        console.log(
+          `[cron/nps] skipping appointment ${appointment.id}: clinic ${appointment.clinic_id} has no active subscription`
+        );
         skipped++;
         continue;
       }

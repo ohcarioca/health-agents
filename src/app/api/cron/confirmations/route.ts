@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isAuthorizedCron, findOrCreateConversation } from "@/lib/cron";
+import { isAuthorizedCron, findOrCreateConversation, getSubscribedClinicIds } from "@/lib/cron";
 import {
   sendOutboundTemplate,
   isWithinBusinessHours,
@@ -75,7 +75,7 @@ export async function GET(request: Request) {
   const appointmentIds = [...new Set(pendingEntries.map((e) => e.appointment_id))];
   const clinicIds = [...new Set(pendingEntries.map((e) => e.clinic_id))];
 
-  const [appointmentsResult, clinicsResult] = await Promise.all([
+  const [appointmentsResult, clinicsResult, subscribedClinicIds] = await Promise.all([
     supabase
       .from("appointments")
       .select("id, status, starts_at, patient_id, professional_id")
@@ -84,6 +84,7 @@ export async function GET(request: Request) {
       .from("clinics")
       .select("id, timezone, whatsapp_phone_number_id, whatsapp_access_token, is_active")
       .in("id", clinicIds),
+    getSubscribedClinicIds(supabase),
   ]);
 
   const appointmentsMap = new Map(
@@ -168,6 +169,16 @@ export async function GET(request: Request) {
       if (!clinic || !clinic.is_active) {
         console.log(
           `[cron/confirmations] skipping entry ${entry.id}: clinic not found or inactive`
+        );
+        await markFailed(supabase, entry.id);
+        failed++;
+        continue;
+      }
+
+      // 6a. Skip clinics without active subscription
+      if (!subscribedClinicIds.has(entry.clinic_id)) {
+        console.log(
+          `[cron/confirmations] skipping entry ${entry.id}: clinic ${entry.clinic_id} has no active subscription`
         );
         await markFailed(supabase, entry.id);
         failed++;
