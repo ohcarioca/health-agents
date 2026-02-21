@@ -311,7 +311,8 @@
       "integrations": "Integraciones",
       "whatsapp": "WhatsApp",
       "customFields": "Campos",
-      "team": "Equipo"
+      "team": "Equipo",
+      "subscription": "Suscripci\u00f3n"
     },
     "customFields": {
       "add": "Agregar campo",
@@ -782,6 +783,89 @@
       "poweredBy": "Powered by",
       "notFound": "Página no encontrada",
       "notFoundDescription": "Esta clínica no tiene una página pública activa."
+    }
+  },
+  "subscription": {
+    "title": "Suscripción",
+    "trial": {
+      "banner": "¡Tu prueba gratuita de 30 días ha comenzado! Quedan {days} días.",
+      "expired": "Tu prueba ha expirado",
+      "cta": "Elegir plan"
+    },
+    "active": {
+      "banner": "Plan {plan} — Próximo cobro: {date}",
+      "label": "Activo"
+    },
+    "pastDue": {
+      "banner": "Fallo en el pago — {amount} pendiente",
+      "cta": "Actualizar tarjeta"
+    },
+    "expired": {
+      "label": "Expirado"
+    },
+    "cancelled": {
+      "label": "Cancelado",
+      "accessUntil": "Acceso hasta {date}"
+    },
+    "usage": {
+      "professionals": "{current} / {limit} profesionales",
+      "messages": "{current} / {limit} mensajes",
+      "unlimited": "Ilimitado"
+    },
+    "plans": {
+      "title": "Elige tu plan",
+      "month": "/mes",
+      "professionals": "{count} profesionales",
+      "professionalsUnlimited": "Profesionales ilimitados",
+      "messages": "{count} mensajes/mes",
+      "messagesUnlimited": "Mensajes ilimitados",
+      "current": "Plan actual",
+      "subscribe": "Suscribirse",
+      "changePlan": "Cambiar plan"
+    },
+    "card": {
+      "title": "Datos de la tarjeta",
+      "holderName": "Nombre en la tarjeta",
+      "number": "Número de tarjeta",
+      "expiry": "Vencimiento (MM/AA)",
+      "cvv": "CVV"
+    },
+    "holder": {
+      "title": "Datos del titular",
+      "name": "Nombre completo",
+      "cpfCnpj": "CPF/CNPJ",
+      "email": "Email",
+      "phone": "Teléfono",
+      "postalCode": "Código postal",
+      "addressNumber": "Número"
+    },
+    "actions": {
+      "subscribe": "Suscribirse — {price}/mes",
+      "upgrade": "Cambiar plan",
+      "updateCard": "Actualizar tarjeta",
+      "cancel": "Cancelar suscripción",
+      "confirmCancel": "¿Estás seguro de que deseas cancelar?",
+      "cancelConfirm": "Sí, cancelar",
+      "cancelDismiss": "No, mantener"
+    },
+    "invoices": {
+      "title": "Historial de Facturas",
+      "date": "Fecha",
+      "amount": "Monto",
+      "status": "Estado",
+      "receipt": "Recibo",
+      "paid": "Pagado",
+      "pending": "Pendiente",
+      "overdue": "Vencido"
+    },
+    "readOnly": {
+      "title": "Funcionalidades bloqueadas",
+      "description": "Suscríbete para volver a usar agendamiento, mensajes y todas las funcionalidades.",
+      "dataNotice": "Tus datos están seguros — nada fue eliminado."
+    },
+    "limitReached": {
+      "professionals": "Límite de profesionales alcanzado ({current}/{limit}). Mejora tu plan para agregar más.",
+      "messages": "Límite de mensajes alcanzado ({current}/{limit})."
     }
   }
 }

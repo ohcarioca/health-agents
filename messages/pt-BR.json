@@ -311,7 +311,8 @@
       "integrations": "Integrações",
       "whatsapp": "WhatsApp",
       "customFields": "Campos",
-      "team": "Equipe"
+      "team": "Equipe",
+      "subscription": "Assinatura"
     },
     "customFields": {
       "add": "Adicionar campo",
@@ -973,6 +974,89 @@
       "terms": "Termos de Uso",
       "privacy": "Privacidade",
       "rights": "Todos os direitos reservados."
+    }
+  },
+  "subscription": {
+    "title": "Assinatura",
+    "trial": {
+      "banner": "Seu trial gratuito de 30 dias começou! Restam {days} dias.",
+      "expired": "Seu trial expirou",
+      "cta": "Escolher plano"
+    },
+    "active": {
+      "banner": "Plano {plan} — Próxima cobrança: {date}",
+      "label": "Ativo"
+    },
+    "pastDue": {
+      "banner": "Falha no pagamento — {amount} pendente",
+      "cta": "Atualizar cartão"
+    },
+    "expired": {
+      "label": "Expirado"
+    },
+    "cancelled": {
+      "label": "Cancelado",
+      "accessUntil": "Acesso até {date}"
+    },
+    "usage": {
+      "professionals": "{current} / {limit} profissionais",
+      "messages": "{current} / {limit} mensagens",
+      "unlimited": "Ilimitado"
+    },
+    "plans": {
+      "title": "Escolha seu plano",
+      "month": "/mês",
+      "professionals": "{count} profissionais",
+      "professionalsUnlimited": "Profissionais ilimitados",
+      "messages": "{count} mensagens/mês",
+      "messagesUnlimited": "Mensagens ilimitadas",
+      "current": "Plano atual",
+      "subscribe": "Assinar",
+      "changePlan": "Trocar plano"
+    },
+    "card": {
+      "title": "Dados do cartão",
+      "holderName": "Nome no cartão",
+      "number": "Número do cartão",
+      "expiry": "Validade (MM/AA)",
+      "cvv": "CVV"
+    },
+    "holder": {
+      "title": "Dados do titular",
+      "name": "Nome completo",
+      "cpfCnpj": "CPF/CNPJ",
+      "email": "Email",
+      "phone": "Telefone",
+      "postalCode": "CEP",
+      "addressNumber": "Número"
+    },
+    "actions": {
+      "subscribe": "Assinar — {price}/mês",
+      "upgrade": "Trocar plano",
+      "updateCard": "Atualizar cartão",
+      "cancel": "Cancelar assinatura",
+      "confirmCancel": "Tem certeza que deseja cancelar?",
+      "cancelConfirm": "Sim, cancelar",
+      "cancelDismiss": "Não, manter"
+    },
+    "invoices": {
+      "title": "Histórico de Faturas",
+      "date": "Data",
+      "amount": "Valor",
+      "status": "Status",
+      "receipt": "Recibo",
+      "paid": "Pago",
+      "pending": "Pendente",
+      "overdue": "Em atraso"
+    },
+    "readOnly": {
+      "title": "Funcionalidades travadas",
+      "description": "Assine para voltar a usar agendamento, mensagens e todas as funcionalidades.",
+      "dataNotice": "Seus dados estão seguros — nada foi apagado."
+    },
+    "limitReached": {
+      "professionals": "Limite de profissionais atingido ({current}/{limit}). Faça upgrade para adicionar mais.",
+      "messages": "Limite de mensagens atingido ({current}/{limit})."
     }
   }
 }
