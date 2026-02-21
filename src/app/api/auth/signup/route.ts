@@ -112,6 +112,13 @@ export async function POST(request: Request) {
 
   await supabase.from("agents").insert(agentInserts);
 
+  // 6. Create trial subscription
+  await supabase.from("subscriptions").insert({
+    clinic_id: clinic.id,
+    status: "trialing",
+    trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+  });
+
   return NextResponse.json(
     { data: { userId, clinicId: clinic.id } },
     { status: 201 }
