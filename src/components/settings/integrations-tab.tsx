@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarDays, Mail, CreditCard } from "lucide-react";
+import { CalendarDays, Mail } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -283,58 +283,31 @@ export function IntegrationsTab() {
         </div>
       </Card>
 
-      {/* Gmail and Pagar.me placeholder sections */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Card>
-          <div className="flex items-center gap-3">
-            <Mail
-              className="size-5"
-              strokeWidth={1.75}
+      {/* Gmail placeholder section */}
+      <Card>
+        <div className="flex items-center gap-3">
+          <Mail
+            className="size-5"
+            strokeWidth={1.75}
+            style={{ color: "var(--text-muted)" }}
+          />
+          <div className="min-w-0 flex-1">
+            <p
+              className="text-sm font-medium"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {t("gmail")}
+            </p>
+            <p
+              className="text-xs"
               style={{ color: "var(--text-muted)" }}
-            />
-            <div className="min-w-0 flex-1">
-              <p
-                className="text-sm font-medium"
-                style={{ color: "var(--text-primary)" }}
-              >
-                {t("gmail")}
-              </p>
-              <p
-                className="text-xs"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {t("comingSoon")}
-              </p>
-            </div>
-            <Badge variant="neutral">{t("notConnected")}</Badge>
+            >
+              {t("comingSoon")}
+            </p>
           </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center gap-3">
-            <CreditCard
-              className="size-5"
-              strokeWidth={1.75}
-              style={{ color: "var(--text-muted)" }}
-            />
-            <div className="min-w-0 flex-1">
-              <p
-                className="text-sm font-medium"
-                style={{ color: "var(--text-primary)" }}
-              >
-                {t("asaas")}
-              </p>
-              <p
-                className="text-xs"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {t("asaasDescription")}
-              </p>
-            </div>
-            <Badge variant="neutral">{t("configuredViaEnv")}</Badge>
-          </div>
-        </Card>
-      </div>
+          <Badge variant="neutral">{t("notConnected")}</Badge>
+        </div>
+      </Card>
     </div>
   );
 }
