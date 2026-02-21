@@ -64,7 +64,7 @@ export async function PUT(request: Request) {
   if (!result.success) {
     console.error("[subscriptions] Card update failed:", result.error);
     return NextResponse.json(
-      { error: "Failed to update card" },
+      { error: result.error ?? "Failed to update card" },
       { status: 502 },
     );
   }

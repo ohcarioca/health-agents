@@ -51,7 +51,7 @@ export async function POST() {
   if (!result.success) {
     console.error("[subscriptions] Cancel failed:", result.error);
     return NextResponse.json(
-      { error: "Failed to cancel subscription" },
+      { error: result.error ?? "Failed to cancel subscription" },
       { status: 502 },
     );
   }

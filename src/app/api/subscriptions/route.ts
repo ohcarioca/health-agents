@@ -142,7 +142,7 @@ export async function POST(request: Request) {
     if (!customerResult.success || !customerResult.customerId) {
       console.error("[subscriptions] Customer creation failed:", customerResult.error);
       return NextResponse.json(
-        { error: "Failed to process payment" },
+        { error: customerResult.error ?? "Failed to process payment" },
         { status: 502 },
       );
     }
@@ -169,7 +169,7 @@ export async function POST(request: Request) {
   if (!subResult.success || !subResult.subscriptionId) {
     console.error("[subscriptions] Subscription creation failed:", subResult.error);
     return NextResponse.json(
-      { error: "Failed to process payment" },
+      { error: subResult.error ?? "Failed to process payment" },
       { status: 502 },
     );
   }

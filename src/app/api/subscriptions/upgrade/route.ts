@@ -85,7 +85,7 @@ export async function PUT(request: Request) {
   if (!result.success) {
     console.error("[subscriptions] Upgrade failed:", result.error);
     return NextResponse.json(
-      { error: "Failed to update subscription" },
+      { error: result.error ?? "Failed to update subscription" },
       { status: 502 },
     );
   }
