@@ -839,6 +839,8 @@
       "postalCode": "Código postal",
       "addressNumber": "Número"
     },
+    "periodStart": "Inicio del período",
+    "nextBilling": "Próximo cobro",
     "actions": {
       "subscribe": "Suscribirse — {price}/mes",
       "upgrade": "Cambiar plan",

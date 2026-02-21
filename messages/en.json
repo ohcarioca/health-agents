@@ -839,6 +839,8 @@
       "postalCode": "ZIP code",
       "addressNumber": "Number"
     },
+    "periodStart": "Period start",
+    "nextBilling": "Next billing",
     "actions": {
       "subscribe": "Subscribe — {price}/month",
       "upgrade": "Change plan",

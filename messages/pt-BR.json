@@ -1030,6 +1030,8 @@
       "postalCode": "CEP",
       "addressNumber": "Número"
     },
+    "periodStart": "Início do período",
+    "nextBilling": "Próxima cobrança",
     "actions": {
       "subscribe": "Assinar — {price}/mês",
       "upgrade": "Trocar plano",
